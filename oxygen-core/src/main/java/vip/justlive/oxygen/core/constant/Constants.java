@@ -90,6 +90,31 @@ public class Constants {
    */
   public static final String DOT = ".";
   /**
+   * 分号
+   */
+  public static final String SEMICOLON = ";";
+  /**
+   * 数组类名前缀: "[]"
+   */
+  public static final String ARRAY_SUFFIX = "[]";
+  /**
+   * 内部数组类名前缀: "["
+   */
+  public static final String INTERNAL_ARRAY_PREFIX = "[";
+
+  /**
+   * 内部非基本数组类名前缀: "[L"
+   */
+  public static final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
+  /**
+   * 内部类分隔符: '$'
+   */
+  public static final char INNER_CLASS_SEPARATOR = '$';
+  /**
+   * CGLIB分隔符: "$$"
+   */
+  public static final String CGLIB_CLASS_SEPARATOR = "$$";
+  /**
    * 匹配所有
    */
   public static final String ANY = "*";

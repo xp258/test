@@ -145,6 +145,14 @@ public class ConfigFactory {
   }
 
   /**
+   * 清除配置
+   */
+  public static void clear() {
+    FACTORY.clear();
+    PROPS.clear();
+  }
+
+  /**
    * 解析
    *
    * @param clazz 类

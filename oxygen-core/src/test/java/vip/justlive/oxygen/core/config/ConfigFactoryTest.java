@@ -2,6 +2,7 @@ package vip.justlive.oxygen.core.config;
 
 import lombok.Data;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -19,6 +20,11 @@ public class ConfigFactoryTest {
     private Integer age;
   }
 
+  @Before
+  public void before() {
+    ConfigFactory.clear();
+  }
+
   @Test
   public void testLoadOneProp() {
 
@@ -33,7 +39,8 @@ public class ConfigFactoryTest {
 
   @Test
   public void testLoadOverride() {
-    ConfigFactory.loadProperties("classpath:/config/config.properties", "classpath:/config/config2.properties");
+    ConfigFactory.loadProperties("classpath:/config/config.properties",
+        "classpath:/config/config2.properties");
     Prop prop = ConfigFactory.load(Prop.class);
 
     Assert.assertNotNull(prop);
