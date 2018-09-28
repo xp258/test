@@ -36,9 +36,8 @@
   <dependencies>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <groupId>vip.justlive</groupId>
+      <artifactId>oxygen-core</artifactId>
     </dependency>
 
   </dependencies>
