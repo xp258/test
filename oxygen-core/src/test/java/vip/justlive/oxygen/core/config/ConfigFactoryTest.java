@@ -11,12 +11,12 @@ import org.junit.Test;
 public class ConfigFactoryTest {
 
   @Data
+  @ValueConfig("fc")
   static class Prop {
 
     @Value("${fc.name}")
     private String name;
 
-    @Value("${fc.age}")
     private Integer age;
   }
 
@@ -29,6 +29,9 @@ public class ConfigFactoryTest {
   public void testLoadOneProp() {
 
     ConfigFactory.loadProperties("classpath:/config/config.properties");
+
+    System.out.println(ConfigFactory.keys());
+
     Prop prop = ConfigFactory.load(Prop.class);
 
     Assert.assertNotNull(prop);

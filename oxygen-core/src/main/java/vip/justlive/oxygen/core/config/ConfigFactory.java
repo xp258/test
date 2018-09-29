@@ -18,9 +18,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
@@ -139,8 +141,18 @@ public class ConfigFactory {
    * @param bean 对象
    */
   public static void load(Object bean) {
+    load(bean, null);
+  }
+
+  /**
+   * 加载配置类，需要有{@link Value}注解
+   *
+   * @param bean 对象
+   * @param valueConfig 注解
+   */
+  public static void load(Object bean, ValueConfig valueConfig) {
     if (bean != null) {
-      parse(bean);
+      parse(bean, valueConfig);
     }
   }
 
@@ -150,6 +162,15 @@ public class ConfigFactory {
   public static void clear() {
     FACTORY.clear();
     PROPS.clear();
+  }
+
+  /**
+   * 获取所有属性名称
+   *
+   * @return keys
+   */
+  public static Set<String> keys() {
+    return PROPS.stringPropertyNames();
   }
 
   /**
@@ -166,23 +187,31 @@ public class ConfigFactory {
     } catch (InstantiationException | IllegalAccessException e) {
       throw Exceptions.wrap(e);
     }
-    return clazz.cast(parse(obj));
+    return clazz.cast(parse(obj, null));
   }
 
-  protected static Object parse(Object obj) {
+  protected static Object parse(Object obj, ValueConfig valueConfig) {
     Class<?> clazz = obj.getClass();
+    if (valueConfig == null && clazz.isAnnotationPresent(ValueConfig.class)) {
+      valueConfig = clazz.getAnnotation(ValueConfig.class);
+    }
     Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
     for (Field field : fields) {
       if (field.isAnnotationPresent(Value.class)) {
         Value val = field.getAnnotation(Value.class);
         Object value = getProperty(val.value(), field.getType());
         if (value != null) {
-          field.setAccessible(true);
-          try {
-            field.set(obj, value);
-          } catch (IllegalArgumentException | IllegalAccessException e) {
-            log.error("set value {} to class {} error", value, clazz, e);
-          }
+          ReflectUtils.setValue(obj, field, value);
+        }
+      } else if (valueConfig != null) {
+        StringBuilder name = new StringBuilder(valueConfig.value());
+        if (name.length() > 0) {
+          name.append(Constants.DOT);
+        }
+        name.append(field.getName());
+        Object value = getProperty(name.toString(), field.getType(), false);
+        if (value != null) {
+          ReflectUtils.setValue(obj, field, value);
         }
       }
     }
@@ -190,11 +219,20 @@ public class ConfigFactory {
   }
 
   private static Object getProperty(String key, Class<?> type) {
-    String tmpKey = String.format(TMP_PREFIX, ATOMIC.getAndIncrement());
-    PROPS.setProperty(tmpKey, key);
-    String value = getProperty(tmpKey);
-    PROPS.remove(tmpKey);
-    if (value.getClass() == type) {
+    return getProperty(key, type, true);
+  }
+
+  private static Object getProperty(String key, Class<?> type, boolean wrap) {
+    String value;
+    if (wrap) {
+      String tmpKey = String.format(TMP_PREFIX, ATOMIC.getAndIncrement());
+      PROPS.setProperty(tmpKey, key);
+      value = getProperty(tmpKey);
+      PROPS.remove(tmpKey);
+    } else {
+      value = getProperty(key);
+    }
+    if (value == null || value.getClass() == type) {
       return value;
     }
     return DefaultConverterService.sharedConverterService().convert(value, type);
