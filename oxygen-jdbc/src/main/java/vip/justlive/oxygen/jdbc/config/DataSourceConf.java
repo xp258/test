@@ -14,8 +14,6 @@
 package vip.justlive.oxygen.jdbc.config;
 
 import lombok.Data;
-import vip.justlive.oxygen.core.config.ValueConfig;
-import vip.justlive.oxygen.core.util.Checks;
 
 /**
  * 数据源配置
@@ -23,8 +21,13 @@ import vip.justlive.oxygen.core.util.Checks;
  * @author wubo
  */
 @Data
-@ValueConfig("datasource")
+@vip.justlive.oxygen.core.config.ValueConfig("datasource")
 public class DataSourceConf {
+
+  /**
+   * 是否禁用jdbc插件自动初始化
+   */
+  private boolean disabled = false;
 
   /**
    * 多数据源名称
@@ -60,9 +63,9 @@ public class DataSourceConf {
    * 校验合法
    */
   public DataSourceConf validate() {
-    Checks.notNull(driverClassName, "driverClassName cannot be null");
-    Checks.notNull(url, "url cannot be null");
-    Checks.notNull(username, "username cannot be null");
+    vip.justlive.oxygen.core.util.Checks.notNull(driverClassName, "driverClassName cannot be null");
+    vip.justlive.oxygen.core.util.Checks.notNull(url, "url cannot be null");
+    vip.justlive.oxygen.core.util.Checks.notNull(username, "username cannot be null");
     return this;
   }
 
