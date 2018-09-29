@@ -175,4 +175,18 @@ public class ClassUtils {
   public static boolean isCglibProxyClassName(String className) {
     return (className != null && className.contains(Constants.CGLIB_CLASS_SEPARATOR));
   }
+
+  /**
+   * 获取cglib代理的真实类
+   *
+   * @param clazz
+   * @return
+   */
+  public static Class<?> getCglibActualClass(Class<?> clazz) {
+    Class<?> actualClass = clazz;
+    while (isCglibProxyClass(actualClass)) {
+      actualClass = actualClass.getSuperclass();
+    }
+    return actualClass;
+  }
 }

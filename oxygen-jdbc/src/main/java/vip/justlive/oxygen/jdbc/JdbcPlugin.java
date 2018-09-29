@@ -24,7 +24,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.jdbc.config.DataSourceBuilder;
+import vip.justlive.oxygen.jdbc.config.DataSourceConf;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
 
@@ -37,10 +40,13 @@ public class JdbcPlugin implements Plugin {
 
   private static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   private static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
+  private static final String TEMPLATE = "datasource.%s";
+  private static final String PRIMARY_KEY = JdbcPlugin.class.getSimpleName();
+
 
   @Override
   public void start() {
-    // TODO
+    lookupDataSource();
   }
 
   @Override
@@ -54,10 +60,38 @@ public class JdbcPlugin implements Plugin {
     DATA_SOURCE_MAP.clear();
   }
 
+  /**
+   * 查找数据源
+   */
+  private void lookupDataSource() {
+    loadFromConfig();
+  }
+
+  /**
+   * 从配置文件中获取
+   */
+  private void loadFromConfig() {
+    DataSourceConf primary = ConfigFactory.load(DataSourceConf.class);
+    addDataSource(PRIMARY_KEY, DataSourceBuilder.build(primary.validate()));
+    if (primary.getMulti() != null && primary.getMulti().length > 0) {
+      for (String name : primary.getMulti()) {
+        DataSourceConf conf = ConfigFactory
+            .load(DataSourceConf.class, String.format(TEMPLATE, name));
+        addDataSource(name, DataSourceBuilder.build(conf.validate()));
+      }
+    }
+  }
+
+  /**
+   * 添加数据源
+   *
+   * @param name 数据源名称
+   * @param dataSource 数据源
+   */
   public static void addDataSource(String name, DataSource dataSource) {
     DataSource local = DATA_SOURCE_MAP.putIfAbsent(name, dataSource);
     if (local != null) {
-      throw new IllegalArgumentException(String.format("名称[%s]已存在", name));
+      throw new IllegalArgumentException(String.format("数据源名称[%s]已存在", name));
     }
   }
 
@@ -74,7 +108,7 @@ public class JdbcPlugin implements Plugin {
   }
 
   public static <T> T query(String sql, ResultSetHandler<T> handler, Object... params) {
-    return query(getConnection(JdbcPlugin.class.getSimpleName()), sql, handler, params);
+    return query(getConnection(PRIMARY_KEY), sql, handler, params);
   }
 
   public static <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,

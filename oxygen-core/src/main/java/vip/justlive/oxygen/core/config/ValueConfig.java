@@ -36,17 +36,4 @@ public @interface ValueConfig {
    */
   String value() default "";
 
-  /**
-   * 忽略不合法的属性
-   *
-   * @return true为忽略
-   */
-  boolean ignoreInvalidFields() default false;
-
-  /**
-   * 忽略未知的属性
-   *
-   * @return true为忽略
-   */
-  boolean ignoreUnknownFields() default true;
 }

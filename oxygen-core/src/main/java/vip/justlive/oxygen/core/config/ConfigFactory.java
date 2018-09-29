@@ -27,6 +27,7 @@ import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
 import vip.justlive.oxygen.core.io.PropertySource;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.ReflectUtils;
 
 /**
@@ -40,7 +41,7 @@ public class ConfigFactory {
   /**
    * 存储解析过的配置类
    */
-  private static final Map<Class<?>, Object> FACTORY = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Map<String, Object>> FACTORY = new ConcurrentHashMap<>();
   /**
    * 配置属性集合
    */
@@ -115,20 +116,37 @@ public class ConfigFactory {
   }
 
   /**
-   * 加载配置类，需要有{@link Value}注解
+   * 加载配置类，需要有{@link Value}或 {@link ValueConfig}注解
    *
    * @param clazz 类
    * @param <T> 泛型类
    * @return 配置类
    */
   public static <T> T load(Class<T> clazz) {
-    Object obj = FACTORY.get(clazz);
-    if (obj != null) {
-      return clazz.cast(obj);
+    return load(clazz, Constants.DOT);
+  }
+
+  /**
+   * 加载配置类
+   *
+   * @param clazz 类
+   * @param prefix 前缀
+   * @param <T> 泛型
+   * @return 配置类
+   */
+  public static <T> T load(Class<T> clazz, String prefix) {
+    Map<String, Object> map = FACTORY.get(clazz);
+    if (map == null) {
+      map = new ConcurrentHashMap<>(4, 1f);
+      FACTORY.putIfAbsent(clazz, map);
+    }
+    map = FACTORY.get(clazz);
+    if (map.containsKey(prefix)) {
+      return clazz.cast(map.get(prefix));
     }
 
-    T val = parse(clazz);
-    Object other = FACTORY.putIfAbsent(clazz, val);
+    T val = parse(clazz, prefix);
+    Object other = map.putIfAbsent(prefix, val);
     if (other != null) {
       val = clazz.cast(other);
     }
@@ -148,11 +166,11 @@ public class ConfigFactory {
    * 加载配置类，需要有{@link Value}注解
    *
    * @param bean 对象
-   * @param valueConfig 注解
+   * @param prefix 前缀
    */
-  public static void load(Object bean, ValueConfig valueConfig) {
+  public static void load(Object bean, String prefix) {
     if (bean != null) {
-      parse(bean, valueConfig);
+      parse(bean, prefix);
     }
   }
 
@@ -180,21 +198,22 @@ public class ConfigFactory {
    * @param <T> 泛型类
    * @return 配置类
    */
-  protected static <T> T parse(Class<T> clazz) {
+  protected static <T> T parse(Class<T> clazz, String prefix) {
     T obj;
     try {
       obj = clazz.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw Exceptions.wrap(e);
     }
-    return clazz.cast(parse(obj, null));
+    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    if (Constants.DOT.equals(prefix) && actualClass.isAnnotationPresent(ValueConfig.class)) {
+      prefix = actualClass.getAnnotation(ValueConfig.class).value();
+    }
+    return clazz.cast(parse(obj, prefix));
   }
 
-  protected static Object parse(Object obj, ValueConfig valueConfig) {
+  protected static Object parse(Object obj, String prefix) {
     Class<?> clazz = obj.getClass();
-    if (valueConfig == null && clazz.isAnnotationPresent(ValueConfig.class)) {
-      valueConfig = clazz.getAnnotation(ValueConfig.class);
-    }
     Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
     for (Field field : fields) {
       if (field.isAnnotationPresent(Value.class)) {
@@ -203,8 +222,8 @@ public class ConfigFactory {
         if (value != null) {
           ReflectUtils.setValue(obj, field, value);
         }
-      } else if (valueConfig != null) {
-        StringBuilder name = new StringBuilder(valueConfig.value());
+      } else if (prefix != null) {
+        StringBuilder name = new StringBuilder(prefix);
         if (name.length() > 0) {
           name.append(Constants.DOT);
         }

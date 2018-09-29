@@ -103,7 +103,7 @@ public class IocPlugin implements Plugin {
           throw new IllegalStateException("@Configuration下实例方法出错", e);
         }
         if (method.isAnnotationPresent(ValueConfig.class)) {
-          ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class));
+          ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
         } else {
           ConfigFactory.load(bean);
         }

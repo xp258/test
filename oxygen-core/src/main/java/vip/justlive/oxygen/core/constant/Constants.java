@@ -78,6 +78,10 @@ public class Constants {
    */
   public static final String RESP_IS_SUCCESS = "success";
   /**
+   * 空字符串
+   */
+  public static final String EMPTY = "";
+  /**
    * 冒号
    */
   public static final String COLON = ":";

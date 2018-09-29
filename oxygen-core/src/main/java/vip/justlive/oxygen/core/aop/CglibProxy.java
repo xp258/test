@@ -61,17 +61,9 @@ public class CglibProxy implements MethodInterceptor {
     enhancer.setCallback(CGLIB_PROXY);
     Class<?>[] classes = new Class[args.length];
     for (int i = 0; i < args.length; i++) {
-      classes[i] = getActualClass(args[i].getClass());
+      classes[i] = ClassUtils.getCglibActualClass(args[i].getClass());
     }
     return targetClass.cast(enhancer.create(classes, args));
-  }
-
-  private static Class<?> getActualClass(Class<?> clazz) {
-    Class<?> actualClass = clazz;
-    while (ClassUtils.isCglibProxyClass(actualClass)) {
-      actualClass = actualClass.getSuperclass();
-    }
-    return actualClass;
   }
 
   @Override
