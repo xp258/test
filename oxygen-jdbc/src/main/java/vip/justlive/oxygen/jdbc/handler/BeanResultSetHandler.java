@@ -14,14 +14,28 @@
 package vip.justlive.oxygen.jdbc.handler;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
+ * bean处理器
+ *
  * @author wubo
  */
 public class BeanResultSetHandler<T> implements ResultSetHandler<T> {
 
+  private final Class<T> clazz;
+
+  public BeanResultSetHandler(Class<T> clazz) {
+    this.clazz = clazz;
+  }
+
   @Override
   public T handle(ResultSet rs) {
-    return null;
+    try {
+      return rs.next() ? BasicRowHandler.singleton().toBean(rs, clazz) : null;
+    } catch (SQLException e) {
+      throw JdbcException.wrap(e);
+    }
   }
 }

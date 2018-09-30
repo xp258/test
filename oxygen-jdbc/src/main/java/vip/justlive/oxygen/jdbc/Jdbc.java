@@ -94,6 +94,37 @@ public class Jdbc {
    * 使用primary数据源，自动关闭连接
    *
    * @param sql sql
+   * @param clazz bean类型
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> T query(String sql, Class<T> clazz, Object... params) {
+    return query(PRIMARY_KEY, sql, clazz, params);
+  }
+
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param clazz bean类型
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> T query(String dataSourceName, String sql, Class<T> clazz, Object... params) {
+    return query(dataSourceName, sql, ResultSetHandler.beanHandler(clazz), params);
+  }
+
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
    * @param handler 结果集处理器
    * @param params 参数
    * @param <T> 泛型
@@ -221,6 +252,38 @@ public class Jdbc {
       onFinally(sql, params, result);
     }
     return result;
+  }
+
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param clazz bean类型
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> List<T> queryForList(String sql, Class<T> clazz, Object... params) {
+    return queryForList(PRIMARY_KEY, sql, clazz, params);
+  }
+
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param clazz bean类型
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> List<T> queryForList(String dataSourceName, String sql, Class<T> clazz,
+      Object... params) {
+    return query(dataSourceName, sql, ResultSetHandler.beanListHandler(clazz), params);
   }
 
   /**

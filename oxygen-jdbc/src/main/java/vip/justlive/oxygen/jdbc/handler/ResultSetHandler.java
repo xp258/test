@@ -67,4 +67,26 @@ public interface ResultSetHandler<T> {
   static ResultSetHandler<List<Object[]>> arrayListHandler() {
     return ArrayListResultSetHandler.INSTANCE;
   }
+
+  /**
+   * bean处理
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return BeanResultSetHandler
+   */
+  static <T> ResultSetHandler<T> beanHandler(Class<T> clazz) {
+    return new BeanResultSetHandler<>(clazz);
+  }
+
+  /**
+   * beanList处理
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return BeanListResultSetHandler
+   */
+  static <T> ResultSetHandler<List<T>> beanListHandler(Class<T> clazz) {
+    return new BeanListResultSetHandler<>(clazz);
+  }
 }
