@@ -38,6 +38,7 @@
     <dependency>
       <groupId>vip.justlive</groupId>
       <artifactId>oxygen-core</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -53,13 +54,18 @@
     </dependency>
 
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.47</version>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.197</version>
       <scope>test</scope>
     </dependency>
 
-
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

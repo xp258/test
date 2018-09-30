@@ -14,6 +14,8 @@
 package vip.justlive.oxygen.jdbc.handler;
 
 import java.sql.ResultSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 结果集处理
@@ -29,4 +31,40 @@ public interface ResultSetHandler<T> {
    * @return bean
    */
   T handle(ResultSet rs);
+
+  /**
+   * map处理
+   *
+   * @return MapResultSetHandler
+   */
+  static ResultSetHandler<Map<String, Object>> mapHandler() {
+    return MapResultSetHandler.INSTANCE;
+  }
+
+  /**
+   * mapList处理
+   *
+   * @return MapListResultSetHandler
+   */
+  static ResultSetHandler<List<Map<String, Object>>> mapListHandler() {
+    return MapListResultSetHandler.INSTANCE;
+  }
+
+  /**
+   * array处理
+   *
+   * @return ArrayResultSetHandler
+   */
+  static ResultSetHandler<Object[]> arrayHandler() {
+    return ArrayResultSetHandler.INSTANCE;
+  }
+
+  /**
+   * array List处理
+   *
+   * @return ArrayListResultSetHandler
+   */
+  static ResultSetHandler<List<Object[]>> arrayListHandler() {
+    return ArrayListResultSetHandler.INSTANCE;
+  }
 }

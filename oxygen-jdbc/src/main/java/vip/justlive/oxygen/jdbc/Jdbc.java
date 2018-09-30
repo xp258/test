@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
 
@@ -62,6 +61,21 @@ public class Jdbc {
     }
   }
 
+  /**
+   * 增加jdbc拦截
+   *
+   * @param interceptor 拦截
+   */
+  public static void addJdbcInterceptor(JdbcInterceptor interceptor) {
+    JDBC_INTERCEPTORS.add(interceptor);
+  }
+
+  /**
+   * 获取数据库连接
+   *
+   * @param dataSourceName 数据源名称
+   * @return connection
+   */
   public static Connection getConnection(String dataSourceName) {
     try {
       DataSource dataSource = DATA_SOURCE_MAP.get(dataSourceName);
@@ -70,38 +84,119 @@ public class Jdbc {
       }
       return dataSource.getConnection();
     } catch (SQLException e) {
-      throw Exceptions.wrap(e);
+      throw JdbcException.wrap(e);
     }
   }
 
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
   public static <T> T query(String sql, ResultSetHandler<T> handler, Object... params) {
-    return query(getConnection(PRIMARY_KEY), sql, handler, params);
+    return query(PRIMARY_KEY, sql, handler, params);
   }
 
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> T query(String sql, ResultSetHandler<T> handler, List<Object> params) {
+    return query(getConnection(PRIMARY_KEY), sql, handler, params, true);
+  }
+
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
   public static <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,
       Object... params) {
-    return query(getConnection(dataSourceName), sql, handler, params);
+    return query(dataSourceName, sql, handler, Arrays.asList(params));
   }
 
-  public static <T> T query(String sql, ResultSetHandler<T> handler, List<Object> params) {
-    return query(getConnection(JdbcPlugin.class.getSimpleName()), sql, handler, params);
-  }
-
+  /**
+   * 执行 select 操作
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
   public static <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,
       List<Object> params) {
-    return query(getConnection(dataSourceName), sql, handler, params);
+    return query(getConnection(dataSourceName), sql, handler, params, true);
   }
 
+  /**
+   * 执行 select 操作
+   * <br>
+   * 不关闭连接
+   *
+   * @param connection 数据库连接
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
   public static <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
       Object... params) {
     return query(connection, sql, handler, Arrays.asList(params));
   }
 
+  /**
+   * 执行 select 操作
+   * <br>
+   * 不关闭连接
+   *
+   * @param connection 数据库连接
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
   public static <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
       List<Object> params) {
-    return query(connection, sql, handler, params, true);
+    return query(connection, sql, handler, params, false);
   }
 
+  /**
+   * 执行 select 操作
+   *
+   * @param connection 数据库连接
+   * @param sql sql
+   * @param handler 结果集处理器
+   * @param params 参数
+   * @param closeCon 是否关闭连接
+   * @param <T> 泛型
+   * @return result
+   */
   public static <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
       List<Object> params, boolean closeCon) {
     PreparedStatement stmt = null;
@@ -113,10 +208,10 @@ public class Jdbc {
       fillStatement(stmt, params);
       rs = stmt.executeQuery();
       result = handler.handle(rs);
-      after(sql, params, rs, result);
+      after(sql, params, result);
     } catch (Exception e) {
       onException(sql, params, e);
-      throw Exceptions.wrap(e);
+      throw JdbcException.wrap(e);
     } finally {
       close(rs);
       close(stmt);
@@ -128,6 +223,120 @@ public class Jdbc {
     return result;
   }
 
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param params 参数
+   * @return 受影响行数
+   */
+  public static int update(String sql, Object... params) {
+    return update(PRIMARY_KEY, sql, params);
+  }
+
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param params 参数
+   * @return 受影响行数
+   */
+  public static int update(String sql, List<Object> params) {
+    return update(PRIMARY_KEY, sql, params);
+  }
+
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param params 参数
+   * @return 受影响行数
+   */
+  public static int update(String dataSourceName, String sql, Object... params) {
+    return update(getConnection(dataSourceName), sql, Arrays.asList(params));
+  }
+
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param params 参数
+   * @return 受影响行数
+   */
+  public static int update(String dataSourceName, String sql, List<Object> params) {
+    return update(getConnection(dataSourceName), sql, params, true);
+  }
+
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   * <br>
+   * 不关闭连接
+   *
+   * @param connection 数据库连接
+   * @param sql sql
+   * @param params 参数
+   * @return 受影响行数
+   */
+  public static int update(Connection connection, String sql, Object... params) {
+    return update(connection, sql, Arrays.asList(params), false);
+  }
+
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   * <br>
+   * 不关闭连接
+   *
+   * @param connection 数据库连接
+   * @param sql sql
+   * @param params 参数
+   * @return 受影响行数
+   */
+  public static int update(Connection connection, String sql, List<Object> params) {
+    return update(connection, sql, params, false);
+  }
+
+  /**
+   * 执行 INSERT、 UPDATE、 DELETE 操作
+   *
+   * @param connection 数据库连接
+   * @param sql sql
+   * @param params 参数
+   * @param closeCon 是否关闭连接
+   * @return 受影响行数
+   */
+  public static int update(Connection connection, String sql, List<Object> params,
+      boolean closeCon) {
+    PreparedStatement stmt = null;
+    int rows = 0;
+    try {
+      before(sql, params);
+      stmt = connection.prepareStatement(sql);
+      fillStatement(stmt, params);
+      rows = stmt.executeUpdate();
+      after(sql, params, rows);
+    } catch (Exception e) {
+      onException(sql, params, e);
+      throw JdbcException.wrap(e);
+    } finally {
+      close(stmt);
+      if (closeCon) {
+        close(connection);
+      }
+      onFinally(sql, params, rows);
+    }
+    return rows;
+  }
+
   private static void fillStatement(PreparedStatement stmt, List<Object> params)
       throws SQLException {
     if (params != null && !params.isEmpty()) {
@@ -137,12 +346,17 @@ public class Jdbc {
     }
   }
 
-  public static void close(AutoCloseable rs) {
-    if (rs != null) {
+  /**
+   * 用于关闭ResultSet PreparedStatement Connection
+   *
+   * @param closeable AutoCloseable
+   */
+  public static void close(AutoCloseable closeable) {
+    if (closeable != null) {
       try {
-        rs.close();
+        closeable.close();
       } catch (Exception e) {
-        throw Exceptions.wrap(e);
+        throw JdbcException.wrap(e);
       }
     }
   }
@@ -153,9 +367,9 @@ public class Jdbc {
     }
   }
 
-  private static void after(String sql, List<Object> params, ResultSet rs, Object result) {
+  private static void after(String sql, List<Object> params, Object result) {
     for (JdbcInterceptor interceptor : JDBC_INTERCEPTORS) {
-      interceptor.after(sql, params, rs, result);
+      interceptor.after(sql, params, result);
     }
   }
 

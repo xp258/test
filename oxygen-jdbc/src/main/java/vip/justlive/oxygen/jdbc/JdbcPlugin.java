@@ -17,6 +17,7 @@ import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.jdbc.config.DataSourceBuilder;
 import vip.justlive.oxygen.jdbc.config.DataSourceConf;
+import vip.justlive.oxygen.jdbc.interceptor.LogSqlJdbcInterceptor;
 
 /**
  * jdbc操作
@@ -27,6 +28,13 @@ public class JdbcPlugin implements Plugin {
 
   @Override
   public void start() {
+    DataSourceConf primary = ConfigFactory.load(DataSourceConf.class);
+    if (primary.isDisabled()) {
+      return;
+    }
+    if (primary.isLogSql()) {
+      Jdbc.addJdbcInterceptor(new LogSqlJdbcInterceptor());
+    }
     lookupDataSource();
   }
 
@@ -53,9 +61,6 @@ public class JdbcPlugin implements Plugin {
    */
   private void loadFromConfig() {
     DataSourceConf primary = ConfigFactory.load(DataSourceConf.class);
-    if (primary.isDisabled()) {
-      return;
-    }
     Jdbc.addPrimaryDataSource(DataSourceBuilder.build(primary.validate()));
     if (primary.getMulti() != null && primary.getMulti().length > 0) {
       for (String name : primary.getMulti()) {

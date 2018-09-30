@@ -15,19 +15,23 @@ package vip.justlive.oxygen.jdbc.handler;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
+ * 数组结果集处理器
+ *
  * @author wubo
  */
 public class ArrayResultSetHandler implements ResultSetHandler<Object[]> {
+
+  public static final ArrayResultSetHandler INSTANCE = new ArrayResultSetHandler();
 
   @Override
   public Object[] handle(ResultSet rs) {
     try {
       return rs.next() ? BasicRowHandler.singleton().toArray(rs) : null;
     } catch (SQLException e) {
-      throw Exceptions.wrap(e);
+      throw JdbcException.wrap(e);
     }
   }
 }

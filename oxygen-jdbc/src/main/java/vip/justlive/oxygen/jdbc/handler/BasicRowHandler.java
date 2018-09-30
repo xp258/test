@@ -18,9 +18,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
+ * 基本行处理器
+ *
  * @author wubo
  */
 public class BasicRowHandler implements RowHandler {
@@ -47,7 +49,7 @@ public class BasicRowHandler implements RowHandler {
       }
       return result;
     } catch (SQLException e) {
-      throw Exceptions.wrap(e);
+      throw JdbcException.wrap(e);
     }
   }
 
@@ -64,14 +66,14 @@ public class BasicRowHandler implements RowHandler {
       Map<String, Object> result = new HashMap<>(16);
       for (int i = 1; i <= cols; i++) {
         String columnName = rsmd.getColumnLabel(i);
-        if (columnName == null || columnName.length() == 9) {
+        if (columnName == null || columnName.length() == 0) {
           columnName = rsmd.getColumnName(i);
         }
         result.put(columnName, rs.getObject(i));
       }
       return result;
     } catch (SQLException e) {
-      throw Exceptions.wrap(e);
+      throw JdbcException.wrap(e);
     }
   }
 }

@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.jdbc.interceptor;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -37,10 +36,9 @@ public interface JdbcInterceptor {
    *
    * @param sql sql
    * @param params 参数
-   * @param rs 结果集
    * @param result 转换结果
    */
-  default void after(String sql, List<Object> params, ResultSet rs, Object result) {
+  default void after(String sql, List<Object> params, Object result) {
   }
 
   /**

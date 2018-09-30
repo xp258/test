@@ -16,7 +16,7 @@ package vip.justlive.oxygen.jdbc.handler;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
  * map处理器
@@ -25,12 +25,14 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 public class MapResultSetHandler implements ResultSetHandler<Map<String, Object>> {
 
+  public static final MapResultSetHandler INSTANCE = new MapResultSetHandler();
+
   @Override
   public Map<String, Object> handle(ResultSet rs) {
     try {
       return rs.next() ? BasicRowHandler.singleton().toMap(rs) : null;
     } catch (SQLException e) {
-      throw Exceptions.wrap(e);
+      throw JdbcException.wrap(e);
     }
   }
 }

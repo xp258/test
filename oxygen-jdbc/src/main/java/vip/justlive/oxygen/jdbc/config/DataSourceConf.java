@@ -30,6 +30,11 @@ public class DataSourceConf {
   private boolean disabled = false;
 
   /**
+   * 打印sql
+   */
+  private boolean logSql = false;
+
+  /**
    * 多数据源名称
    */
   private String[] multi;

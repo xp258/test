@@ -45,7 +45,7 @@ public class SimpleDataSource implements DataSource {
 
   @Override
   public <T> T unwrap(Class<T> clazz) {
-    return null;
+    throw new UnsupportedOperationException(getClass().getName() + " is not a wrapper.");
   }
 
   @Override
@@ -55,26 +55,26 @@ public class SimpleDataSource implements DataSource {
 
   @Override
   public PrintWriter getLogWriter() {
-    return null;
+    return DriverManager.getLogWriter();
   }
 
   @Override
   public void setLogWriter(PrintWriter out) {
-
+    DriverManager.setLogWriter(out);
   }
 
   @Override
   public void setLoginTimeout(int seconds) {
-
+    DriverManager.setLoginTimeout(seconds);
   }
 
   @Override
   public int getLoginTimeout() {
-    return 0;
+    return DriverManager.getLoginTimeout();
   }
 
   @Override
   public Logger getParentLogger() {
-    return null;
+    return Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
   }
 }
