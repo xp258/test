@@ -37,6 +37,7 @@ public interface ColumnHandler {
    * @param rs 结果集
    * @param index 下标
    * @return 数据
+   * @throws SQLException sql异常
    */
   Object fetch(ResultSet rs, int index) throws SQLException;
 }
