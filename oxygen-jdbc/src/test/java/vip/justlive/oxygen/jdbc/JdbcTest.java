@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,17 +28,22 @@ public class JdbcTest {
   @Before
   public void before() {
     Bootstrap.start();
-    Jdbc.update("create table test (id int primary key, key varchar, value varchar);");
-    Jdbc.update("insert into test (id, key, value) values (?, ?, ?), (2, 'a', 'c')", 1, "b", "b");
+    Jdbc.update("create table option (id int primary key, key varchar, value varchar);");
+    Jdbc.update("insert into option (id, key, value) values (?, ?, ?), (2, 'a', 'c')", 1, "b", "b");
   }
 
   @Test
   public void test() {
-    String sql = "select * from test where key = ?";
+    String sql = "select * from option where key = ?";
     Assert.assertEquals(3, Jdbc.query(sql, ResultSetHandler.mapHandler(), "a").size());
     Assert.assertEquals(1, Jdbc.query(sql, ResultSetHandler.mapListHandler(), "a").size());
     Assert.assertEquals(3, Jdbc.query(sql, ResultSetHandler.arrayHandler(), "a").length);
     Assert.assertEquals(1, Jdbc.query(sql, ResultSetHandler.arrayListHandler(), "a").size());
 
+    Option option = Jdbc.query(sql, Option.class, "a");
+    Assert.assertEquals("c", option.getValue());
+    List<Option> list = Jdbc.queryForList("select * from option", Option.class);
+    Assert.assertNotNull(list);
+    Assert.assertEquals(2, list.size());
   }
 }

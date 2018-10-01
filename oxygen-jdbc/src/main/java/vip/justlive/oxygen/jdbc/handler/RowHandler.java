@@ -32,6 +32,14 @@ public interface RowHandler {
   Object[] toArray(ResultSet rs);
 
   /**
+   * 转换为map
+   *
+   * @param rs 结果集
+   * @return map
+   */
+  Map<String, Object> toMap(ResultSet rs);
+
+  /**
    * 转换为对象
    *
    * @param rs 结果集
@@ -40,12 +48,4 @@ public interface RowHandler {
    * @return 对象
    */
   <T> T toBean(ResultSet rs, Class<T> type);
-
-  /**
-   * 转换为map
-   *
-   * @param rs 结果集
-   * @return map
-   */
-  Map<String, Object> toMap(ResultSet rs);
 }

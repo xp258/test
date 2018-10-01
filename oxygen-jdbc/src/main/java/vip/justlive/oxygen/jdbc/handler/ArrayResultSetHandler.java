@@ -25,11 +25,12 @@ import vip.justlive.oxygen.jdbc.JdbcException;
 public class ArrayResultSetHandler implements ResultSetHandler<Object[]> {
 
   public static final ArrayResultSetHandler INSTANCE = new ArrayResultSetHandler();
+  private static final Object[] EMPTY = new Object[0];
 
   @Override
   public Object[] handle(ResultSet rs) {
     try {
-      return rs.next() ? BasicRowHandler.singleton().toArray(rs) : null;
+      return rs.next() ? BasicRowHandler.singleton().toArray(rs) : EMPTY;
     } catch (SQLException e) {
       throw JdbcException.wrap(e);
     }
