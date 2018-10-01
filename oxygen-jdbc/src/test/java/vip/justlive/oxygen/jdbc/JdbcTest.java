@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,8 +36,8 @@ public class JdbcTest {
   @Test
   public void test() {
     String sql = "select * from option where key = ?";
-    Assert.assertEquals(3, Jdbc.query(sql, ResultSetHandler.mapHandler(), "a").size());
-    Assert.assertEquals(1, Jdbc.query(sql, ResultSetHandler.mapListHandler(), "a").size());
+    Assert.assertEquals(3, Jdbc.queryForMap(sql, Arrays.asList("a")).size());
+    Assert.assertEquals(1, Jdbc.queryForMapList(sql, Arrays.asList("a")).size());
     Assert.assertEquals(3, Jdbc.query(sql, ResultSetHandler.arrayHandler(), "a").length);
     Assert.assertEquals(1, Jdbc.query(sql, ResultSetHandler.arrayListHandler(), "a").size());
 
@@ -45,5 +46,8 @@ public class JdbcTest {
     List<Option> list = Jdbc.queryForList("select * from option", Option.class);
     Assert.assertNotNull(list);
     Assert.assertEquals(2, list.size());
+
+    Assert.assertNull(Jdbc.query(sql, Option.class, "c"));
+    Assert.assertEquals(0, Jdbc.queryForList(sql, Option.class, "c").size());
   }
 }

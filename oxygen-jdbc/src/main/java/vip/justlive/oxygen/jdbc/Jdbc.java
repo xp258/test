@@ -255,7 +255,7 @@ public class Jdbc {
   }
 
   /**
-   * 执行 select 操作
+   * 执行 select 操作 并转换为对象集合
    * <br>
    * 使用primary数据源，自动关闭连接
    *
@@ -270,7 +270,7 @@ public class Jdbc {
   }
 
   /**
-   * 执行 select 操作
+   * 执行 select 操作 并转换为对象集合
    * <br>
    * 使用dataSourceName数据源，自动关闭连接
    *
@@ -284,6 +284,150 @@ public class Jdbc {
   public static <T> List<T> queryForList(String dataSourceName, String sql, Class<T> clazz,
       Object... params) {
     return query(dataSourceName, sql, ResultSetHandler.beanListHandler(clazz), params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为对象集合
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param clazz bean类型
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> List<T> queryForList(String sql, Class<T> clazz, List<Object> params) {
+    return queryForList(PRIMARY_KEY, sql, clazz, params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为对象集合
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param clazz bean类型
+   * @param params 参数
+   * @param <T> 泛型
+   * @return result
+   */
+  public static <T> List<T> queryForList(String dataSourceName, String sql, Class<T> clazz,
+      List<Object> params) {
+    return query(dataSourceName, sql, ResultSetHandler.beanListHandler(clazz), params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static Map<String, Object> queryForMap(String sql, Object... params) {
+    return queryForMap(PRIMARY_KEY, sql, params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static Map<String, Object> queryForMap(String dataSourceName, String sql,
+      Object... params) {
+    return query(dataSourceName, sql, ResultSetHandler.mapHandler(), params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static Map<String, Object> queryForMap(String sql, List<Object> params) {
+    return queryForMap(PRIMARY_KEY, sql, params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static Map<String, Object> queryForMap(String dataSourceName, String sql,
+      List<Object> params) {
+    return query(dataSourceName, sql, ResultSetHandler.mapHandler(), params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map集合
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static List<Map<String, Object>> queryForMapList(String sql, Object... params) {
+    return queryForMapList(PRIMARY_KEY, sql, params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map集合
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static List<Map<String, Object>> queryForMapList(String dataSourceName, String sql,
+      Object... params) {
+    return query(dataSourceName, sql, ResultSetHandler.mapListHandler(), params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map集合
+   * <br>
+   * 使用primary数据源，自动关闭连接
+   *
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static List<Map<String, Object>> queryForMapList(String sql, List<Object> params) {
+    return queryForMapList(PRIMARY_KEY, sql, params);
+  }
+
+  /**
+   * 执行 select 操作 并转换为map集合
+   * <br>
+   * 使用dataSourceName数据源，自动关闭连接
+   *
+   * @param dataSourceName 数据源名称
+   * @param sql sql
+   * @param params 参数
+   * @return result
+   */
+  public static List<Map<String, Object>> queryForMapList(String dataSourceName, String sql,
+      List<Object> params) {
+    return query(dataSourceName, sql, ResultSetHandler.mapListHandler(), params);
   }
 
   /**
