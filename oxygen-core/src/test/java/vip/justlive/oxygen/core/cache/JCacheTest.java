@@ -28,8 +28,8 @@ public class JCacheTest {
 
     Bootstrap.start();
 
-    JCache.cache().putIfAbsent("k", 1);
-    assertEquals(JCache.cache().get("k"), 1);
+    JCache.cache("z").putIfAbsent("k", 1);
+    assertEquals(JCache.cache("z").get("k"), 1);
 
   }
 
