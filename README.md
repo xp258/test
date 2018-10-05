@@ -241,6 +241,13 @@ public Object method(Object arg0, Object arg1) {
 
 ### Jdbc
 
+#### basic
+
+- multi-datasource
+- crud using `Jdbc` 
+- handler ResultSet by yourself using `ResultHandler<T>`
+- start and close transaction
+
 ```
 // use it alone
 ...
@@ -259,6 +266,16 @@ T Jdbc.query(String sql, ResultSetHandler<T> handler, Object... params)
 
 int Jdbc.update(String sql, Object... params)
 
+// start primary datasource transaction
+Jdbc.startTx()
+// start named datasource transaction
+Jdbc.startTx(String dataSourceName)
+
+// close primary datasource transaction
+Jdbc.closeTx()
+// close named datasource transaction
+Jdbc.closeTx(String dataSourceName)
+
 // use oxygen-core, only need to write configuration file
 // multi datasource names
 datasource.multi=a
@@ -276,6 +293,55 @@ datasource.a.username=sa
 datasource.a.password=sa
 
 ```
+
+
+#### handler column yourself
+
+- implement `ColumnHandler`
+- add `META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler` file and add the class name
+
+```
+public class MyColumnHandler implements ColumnHandler {
+
+  @Override
+  public boolean supported(Class<?> type) {
+    ...
+  }
+
+  @Override
+  public Object fetch(ResultSet rs, int index) throws SQLException {
+    ...
+  }
+}
+
+// add or update META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler file and add class name
+xxx.xxx.MyColumnHandler
+
+```
+
+#### add jdbc interceptor
+
+- implement `JdbcInterceptor` 
+- add interceptor using `Jdbc.addJdbcInterceptor` 
+
+```
+// embed print sql interceptor
+@Slf4j
+public class LogSqlJdbcInterceptor implements JdbcInterceptor {
+
+  @Override
+  public void before(String sql, List<Object> params) {
+    if (log.isDebugEnabled()) {
+      log.debug("execute sql: {} -> params: {}", sql, params);
+    }
+  }
+}
+
+// add interceptor
+Jdbc.addJdbcInterceptor(JdbcInterceptor interceptor)
+
+```
+
 
 
 ## Contact information
