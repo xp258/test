@@ -35,9 +35,18 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 @Slf4j
 public class IocPlugin implements Plugin {
 
+  private static final Strategy STRATEGY = new ConstructorStrategy();
   private static final AtomicInteger TODO_INJECT = new AtomicInteger();
 
-  private static Strategy strategy = new ConstructorStrategy();
+  /**
+   * 实例bean， 通过构造函数实例
+   *
+   * @param clazz 类
+   * @return 实例
+   */
+  public static Object instanceBean(Class<?> clazz) {
+    return STRATEGY.instance(clazz);
+  }
 
   @Override
   public int order() {
@@ -54,16 +63,6 @@ public class IocPlugin implements Plugin {
   @Override
   public void stop() {
     BeanStore.BEANS.clear();
-  }
-
-  /**
-   * 实例bean， 通过构造函数实例
-   *
-   * @param clazz 类
-   * @return 实例
-   */
-  Object instanceBean(Class<?> clazz) {
-    return strategy.instance(clazz);
   }
 
   void scan() {
@@ -123,13 +122,13 @@ public class IocPlugin implements Plugin {
       instance();
       int now = TODO_INJECT.get();
       if (now > 0 && now == pre) {
-        if (!strategy.isRequired()) {
+        if (!STRATEGY.isRequired()) {
           if (log.isDebugEnabled()) {
             log.debug("ioc失败 出现循环依赖或缺失Bean TODO_INJECT={}, beans={}", now, BeanStore.BEANS);
           }
           throw new IllegalStateException("发生循环依赖或者缺失Bean ");
         } else {
-          strategy.nonRequired();
+          STRATEGY.nonRequired();
         }
       }
       pre = now;

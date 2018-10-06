@@ -179,8 +179,8 @@ public class ClassUtils {
   /**
    * 获取cglib代理的真实类
    *
-   * @param clazz
-   * @return
+   * @param clazz 代理类
+   * @return 类
    */
   public static Class<?> getCglibActualClass(Class<?> clazz) {
     Class<?> actualClass = clazz;
@@ -189,4 +189,5 @@ public class ClassUtils {
     }
     return actualClass;
   }
+
 }
