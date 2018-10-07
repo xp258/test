@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.jdbc;
 
-import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;

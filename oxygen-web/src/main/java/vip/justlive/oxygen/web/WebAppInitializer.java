@@ -20,7 +20,7 @@ import javax.servlet.ServletContext;
  *
  * @author wubo
  */
-public interface WebAppInitializer {
+public interface WebAppInitializer extends Comparable<WebAppInitializer> {
 
   /**
    * 启动执行
@@ -28,4 +28,24 @@ public interface WebAppInitializer {
    * @param context servlet上下文
    */
   void onStartup(ServletContext context);
+
+  /**
+   * 加载顺序，默认0，越小越先加载
+   *
+   * @return order
+   */
+  default int order() {
+    return 0;
+  }
+
+  /**
+   * sort compare
+   *
+   * @param o compare object
+   * @return result
+   */
+  @Override
+  default int compareTo(WebAppInitializer o) {
+    return Integer.compare(order(), o.order());
+  }
 }

@@ -15,8 +15,11 @@ package vip.justlive.oxygen.web.mapping;
 
 import java.lang.reflect.Method;
 import lombok.Data;
+import vip.justlive.oxygen.web.view.View;
 
 /**
+ * action
+ *
  * @author wubo
  */
 @Data
@@ -25,4 +28,24 @@ public class Action {
   private final String path;
   private final Object router;
   private final Method method;
+
+  /**
+   * 是否为视图
+   *
+   * @return true为视图
+   */
+  public boolean isView() {
+    return method.getReturnType() == View.class;
+  }
+
+  /**
+   * 是否需要渲染视图
+   *
+   * @return true需要渲染
+   */
+  public boolean needRenderView() {
+    return method.getReturnType() != Void.TYPE;
+  }
+
+
 }

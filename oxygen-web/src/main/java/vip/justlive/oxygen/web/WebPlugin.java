@@ -13,8 +13,29 @@
  */
 package vip.justlive.oxygen.web;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.web.mapping.Mappings;
+import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.ioc.BeanStore;
+import vip.justlive.oxygen.core.ioc.IocPlugin;
+import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
+import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.web.handler.ParamHandler;
+import vip.justlive.oxygen.web.mapping.Action;
+import vip.justlive.oxygen.web.mapping.Request;
+import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
+import vip.justlive.oxygen.web.mapping.Router;
+import vip.justlive.oxygen.web.view.DefaultViewResolver;
+import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
  * web插件
@@ -23,6 +44,43 @@ import vip.justlive.oxygen.web.mapping.Mappings;
  */
 public class WebPlugin implements Plugin {
 
+  static final List<ParamHandler> PARAM_HANDLERS = new ArrayList<>();
+  static final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new ConcurrentHashMap<>(8, 1f);
+  private static final ViewResolver VIEW_RESOLVER = new DefaultViewResolver();
+
+  static {
+    for (HttpMethod httpMethod : HttpMethod.values()) {
+      ACTION_MAP.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
+    }
+  }
+
+  /**
+   * 根据路径和请求类型获取Action
+   *
+   * @param path 请求路径
+   * @param httpMethod 请求类型
+   * @return action
+   */
+  public static Action findActionByPath(String path, HttpMethod httpMethod) {
+    Map<String, Action> actionMap = ACTION_MAP.get(httpMethod);
+    Action action = actionMap.get(path);
+    if (action != null) {
+      return action;
+    }
+    // TODO path vars
+    return null;
+  }
+
+  /**
+   * 根据路径获取视图解析
+   *
+   * @param path 请求路径
+   * @return ViewResolver
+   */
+  public static ViewResolver findViewResolverByPath(String path) {
+    return VIEW_RESOLVER;
+  }
+
   @Override
   public int order() {
     return Integer.MIN_VALUE + 60;
@@ -30,11 +88,91 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void start() {
-    Mappings.init();
+    loadRouter();
+    loadParamHandler();
   }
 
   @Override
   public void stop() {
-    Mappings.destroy();
+    ACTION_MAP.clear();
+    PARAM_HANDLERS.clear();
   }
+
+  private void loadParamHandler() {
+    ServiceLoader<ParamHandler> loader = ServiceLoader.load(ParamHandler.class);
+    Iterator<ParamHandler> it = loader.iterator();
+    while (it.hasNext()) {
+      PARAM_HANDLERS.add(it.next());
+    }
+  }
+
+  private void loadRouter() {
+    Set<Class<?>> routerClasses = ClassScannerPlugin.getTypesAnnotatedWith(Router.class);
+    if (routerClasses == null || routerClasses.isEmpty()) {
+      return;
+    }
+    for (Class<?> clazz : routerClasses) {
+      Router router = clazz.getAnnotation(Router.class);
+      if (router == null) {
+        continue;
+      }
+
+      String rootPath = router.value();
+      Object routerBean = IocPlugin.instanceBean(clazz);
+      BeanStore.putBean(clazz.getName(), routerBean);
+
+      parseRequest(rootPath, routerBean);
+    }
+  }
+
+  private void parseRequest(String rootPath, Object routerBean) {
+    Class<?> clazz = routerBean.getClass();
+    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    try {
+      for (Method method : actualClass.getDeclaredMethods()) {
+        if (!method.isAnnotationPresent(Request.class)) {
+          continue;
+        }
+        Method requestMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
+        Request request = method.getAnnotation(Request.class);
+        String path = request.value();
+        HttpMethod[] httpMethods = request.method();
+        String routePath = makePath(rootPath, path);
+        Action action = new Action(routePath, routerBean, requestMethod);
+        HttpMethod[] realMethods = httpMethods;
+        if (realMethods.length == 0) {
+          realMethods = HttpMethod.values();
+        }
+        for (HttpMethod httpMethod : realMethods) {
+          ACTION_MAP.get(httpMethod).put(action.getPath(), action);
+        }
+      }
+    } catch (NoSuchMethodException e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+
+  private String makePath(String parent, String child) {
+    Checks.notNull(parent);
+    Checks.notNull(child);
+    StringBuilder sb = new StringBuilder();
+    if (!parent.startsWith(Constants.ROOT_PATH)) {
+      sb.append(Constants.ROOT_PATH);
+    }
+    sb.append(parent);
+    if (parent.endsWith(Constants.ROOT_PATH)) {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    if (!child.startsWith(Constants.ROOT_PATH)) {
+      sb.append(Constants.ROOT_PATH);
+    }
+    sb.append(child);
+    if (child.endsWith(Constants.ROOT_PATH)) {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    // TODO path vars
+    return sb.toString();
+  }
+
+
 }

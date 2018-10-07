@@ -19,9 +19,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.mapping.Action;
-import vip.justlive.oxygen.web.mapping.Mappings;
 import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
+import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
  * 请求分发器
@@ -31,22 +33,64 @@ import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
+  private static final long serialVersionUID = 1L;
+
   private void doService(HttpServletRequest req, HttpServletResponse resp, HttpMethod httpMethod) {
     String requestPath = getRequestPath(req);
     if (log.isDebugEnabled()) {
-      log.debug("DispatcherServlet handler request for [{}] on method [{}]", requestPath,
+      log.debug("DispatcherServlet accept request for [{}] on method [{}]", requestPath,
           httpMethod);
     }
 
-    Action action = Mappings.findActionByPath(requestPath, httpMethod);
+    Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
     if (action == null) {
-      // TODO not found
+      handlerNotFound(req, resp);
       return;
     }
 
+    handlerAction(action, req, resp);
+  }
+
+  void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
+    Object[] args = new Object[0];
+    for (ParamHandler paramHandler : WebPlugin.PARAM_HANDLERS) {
+      if (paramHandler.supported(req)) {
+        args = paramHandler.handle(action, req, resp);
+        break;
+      }
+    }
+    try {
+      Object result = action.getMethod().invoke(action.getRouter(), args);
+      if (action.needRenderView()) {
+        ViewResolver viewResolver = WebPlugin.findViewResolverByPath(action.getPath());
+        viewResolver.resolveView(req, resp, result);
+      }
+    } catch (Exception e) {
+      handlerError(req, resp, e);
+    }
 
   }
 
+  private void handlerNotFound(HttpServletRequest req, HttpServletResponse resp) {
+    if (log.isDebugEnabled()) {
+      log.debug("DispatcherServlet not found path [{}] on method [{}]", getRequestPath(req),
+          req.getMethod());
+    }
+    try {
+      resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+
+  private void handlerError(HttpServletRequest req, HttpServletResponse resp, Exception e) {
+    log.error("DispatcherServlet occurs an error for path [{}]", getRequestPath(req), e);
+    try {
+      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    } catch (IOException ie) {
+      throw Exceptions.wrap(ie);
+    }
+  }
 
   private String getRequestPath(HttpServletRequest req) {
     return req.getRequestURI();

@@ -11,24 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.mapping;
+package vip.justlive.oxygen.web.view;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
+import java.util.Map;
+import lombok.Data;
 
 /**
+ * 视图
+ *
  * @author wubo
  */
-public class MappingsTest {
+@Data
+public class View {
 
-  @Test
-  public void test(){
+  /**
+   * 视图路径
+   */
+  private String path;
 
-    Bootstrap.start();
+  /**
+   * 是否是重定向
+   */
+  private boolean redirect;
 
-    new Mappings().parseRouter();
-
-  }
+  /**
+   * 数据
+   */
+  private Map<String, Object> data;
 }
