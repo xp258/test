@@ -11,11 +11,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.router;
+package vip.justlive.oxygen.web.http;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
+ * http解析
+ *
  * @author wubo
  */
-public class BaseRouter {
+public interface RequestParse {
 
+  /**
+   * 是否支持
+   *
+   * @param req request
+   * @return true表示支持
+   */
+  boolean supported(HttpServletRequest req);
+
+  /**
+   * 解析参数
+   *
+   * @param req request
+   */
+  void handle(HttpServletRequest req);
 }

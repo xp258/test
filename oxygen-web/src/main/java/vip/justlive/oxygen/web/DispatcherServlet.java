@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web;
 
+import com.alibaba.fastjson.JSON;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.web.handler.ParamHandler;
+import vip.justlive.oxygen.web.http.Request;
+import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
 import vip.justlive.oxygen.web.view.ViewResolver;
@@ -52,21 +54,27 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
-    Object[] args = new Object[0];
-    for (ParamHandler paramHandler : WebPlugin.PARAM_HANDLERS) {
-      if (paramHandler.supported(req)) {
-        args = paramHandler.handle(action, req, resp);
-        break;
+    Request.set(req);
+    for (RequestParse requestParse : WebPlugin.REQUEST_PARSES) {
+      if (requestParse.supported(req)) {
+        requestParse.handle(req);
       }
     }
+
+    if (log.isDebugEnabled()) {
+      log.debug("Request parsed -> {}", JSON.toJSONString(Request.current()));
+    }
+
     try {
-      Object result = action.getMethod().invoke(action.getRouter(), args);
+      Object result = action.invoke();
       if (action.needRenderView()) {
         ViewResolver viewResolver = WebPlugin.findViewResolverByPath(action.getPath());
         viewResolver.resolveView(req, resp, result);
       }
     } catch (Exception e) {
       handlerError(req, resp, e);
+    } finally {
+      Request.clear();
     }
 
   }

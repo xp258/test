@@ -35,10 +35,9 @@ public interface ParamHandler {
   /**
    * 处理参数
    *
-   * @param action action
    * @param req request
    * @param resp response
    * @return args
    */
-  Object[] handle(Action action, HttpServletRequest req, HttpServletResponse resp);
+  void handle(HttpServletRequest req, HttpServletResponse resp);
 }

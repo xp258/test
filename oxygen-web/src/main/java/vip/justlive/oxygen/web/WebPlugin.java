@@ -15,7 +15,6 @@ package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -29,7 +28,7 @@ import vip.justlive.oxygen.core.ioc.IocPlugin;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.Checks;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.web.handler.ParamHandler;
+import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.Request;
 import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
@@ -44,8 +43,9 @@ import vip.justlive.oxygen.web.view.ViewResolver;
  */
 public class WebPlugin implements Plugin {
 
-  static final List<ParamHandler> PARAM_HANDLERS = new ArrayList<>();
-  static final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new ConcurrentHashMap<>(8, 1f);
+  static final List<RequestParse> REQUEST_PARSES = new ArrayList<>();
+  private static final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new ConcurrentHashMap<>(8,
+      1f);
   private static final ViewResolver VIEW_RESOLVER = new DefaultViewResolver();
 
   static {
@@ -89,20 +89,19 @@ public class WebPlugin implements Plugin {
   @Override
   public void start() {
     loadRouter();
-    loadParamHandler();
+    loadRequestParse();
   }
 
   @Override
   public void stop() {
     ACTION_MAP.clear();
-    PARAM_HANDLERS.clear();
+    REQUEST_PARSES.clear();
   }
 
-  private void loadParamHandler() {
-    ServiceLoader<ParamHandler> loader = ServiceLoader.load(ParamHandler.class);
-    Iterator<ParamHandler> it = loader.iterator();
-    while (it.hasNext()) {
-      PARAM_HANDLERS.add(it.next());
+  private void loadRequestParse() {
+    ServiceLoader<RequestParse> loader = ServiceLoader.load(RequestParse.class);
+    for (RequestParse requestParse : loader) {
+      REQUEST_PARSES.add(requestParse);
     }
   }
 

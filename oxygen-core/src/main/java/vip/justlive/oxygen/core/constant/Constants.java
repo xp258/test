@@ -78,6 +78,10 @@ public class Constants {
    */
   public static final String RESP_IS_SUCCESS = "success";
   /**
+   * unknown
+   */
+  public static final String UNKNOWN = "unknown";
+  /**
    * 空字符串
    */
   public static final String EMPTY = "";
@@ -97,6 +101,18 @@ public class Constants {
    * 分号
    */
   public static final String SEMICOLON = ";";
+  /**
+   * 等于
+   */
+  public static final String EQUAL = "=";
+  /**
+   * 问号
+   */
+  public static final String QUESTION_MARK = "?";
+  /**
+   * 与
+   */
+  public static final String AND = "&";
   /**
    * 数组类名前缀: "[]"
    */

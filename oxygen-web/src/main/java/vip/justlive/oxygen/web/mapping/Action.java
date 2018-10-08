@@ -47,5 +47,14 @@ public class Action {
     return method.getReturnType() != Void.TYPE;
   }
 
-
+  /**
+   * 执行action
+   *
+   * @return result
+   * @throws Exception 抛出异常
+   */
+  public Object invoke() throws Exception {
+    Object[] args = new Object[method.getParameterCount()];
+    return method.invoke(router, args);
+  }
 }
