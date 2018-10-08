@@ -14,8 +14,9 @@
 package vip.justlive.oxygen.web.handler;
 
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
-import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.web.http.Request;
+import vip.justlive.oxygen.web.mapping.DataBinder;
+import vip.justlive.oxygen.web.mapping.DataBinder.SCOPE;
 
 /**
  * Params参数处理
@@ -25,18 +26,20 @@ import vip.justlive.oxygen.web.http.Request;
 public class BasicParamHandler implements ParamHandler {
 
   @Override
-  public boolean supported(Class<?> type) {
-    return true;
+  public boolean supported(DataBinder dataBinder) {
+    return dataBinder.getScope() == SCOPE.PARAM;
   }
 
   @Override
-  public Object handle(Class<?> type) {
+  public Object handle(DataBinder dataBinder) {
     Request request = Request.current();
     DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
-    if (ClassUtils.isPrimitive(type)) {
-      if (converterService.canConverter(String.class, type)) {
-      }
+    if (converterService.canConverter(String.class, dataBinder.getType())) {
+      String value = request.getParam(dataBinder.getName());
+      return converterService.convert(value, dataBinder.getType());
     }
+    // 复杂类型
+
     return null;
   }
 }

@@ -13,6 +13,8 @@
  */
 package vip.justlive.oxygen.web.handler;
 
+import vip.justlive.oxygen.web.mapping.DataBinder;
+
 /**
  * 参数处理
  *
@@ -23,13 +25,16 @@ public interface ParamHandler {
   /**
    * 是否支持
    *
-   * @param type 参数类型
+   * @param dataBinder 数据绑定
    * @return true表示支持
    */
-  boolean supported(Class<?> type);
+  boolean supported(DataBinder dataBinder);
 
   /**
    * 处理参数
+   *
+   * @param dataBinder 数据绑定
+   * @return result
    */
-  Object handle(Class<?> type);
+  Object handle(DataBinder dataBinder);
 }

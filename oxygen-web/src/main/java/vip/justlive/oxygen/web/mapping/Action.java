@@ -14,7 +14,11 @@
 package vip.justlive.oxygen.web.mapping;
 
 import java.lang.reflect.Method;
-import lombok.Data;
+import java.lang.reflect.Parameter;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import vip.justlive.oxygen.web.WebPlugin;
 import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.view.View;
@@ -24,12 +28,25 @@ import vip.justlive.oxygen.web.view.View;
  *
  * @author wubo
  */
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 public class Action {
 
   private final String path;
   private final Object router;
   private final Method method;
+  private final DataBinder[] dataBinders;
+
+  public Action(String path, Object router, Method method) {
+    this.path = path;
+    this.router = router;
+    this.method = method;
+    this.dataBinders = new DataBinder[method.getParameterCount()];
+    this.init();
+  }
+
 
   /**
    * 是否为视图
@@ -56,18 +73,29 @@ public class Action {
    * @throws Exception 抛出异常
    */
   public Object invoke() throws Exception {
-    Object[] args = new Object[method.getParameterCount()];
+    Object[] args = new Object[dataBinders.length];
     if (args.length > 0) {
-      Class<?>[] parameterTypes = method.getParameterTypes();
       for (int i = 0; i < args.length; i++) {
-        Class<?> type = parameterTypes[i];
-        ParamHandler paramHandler = WebPlugin.findParamHandlerByType(type);
+        DataBinder dataBinder = dataBinders[i];
+        ParamHandler paramHandler = WebPlugin.findParamHandler(dataBinder);
         if (paramHandler != null) {
-          Object result = paramHandler.handle(type);
+          Object result = paramHandler.handle(dataBinder);
           args[i] = result;
         }
       }
     }
     return method.invoke(router, args);
   }
+
+  void init() {
+    Parameter[] parameters = method.getParameters();
+    for (int i = 0; i < parameters.length; i++) {
+      DataBinder dataBinder = new DataBinder();
+      dataBinder.setName(parameters[i].getName());
+      dataBinder.setType(parameters[i].getType());
+      // TODO
+      dataBinders[i] = dataBinder;
+    }
+  }
+
 }

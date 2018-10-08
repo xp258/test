@@ -31,6 +31,7 @@ import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.mapping.Action;
+import vip.justlive.oxygen.web.mapping.DataBinder;
 import vip.justlive.oxygen.web.mapping.Request;
 import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
 import vip.justlive.oxygen.web.mapping.Router;
@@ -76,12 +77,12 @@ public class WebPlugin implements Plugin {
   /**
    * 根据入参类型获取参数处理器
    *
-   * @param type 入参类型
+   * @param dataBinder 数据绑定
    * @return ParamHandler
    */
-  public static ParamHandler findParamHandlerByType(Class<?> type) {
+  public static ParamHandler findParamHandler(DataBinder dataBinder) {
     for (ParamHandler paramHandler : PARAM_HANDLERS) {
-      if (paramHandler.supported(type)) {
+      if (paramHandler.supported(dataBinder)) {
         return paramHandler;
       }
     }
