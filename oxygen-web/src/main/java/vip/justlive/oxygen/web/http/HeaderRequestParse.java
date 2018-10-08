@@ -52,14 +52,14 @@ public class HeaderRequestParse extends AbstractRequestParse {
   }
 
   void parseContentType(Request request) {
-    String contentType = request.getHeader(Request.CONTENT_TYPE);
+    String contentType = request.getHeader(Constants.CONTENT_TYPE);
     if (contentType != null) {
       request.setContentType(contentType);
       int index = contentType.indexOf(Constants.SEMICOLON);
       if (index > 0) {
         request.setContentType(contentType.substring(0, index));
         String[] arr = contentType.substring(index + 1).trim().split(Constants.EQUAL);
-        if (arr.length == 2 && arr[0].trim().equalsIgnoreCase(Request.CHARSET)) {
+        if (arr.length == 2 && arr[0].trim().equalsIgnoreCase(Constants.CHARSET)) {
           request.setEncoding(arr[1].trim());
         }
       }

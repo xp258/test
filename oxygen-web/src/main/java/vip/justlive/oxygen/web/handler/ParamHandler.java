@@ -13,10 +13,6 @@
  */
 package vip.justlive.oxygen.web.handler;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import vip.justlive.oxygen.web.mapping.Action;
-
 /**
  * 参数处理
  *
@@ -27,17 +23,13 @@ public interface ParamHandler {
   /**
    * 是否支持
    *
-   * @param req request
+   * @param type 参数类型
    * @return true表示支持
    */
-  boolean supported(HttpServletRequest req);
+  boolean supported(Class<?> type);
 
   /**
    * 处理参数
-   *
-   * @param req request
-   * @param resp response
-   * @return args
    */
-  void handle(HttpServletRequest req, HttpServletResponse resp);
+  Object handle(Class<?> type);
 }

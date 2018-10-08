@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
+import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
 import vip.justlive.oxygen.web.view.ViewResolver;
@@ -55,6 +56,8 @@ public class DispatcherServlet extends HttpServlet {
 
   void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
     Request.set(req);
+    Response.set(resp);
+
     for (RequestParse requestParse : WebPlugin.REQUEST_PARSES) {
       if (requestParse.supported(req)) {
         requestParse.handle(req);
@@ -75,6 +78,7 @@ public class DispatcherServlet extends HttpServlet {
       handlerError(req, resp, e);
     } finally {
       Request.clear();
+      Response.clear();
     }
 
   }

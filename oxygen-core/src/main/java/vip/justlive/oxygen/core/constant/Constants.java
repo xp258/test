@@ -195,12 +195,27 @@ public class Constants {
    */
   public static final String FILE_PREFIX = "file:";
 
+
+  // http
+
+  public static final String ACCEPT = "Accept";
+  public static final String ACCEPT_CHARSET = "Accept-Charset";
+  public static final String ACCEPT_ENCODING = "Accept-Encoding";
+  public static final String CHARSET = "charset";
+  public static final String CONTENT_TYPE = "Content-Type";
+  public static final String COOKIE = "Cookie";
+  public static final String HOST_NAME = "Host";
+  public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
+  public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
+  public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+  public static final String X_REAL_IP = "X-Real-IP";
+
+  // 正则
+
   /**
    * Email校验正则
    */
   public static final String REGEX_EMAIL = "\\w+@\\w+\\.[a-z]+(\\.[a-z]+)?";
-
-  // 正则
   /**
    * 身份证校验正则
    */

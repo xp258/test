@@ -29,18 +29,6 @@ public class Request implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  public static final String ACCEPT = "Accept";
-  public static final String ACCEPT_CHARSET = "Accept-Charset";
-  public static final String ACCEPT_ENCODING = "Accept-Encoding";
-  public static final String CHARSET = "charset";
-  public static final String CONTENT_TYPE = "Content-Type";
-  public static final String COOKIE = "Cookie";
-  public static final String HOST_NAME = "Host";
-  public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
-  public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
-  public static final String X_FORWARDED_FOR = "X-Forwarded-For";
-  public static final String X_REAL_IP = "X-Real-IP";
-
   private static final ThreadLocal<Request> LOCAL = new ThreadLocal<>();
   private static final String[] EMPTY = new String[0];
 
@@ -86,7 +74,7 @@ public class Request implements Serializable {
   /**
    * query params
    */
-  private Map<String, String[]> queryParams;
+  private Map<String, String[]> params;
 
   /**
    * headers
@@ -119,8 +107,8 @@ public class Request implements Serializable {
    * @return values
    */
   public String[] getParams(String key) {
-    if (queryParams != null) {
-      String[] values = queryParams.get(key);
+    if (params != null) {
+      String[] values = params.get(key);
       if (values != null) {
         return values;
       }

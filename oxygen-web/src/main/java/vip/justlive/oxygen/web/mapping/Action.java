@@ -15,6 +15,8 @@ package vip.justlive.oxygen.web.mapping;
 
 import java.lang.reflect.Method;
 import lombok.Data;
+import vip.justlive.oxygen.web.WebPlugin;
+import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.view.View;
 
 /**
@@ -55,6 +57,17 @@ public class Action {
    */
   public Object invoke() throws Exception {
     Object[] args = new Object[method.getParameterCount()];
+    if (args.length > 0) {
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      for (int i = 0; i < args.length; i++) {
+        Class<?> type = parameterTypes[i];
+        ParamHandler paramHandler = WebPlugin.findParamHandlerByType(type);
+        if (paramHandler != null) {
+          Object result = paramHandler.handle(type);
+          args[i] = result;
+        }
+      }
+    }
     return method.invoke(router, args);
   }
 }

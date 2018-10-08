@@ -38,7 +38,7 @@ public class GeneralRequestParse extends AbstractRequestParse {
     if (request.getQueryString() != null) {
       request.setUrl(request.getUrl() + Constants.QUESTION_MARK + request.getQueryString());
     }
-    String host = request.getOriginalRequest().getHeader(Request.HOST_NAME);
+    String host = request.getOriginalRequest().getHeader(Constants.HOST_NAME);
     if (host.contains(Constants.COLON)) {
       String[] arr = host.split(Constants.COLON);
       request.setHost(arr[0]);
@@ -51,19 +51,19 @@ public class GeneralRequestParse extends AbstractRequestParse {
   }
 
   private String getIpAddress(final Request request, String remoteIp) {
-    String ip = request.getHeader(Request.X_FORWARDED_FOR);
+    String ip = request.getHeader(Constants.X_FORWARDED_FOR);
     if (checkIp(ip)) {
       return ip;
     }
-    ip = request.getHeader(Request.PROXY_CLIENT_IP);
+    ip = request.getHeader(Constants.PROXY_CLIENT_IP);
     if (checkIp(ip)) {
       return ip;
     }
-    ip = request.getHeader(Request.WL_PROXY_CLIENT_IP);
+    ip = request.getHeader(Constants.WL_PROXY_CLIENT_IP);
     if (checkIp(ip)) {
       return ip;
     }
-    ip = request.getHeader(Request.X_REAL_IP);
+    ip = request.getHeader(Constants.X_REAL_IP);
     if (checkIp(ip)) {
       return ip;
     }

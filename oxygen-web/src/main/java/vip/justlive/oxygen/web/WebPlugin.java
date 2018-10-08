@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -28,6 +28,7 @@ import vip.justlive.oxygen.core.ioc.IocPlugin;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.Checks;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.Request;
@@ -43,7 +44,8 @@ import vip.justlive.oxygen.web.view.ViewResolver;
  */
 public class WebPlugin implements Plugin {
 
-  static final List<RequestParse> REQUEST_PARSES = new ArrayList<>();
+  static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
+  static final List<ParamHandler> PARAM_HANDLERS = new LinkedList<>();
   private static final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new ConcurrentHashMap<>(8,
       1f);
   private static final ViewResolver VIEW_RESOLVER = new DefaultViewResolver();
@@ -72,6 +74,21 @@ public class WebPlugin implements Plugin {
   }
 
   /**
+   * 根据入参类型获取参数处理器
+   *
+   * @param type 入参类型
+   * @return ParamHandler
+   */
+  public static ParamHandler findParamHandlerByType(Class<?> type) {
+    for (ParamHandler paramHandler : PARAM_HANDLERS) {
+      if (paramHandler.supported(type)) {
+        return paramHandler;
+      }
+    }
+    return null;
+  }
+
+  /**
    * 根据路径获取视图解析
    *
    * @param path 请求路径
@@ -90,6 +107,7 @@ public class WebPlugin implements Plugin {
   public void start() {
     loadRouter();
     loadRequestParse();
+    loadParamHandler();
   }
 
   @Override
@@ -104,6 +122,14 @@ public class WebPlugin implements Plugin {
       REQUEST_PARSES.add(requestParse);
     }
   }
+
+  private void loadParamHandler() {
+    ServiceLoader<ParamHandler> loader = ServiceLoader.load(ParamHandler.class);
+    for (ParamHandler paramHandler : loader) {
+      PARAM_HANDLERS.add(paramHandler);
+    }
+  }
+
 
   private void loadRouter() {
     Set<Class<?>> routerClasses = ClassScannerPlugin.getTypesAnnotatedWith(Router.class);

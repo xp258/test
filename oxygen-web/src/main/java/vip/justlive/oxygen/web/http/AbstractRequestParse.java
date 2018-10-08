@@ -24,8 +24,8 @@ import java.util.Map;
 abstract class AbstractRequestParse implements RequestParse {
 
   void checkParam(Request request) {
-    if (request.getQueryParams() == null) {
-      request.setQueryParams(new HashMap<>(4));
+    if (request.getParams() == null) {
+      request.setParams(new HashMap<>(4));
     }
   }
 
