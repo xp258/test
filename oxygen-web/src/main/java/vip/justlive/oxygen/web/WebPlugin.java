@@ -164,7 +164,7 @@ public class WebPlugin implements Plugin {
         String path = request.value();
         HttpMethod[] httpMethods = request.method();
         String routePath = makePath(rootPath, path);
-        Action action = new Action(routePath, routerBean, requestMethod);
+        Action action = new Action(routePath, routerBean, requestMethod, method);
         HttpMethod[] realMethods = httpMethods;
         if (realMethods.length == 0) {
           realMethods = HttpMethod.values();

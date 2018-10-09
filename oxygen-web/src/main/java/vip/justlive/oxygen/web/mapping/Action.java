@@ -39,12 +39,12 @@ public class Action {
   private final Method method;
   private final DataBinder[] dataBinders;
 
-  public Action(String path, Object router, Method method) {
+  public Action(String path, Object router, Method method, Method actualMethod) {
     this.path = path;
     this.router = router;
     this.method = method;
-    this.dataBinders = new DataBinder[method.getParameterCount()];
-    this.init();
+    this.dataBinders = new DataBinder[actualMethod.getParameterCount()];
+    this.init(actualMethod);
   }
 
 
@@ -87,7 +87,7 @@ public class Action {
     return method.invoke(router, args);
   }
 
-  void init() {
+  void init(Method method) {
     Parameter[] parameters = method.getParameters();
     for (int i = 0; i < parameters.length; i++) {
       DataBinder dataBinder = new DataBinder();

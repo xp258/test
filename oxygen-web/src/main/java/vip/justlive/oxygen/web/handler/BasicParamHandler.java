@@ -13,8 +13,14 @@
  */
 package vip.justlive.oxygen.web.handler;
 
+import com.alibaba.fastjson.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.web.http.Request;
+import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.mapping.DataBinder;
 import vip.justlive.oxygen.web.mapping.DataBinder.SCOPE;
 
@@ -33,13 +39,39 @@ public class BasicParamHandler implements ParamHandler {
   @Override
   public Object handle(DataBinder dataBinder) {
     Request request = Request.current();
+
+    // 内置类型
+    if (dataBinder.getType() == HttpServletRequest.class) {
+      return request.getOriginalRequest();
+    }
+    if (dataBinder.getType() == HttpServletResponse.class) {
+      return Response.current().getOriginalResponse();
+    }
+
+    // 简单类型
     DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
     if (converterService.canConverter(String.class, dataBinder.getType())) {
       String value = request.getParam(dataBinder.getName());
+      if (value == null) {
+        return null;
+      }
       return converterService.convert(value, dataBinder.getType());
     }
-    // 复杂类型
 
+    Map<String, Object> map = new HashMap<>(16);
+    request.getParams().forEach((k, v) -> map.put(k, v[0]));
+
+    // map
+    if (Map.class.isAssignableFrom(dataBinder.getType())) {
+      return map;
+    }
+
+    // 复杂类型 使用classloader判断非java内置类
+    if (dataBinder.getType().getClassLoader() != null) {
+      // 简单使用Json转换
+      return new JSONObject(map).toJavaObject(dataBinder.getType());
+    }
     return null;
   }
+
 }
