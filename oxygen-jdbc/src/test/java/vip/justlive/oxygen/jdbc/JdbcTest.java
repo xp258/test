@@ -28,7 +28,8 @@ public class JdbcTest {
   @Before
   public void before() {
     Bootstrap.start();
-    Jdbc.update("create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
+    Jdbc.update(
+        "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
     Jdbc.update("insert into option values (1, 'st', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
   }
 

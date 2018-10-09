@@ -71,7 +71,11 @@ public class DispatcherServlet extends HttpServlet {
     try {
       Object result = action.invoke();
       if (action.needRenderView()) {
-        ViewResolver viewResolver = WebPlugin.findViewResolverByPath(action.getPath());
+        ViewResolver viewResolver = WebPlugin.findViewResolver(result);
+        if (viewResolver == null) {
+          hanlderNoViewResolver(resp);
+          return;
+        }
         viewResolver.resolveView(req, resp, result);
       }
     } catch (Exception e) {
@@ -81,6 +85,17 @@ public class DispatcherServlet extends HttpServlet {
       Response.clear();
     }
 
+  }
+
+  private void hanlderNoViewResolver(HttpServletResponse resp) {
+    String msg = String
+        .format("no ViewResolver found in container for [%s]", Request.current().getPath());
+    log.error(msg);
+    try {
+      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
   }
 
   private void handlerNotFound(HttpServletRequest req, HttpServletResponse resp) {

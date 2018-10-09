@@ -15,7 +15,6 @@ package vip.justlive.oxygen.web.view;
 
 import com.alibaba.fastjson.JSON;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -28,22 +27,25 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 public class DefaultViewResolver implements ViewResolver {
 
   @Override
+  public boolean supported(Object data) {
+    // 重定向
+    if (data != null && data.getClass() == View.class && ((View) data).isRedirect()) {
+      return true;
+    }
+    // null 或者 非view 返回json
+    return data == null || data.getClass() != View.class;
+  }
+
+  @Override
   public void resolveView(HttpServletRequest request, HttpServletResponse response, Object data) {
     try {
       if (data != null && data.getClass() == View.class) {
         View view = (View) data;
-        if (view.isRedirect()) {
-          response.sendRedirect(request.getContextPath() + view.getPath());
-        } else {
-          if (view.getData() != null) {
-            view.getData().forEach(request::setAttribute);
-          }
-          request.getRequestDispatcher(view.getPath()).forward(request, response);
-        }
+        response.sendRedirect(request.getContextPath() + view.getPath());
       } else {
         response.getWriter().print(JSON.toJSONString(data));
       }
-    } catch (IOException | ServletException e) {
+    } catch (IOException e) {
       throw Exceptions.wrap(e);
     }
   }

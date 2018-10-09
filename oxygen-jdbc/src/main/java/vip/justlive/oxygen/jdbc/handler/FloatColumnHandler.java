@@ -18,9 +18,10 @@ import java.sql.SQLException;
 
 /**
  * float列处理器
+ *
  * @author wubo
  */
-public class FloatColumnHandler  implements ColumnHandler{
+public class FloatColumnHandler implements ColumnHandler {
 
   @Override
   public boolean supported(Class<?> type) {

@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,6 @@ import vip.justlive.oxygen.web.mapping.DataBinder;
 import vip.justlive.oxygen.web.mapping.Request;
 import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
 import vip.justlive.oxygen.web.mapping.Router;
-import vip.justlive.oxygen.web.view.DefaultViewResolver;
 import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
@@ -46,10 +46,10 @@ import vip.justlive.oxygen.web.view.ViewResolver;
 public class WebPlugin implements Plugin {
 
   static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
-  static final List<ParamHandler> PARAM_HANDLERS = new LinkedList<>();
+  private static final List<ParamHandler> PARAM_HANDLERS = new LinkedList<>();
   private static final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new ConcurrentHashMap<>(8,
       1f);
-  private static final ViewResolver VIEW_RESOLVER = new DefaultViewResolver();
+  private static final Set<ViewResolver> VIEW_RESOLVERS = new HashSet<>(4);
 
   static {
     for (HttpMethod httpMethod : HttpMethod.values()) {
@@ -90,13 +90,27 @@ public class WebPlugin implements Plugin {
   }
 
   /**
-   * 根据路径获取视图解析
+   * 添加视图解析器
    *
-   * @param path 请求路径
+   * @param viewResolver 视图解析器
+   */
+  public static void addViewResolver(ViewResolver viewResolver) {
+    VIEW_RESOLVERS.add(viewResolver);
+  }
+
+  /**
+   * 获取视图解析
+   *
+   * @param data Action执行返回
    * @return ViewResolver
    */
-  public static ViewResolver findViewResolverByPath(String path) {
-    return VIEW_RESOLVER;
+  public static ViewResolver findViewResolver(Object data) {
+    for (ViewResolver viewResolver : VIEW_RESOLVERS) {
+      if (viewResolver.supported(data)) {
+        return viewResolver;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -109,7 +123,9 @@ public class WebPlugin implements Plugin {
     loadRouter();
     loadRequestParse();
     loadParamHandler();
+    loadViewResolver();
   }
+
 
   @Override
   public void stop() {
@@ -131,6 +147,12 @@ public class WebPlugin implements Plugin {
     }
   }
 
+  private void loadViewResolver() {
+    ServiceLoader<ViewResolver> loader = ServiceLoader.load(ViewResolver.class);
+    for (ViewResolver viewResolver : loader) {
+      addViewResolver(viewResolver);
+    }
+  }
 
   private void loadRouter() {
     Set<Class<?>> routerClasses = ClassScannerPlugin.getTypesAnnotatedWith(Router.class);

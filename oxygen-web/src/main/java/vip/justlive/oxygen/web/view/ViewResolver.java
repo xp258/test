@@ -24,6 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 public interface ViewResolver {
 
   /**
+   * 是否支持
+   *
+   * @param data Action 方法返回值
+   * @return true支持
+   */
+  boolean supported(Object data);
+
+  /**
    * 解析视图
    *
    * @param request 请求对象

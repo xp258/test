@@ -20,6 +20,8 @@ package vip.justlive.oxygen.core.constant;
  */
 public class Constants {
 
+  // settings
+
   /**
    * 配置文件默认地址
    */
@@ -57,6 +59,13 @@ public class Constants {
    * 缓存实现类
    */
   public static final String CACHE_IMPL_CLASS = "cache.impl.class";
+  /**
+   * web jsp路径前缀
+   */
+  public static final String WEB_JSP_PREFIX = "web.view.jsp.prefix";
+
+
+
   /**
    * 成功code
    */
