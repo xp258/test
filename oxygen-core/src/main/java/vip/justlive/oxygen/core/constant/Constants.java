@@ -207,6 +207,8 @@ public class Constants {
   // http
 
   public static final String BODY_STORE_KEY = "_body";
+  public static final String HTTP_PREFIX = "http://";
+  public static final String HTTPS_PREFIX = "https://";
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";

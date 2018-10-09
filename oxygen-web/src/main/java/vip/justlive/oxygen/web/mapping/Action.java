@@ -22,7 +22,7 @@ import lombok.Setter;
 import lombok.ToString;
 import vip.justlive.oxygen.web.WebPlugin;
 import vip.justlive.oxygen.web.handler.ParamHandler;
-import vip.justlive.oxygen.web.view.View;
+import vip.justlive.oxygen.web.mapping.DataBinder.SCOPE;
 
 /**
  * action
@@ -46,16 +46,6 @@ public class Action {
     this.method = method;
     this.dataBinders = new DataBinder[actualMethod.getParameterCount()];
     this.init(actualMethod);
-  }
-
-
-  /**
-   * 是否为视图
-   *
-   * @return true为视图
-   */
-  public boolean isView() {
-    return method.getReturnType() == View.class;
   }
 
   /**
@@ -103,14 +93,28 @@ public class Action {
   private void parseAnnotation(DataBinder dataBinder, Parameter parameter) {
     Param param = parameter.getAnnotation(Param.class);
     if (param != null) {
-      if (param.value().length() > 0) {
-        dataBinder.setName(param.value());
-      }
-      if (param.defaultValue().length() > 0) {
-        dataBinder.setDefaultValue(param.defaultValue());
-      }
+      fillDataBinder(dataBinder, param.value(), param.defaultValue());
       return;
+    }
+    HeaderParam headerParam = parameter.getAnnotation(HeaderParam.class);
+    if (headerParam != null) {
+      fillDataBinder(dataBinder, headerParam.value(), headerParam.defaultValue());
+      dataBinder.setScope(SCOPE.HEADER);
+      return;
+    }
+    CookieParam cookieParam = parameter.getAnnotation(CookieParam.class);
+    if (cookieParam != null) {
+      fillDataBinder(dataBinder, cookieParam.value(), cookieParam.defaultValue());
+      dataBinder.setScope(SCOPE.COOKIE);
     }
   }
 
+  private void fillDataBinder(DataBinder dataBinder, String name, String defaultValue) {
+    if (name.length() > 0) {
+      dataBinder.setName(name);
+    }
+    if (defaultValue.length() > 0) {
+      dataBinder.setDefaultValue(defaultValue);
+    }
+  }
 }

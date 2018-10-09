@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSON;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -41,7 +42,12 @@ public class DefaultViewResolver implements ViewResolver {
     try {
       if (data != null && data.getClass() == View.class) {
         View view = (View) data;
-        response.sendRedirect(request.getContextPath() + view.getPath());
+        String redirectUrl = view.getPath();
+        if (!redirectUrl.startsWith(Constants.HTTP_PREFIX) && !redirectUrl
+            .startsWith(Constants.HTTPS_PREFIX)) {
+          redirectUrl = request.getContextPath() + view.getPath();
+        }
+        response.sendRedirect(redirectUrl);
       } else {
         response.getWriter().print(JSON.toJSONString(data));
       }

@@ -45,6 +45,10 @@ public class DispatcherServlet extends HttpServlet {
           httpMethod);
     }
 
+    String contentPath = req.getContextPath();
+    if (contentPath.length() > 0 && requestPath.startsWith(contentPath)) {
+      requestPath = requestPath.substring(contentPath.length());
+    }
     Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
     if (action == null) {
       handlerNotFound(req, resp);

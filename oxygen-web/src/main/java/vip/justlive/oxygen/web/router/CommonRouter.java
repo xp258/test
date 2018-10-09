@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import vip.justlive.oxygen.core.domain.Resp;
+import vip.justlive.oxygen.web.mapping.Param;
 import vip.justlive.oxygen.web.mapping.Request;
 import vip.justlive.oxygen.web.mapping.Router;
 
@@ -45,7 +46,7 @@ public class CommonRouter {
    * @return 服务器日期
    */
   @Request("/localDate")
-  public Resp localDate(Integer offset) {
+  public Resp localDate(@Param(value = "offset", defaultValue = "0") Integer offset) {
     return Resp.success(
         LocalDate.now().plusDays(offset).atStartOfDay(ZoneOffset.systemDefault()).toInstant()
             .toEpochMilli());
@@ -58,20 +59,10 @@ public class CommonRouter {
    * @return 服务器日期时间
    */
   @Request("/localDateTime")
-  public Resp localDateTime(Integer offset) {
+  public Resp localDateTime(@Param(value = "offset", defaultValue = "0") Integer offset) {
     return Resp.success(
         LocalDateTime.now().plusDays(offset).atZone(ZoneOffset.systemDefault()).toInstant()
             .toEpochMilli());
-  }
-
-  /**
-   * 获取系统配置参数
-   *
-   * @return 系统配置参数
-   */
-  @Request("/systemProperties")
-  public Resp systemProperties() {
-    return Resp.success(System.getProperties());
   }
 
 }
