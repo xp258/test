@@ -15,6 +15,7 @@ package vip.justlive.oxygen.web.http;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Data;
@@ -180,6 +181,9 @@ public class Request implements Serializable {
    */
   public static void set(HttpServletRequest originalRequest) {
     Request request = new Request(originalRequest);
+    request.params = new HashMap<>(8);
+    request.cookies = new HashMap<>(4);
+    request.headers = new HashMap<>(4);
     LOCAL.set(request);
   }
 

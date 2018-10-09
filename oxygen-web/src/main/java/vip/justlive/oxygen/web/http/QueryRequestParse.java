@@ -34,7 +34,6 @@ public class QueryRequestParse extends AbstractRequestParse {
   @Override
   public void handle(HttpServletRequest req) {
     Request request = Request.current();
-    checkParam(request);
     margeParam(request.getParams(), request.getOriginalRequest().getParameterMap());
   }
 

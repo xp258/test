@@ -53,7 +53,7 @@ public class BasicParamHandler implements ParamHandler {
     if (converterService.canConverter(String.class, dataBinder.getType())) {
       String value = request.getParam(dataBinder.getName());
       if (value == null) {
-        return null;
+        value = dataBinder.getDefaultValue();
       }
       return converterService.convert(value, dataBinder.getType());
     }

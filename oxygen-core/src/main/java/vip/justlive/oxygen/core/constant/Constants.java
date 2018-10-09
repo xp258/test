@@ -195,8 +195,9 @@ public class Constants {
    */
   public static final String FILE_PREFIX = "file:";
 
-
   // http
+
+  public static final String BODY_STORE_KEY = "_body";
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
@@ -209,6 +210,16 @@ public class Constants {
   public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
   public static final String X_REAL_IP = "X-Real-IP";
+
+  public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
+  public static final String APPLICATION_JSON = "application/json";
+  public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+  public static final String APPLICATION_PDF = "application/pdf";
+  public static final String APPLICATION_XML = "application/xml";
+  public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+  public static final String TEXT_PLAIN = "text/plain";
+  public static final String TEXT_XML = "text/xml";
+  public static final String TEXT_HTML = "text/html";
 
   // 正则
 

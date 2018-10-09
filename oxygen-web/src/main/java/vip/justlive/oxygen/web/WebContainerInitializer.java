@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
@@ -37,8 +36,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 public class WebContainerInitializer implements ServletContainerInitializer {
 
   @Override
-  public void onStartup(Set<Class<?>> classes, ServletContext ctx) throws ServletException {
-
+  public void onStartup(Set<Class<?>> classes, ServletContext ctx) {
     List<WebAppInitializer> initializers = new LinkedList<>();
     if (classes != null) {
       try {

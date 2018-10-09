@@ -13,8 +13,13 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * request解析抽象类
@@ -23,10 +28,8 @@ import java.util.Map;
  */
 abstract class AbstractRequestParse implements RequestParse {
 
-  void checkParam(Request request) {
-    if (request.getParams() == null) {
-      request.setParams(new HashMap<>(4));
-    }
+  void margeParam(Map<String, String[]> map, String key, String value) {
+    margeParam(map, key, new String[]{value});
   }
 
   void margeParam(Map<String, String[]> map, String key, String[] values) {
@@ -43,5 +46,19 @@ abstract class AbstractRequestParse implements RequestParse {
 
   void margeParam(Map<String, String[]> map, Map<String, String[]> values) {
     values.forEach((k, v) -> margeParam(map, k, v));
+  }
+
+  String readBody(HttpServletRequest req) {
+    try (ByteArrayOutputStream os = new ByteArrayOutputStream();
+        InputStream is = req.getInputStream()) {
+      int b;
+      while ((b = is.read()) != -1) {
+        os.write(b);
+      }
+      Request request = Request.current();
+      return new String(os.toByteArray(), request.getEncoding());
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
   }
 }

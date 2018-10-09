@@ -32,6 +32,10 @@ public class DataBinder {
    */
   private Class<?> type;
   /**
+   * 默认值
+   */
+  private String defaultValue;
+  /**
    * 数据获取的范围, 默认从参数中取值
    */
   private SCOPE scope = SCOPE.PARAM;

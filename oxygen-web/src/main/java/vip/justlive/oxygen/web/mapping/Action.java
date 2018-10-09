@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.mapping;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import lombok.EqualsAndHashCode;
@@ -70,9 +71,10 @@ public class Action {
    * 执行action
    *
    * @return result
-   * @throws Exception 抛出异常
+   * @throws InvocationTargetException 反射出错
+   * @throws IllegalAccessException 反射出错
    */
-  public Object invoke() throws Exception {
+  public Object invoke() throws InvocationTargetException, IllegalAccessException {
     Object[] args = new Object[dataBinders.length];
     if (args.length > 0) {
       for (int i = 0; i < args.length; i++) {
@@ -93,8 +95,21 @@ public class Action {
       DataBinder dataBinder = new DataBinder();
       dataBinder.setName(parameters[i].getName());
       dataBinder.setType(parameters[i].getType());
-      // TODO
+      parseAnnotation(dataBinder, parameters[i]);
       dataBinders[i] = dataBinder;
+    }
+  }
+
+  private void parseAnnotation(DataBinder dataBinder, Parameter parameter) {
+    Param param = parameter.getAnnotation(Param.class);
+    if (param != null) {
+      if (param.value().length() > 0) {
+        dataBinder.setName(param.value());
+      }
+      if (param.defaultValue().length() > 0) {
+        dataBinder.setDefaultValue(param.defaultValue());
+      }
+      return;
     }
   }
 

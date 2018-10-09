@@ -15,4 +15,6 @@
 vip.justlive.oxygen.web.http.HeaderRequestParse
 vip.justlive.oxygen.web.http.GeneralRequestParse
 vip.justlive.oxygen.web.http.QueryRequestParse
+vip.justlive.oxygen.web.http.TextRequestParse
+vip.justlive.oxygen.web.http.JsonRequestParse
 vip.justlive.oxygen.web.http.CookieRequestParse

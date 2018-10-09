@@ -36,7 +36,7 @@ public class DefaultViewResolver implements ViewResolver {
           response.sendRedirect(request.getContextPath() + view.getPath());
         } else {
           if (view.getData() != null) {
-            view.getData().forEach((k, v) -> request.setAttribute(k, v));
+            view.getData().forEach(request::setAttribute);
           }
           request.getRequestDispatcher(view.getPath()).forward(request, response);
         }

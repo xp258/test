@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.web.http;
 
-import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -32,9 +31,6 @@ public class CookieRequestParse extends AbstractRequestParse {
   public void handle(HttpServletRequest req) {
     javax.servlet.http.Cookie[] cookies = req.getCookies();
     Request request = Request.current();
-    if (request.getCookies() == null) {
-      request.setCookies(new HashMap<>(4));
-    }
     for (javax.servlet.http.Cookie cookie : cookies) {
       Cookie vipCookie = new Cookie();
       vipCookie.setDomain(cookie.getDomain());

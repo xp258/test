@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.web.http;
 
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -36,9 +35,6 @@ public class HeaderRequestParse extends AbstractRequestParse {
   public void handle(HttpServletRequest req) {
     Enumeration<String> headerNames = req.getHeaderNames();
     Request request = Request.current();
-    if (request.getHeaders() == null) {
-      request.setHeaders(new HashMap<>(4));
-    }
     while (headerNames.hasMoreElements()) {
       String headerName = headerNames.nextElement();
       Enumeration<String> headers = req.getHeaders(headerName);

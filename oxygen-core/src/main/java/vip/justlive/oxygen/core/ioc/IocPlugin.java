@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.ioc;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
@@ -86,33 +87,32 @@ public class IocPlugin implements Plugin {
     Object obj;
     try {
       obj = clazz.newInstance();
-    } catch (Exception e) {
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new IllegalStateException(String.format("@Configuration注解的类[%s]无法实例化", clazz), e);
     }
-    for (Method method : clazz.getDeclaredMethods()) {
-      if (method.isAnnotationPresent(Bean.class)) {
-        if (method.getParameterCount() > 0) {
-          throw new IllegalStateException("@Configuration下实例Bean不支持有参方式");
+    try {
+      for (Method method : clazz.getDeclaredMethods()) {
+        if (method.isAnnotationPresent(Bean.class)) {
+          if (method.getParameterCount() > 0) {
+            throw new IllegalStateException("@Configuration下实例Bean不支持有参方式");
+          }
+          method.setAccessible(true);
+          Object bean = method.invoke(obj);
+          if (method.isAnnotationPresent(ValueConfig.class)) {
+            ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
+          } else {
+            ConfigFactory.load(bean);
+          }
+          Bean singleton = method.getAnnotation(Bean.class);
+          String name = singleton.value();
+          if (name.length() == 0) {
+            name = method.getName();
+          }
+          BeanStore.putBean(name, bean);
         }
-        method.setAccessible(true);
-        Object bean;
-        try {
-          bean = method.invoke(obj);
-        } catch (Exception e) {
-          throw new IllegalStateException("@Configuration下实例方法出错", e);
-        }
-        if (method.isAnnotationPresent(ValueConfig.class)) {
-          ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
-        } else {
-          ConfigFactory.load(bean);
-        }
-        Bean singleton = method.getAnnotation(Bean.class);
-        String name = singleton.value();
-        if (name.length() == 0) {
-          name = method.getName();
-        }
-        BeanStore.putBean(name, bean);
       }
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new IllegalStateException("@Configuration下实例方法出错", e);
     }
   }
 
