@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
  * servlet内置参数处理
@@ -26,16 +27,17 @@ import vip.justlive.oxygen.web.http.Response;
 public class ServletParamHandler implements ParamHandler {
 
   @Override
-  public boolean supported(Class<?> type) {
-    return type == HttpServletResponse.class || type == HttpServletRequest.class;
+  public boolean supported(DataBinder dataBinder) {
+    return dataBinder.getType() == HttpServletResponse.class
+        || dataBinder.getType() == HttpServletRequest.class;
   }
 
   @Override
-  public Object handle(Class<?> type) {
-    if (type == HttpServletRequest.class) {
+  public Object handle(DataBinder dataBinder) {
+    if (dataBinder.getType() == HttpServletRequest.class) {
       return Request.current().getOriginalRequest();
     }
-    if (type == HttpServletResponse.class) {
+    if (dataBinder.getType() == HttpServletResponse.class) {
       return Response.current().getOriginalResponse();
     }
     return null;
