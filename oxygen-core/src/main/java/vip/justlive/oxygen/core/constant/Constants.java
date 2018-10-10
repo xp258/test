@@ -65,7 +65,6 @@ public class Constants {
   public static final String WEB_JSP_PREFIX = "web.view.jsp.prefix";
 
 
-
   /**
    * 成功code
    */
@@ -130,7 +129,6 @@ public class Constants {
    * 内部数组类名前缀: "["
    */
   public static final String INTERNAL_ARRAY_PREFIX = "[";
-
   /**
    * 内部非基本数组类名前缀: "[L"
    */
@@ -274,6 +272,9 @@ public class Constants {
    * ipv4校验正则
    */
   public static final String REGEX_IP = "[1-9](\\d{1,2})?\\.(0|([1-9](\\d{1,2})?))\\.(0|([1-9](\\d{1,2})?))\\.(0|([1-9](\\d{1,2})?))";
+
+  public static final String REGEX_PATH_VAR = "\\{\\w+\\}";
+  public static final String REGEX_PATH_VAR_REPLACE = "(\\\\w+)";
 
   private Constants() {
   }

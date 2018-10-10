@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Data;
+import vip.justlive.oxygen.web.mapping.Action;
 
 /**
  * Request
@@ -34,6 +35,7 @@ public class Request implements Serializable {
   private static final String[] EMPTY = new String[0];
 
   private final transient HttpServletRequest originalRequest;
+  private final transient Action action;
 
   /**
    * 主机名
@@ -43,6 +45,10 @@ public class Request implements Serializable {
    * 请求路径 去除host:port
    */
   private String path;
+  /**
+   * 容器路径
+   */
+  private String contentPath;
   /**
    * 请求全路径 http://host:port/path?queryString
    */
@@ -76,6 +82,11 @@ public class Request implements Serializable {
    * query params
    */
   private Map<String, String[]> params;
+
+  /**
+   * 请求路径参数
+   */
+  private Map<String, String> pathVariables;
 
   /**
    * headers
@@ -178,10 +189,12 @@ public class Request implements Serializable {
    * 设置线程值Request
    *
    * @param originalRequest 原始request
+   * @param action 执行逻辑
    */
-  public static void set(HttpServletRequest originalRequest) {
-    Request request = new Request(originalRequest);
+  public static void set(HttpServletRequest originalRequest, Action action) {
+    Request request = new Request(originalRequest, action);
     request.params = new HashMap<>(8);
+    request.pathVariables = new HashMap<>(2);
     request.cookies = new HashMap<>(4);
     request.headers = new HashMap<>(4);
     LOCAL.set(request);
