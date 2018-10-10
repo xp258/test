@@ -135,7 +135,7 @@ public class Request implements Serializable {
    * @return value
    */
   public String getHeader(String key) {
-    String[] values = getHeaders(key.toLowerCase());
+    String[] values = getHeaders(key);
     if (values.length > 0) {
       return values[0];
     }
@@ -150,7 +150,7 @@ public class Request implements Serializable {
    */
   public String[] getHeaders(String key) {
     if (headers != null) {
-      String[] values = headers.get(key);
+      String[] values = headers.get(key.toLowerCase());
       if (values != null) {
         return values;
       }
