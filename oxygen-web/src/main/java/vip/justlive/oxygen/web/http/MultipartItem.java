@@ -29,6 +29,7 @@ public class MultipartItem {
   private Charset charset;
   private String name;
   private String filename;
+  private String contentType;
   private byte[] body;
   private String value;
 

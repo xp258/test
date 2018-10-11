@@ -131,6 +131,10 @@ public class Constants {
    */
   public static final String QUESTION_MARK = "?";
   /**
+   * 双引号
+   */
+  public static final String DOUBLE_QUOTATION_MARK = "\"";
+  /**
    * 与
    */
   public static final String AND = "&";
