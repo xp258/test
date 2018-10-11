@@ -15,7 +15,6 @@ package vip.justlive.oxygen.web.http;
 
 import java.nio.charset.Charset;
 import lombok.Data;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * multipart item
@@ -31,32 +30,5 @@ public class MultipartItem {
   private String filename;
   private String contentType;
   private byte[] body;
-  private String value;
 
-  void parse() {
-    for (String line : disposition.split(Constants.SEMICOLON)) {
-      String[] props = line.split(Constants.EQUAL);
-      if (props.length == 2) {
-        String key = props[0].trim();
-        String val = props[1].replace("\"", "").trim();
-        if (Constants.FORM_DATA_NAME.equals(key)) {
-          name = val;
-        } else if (Constants.FORM_DATA_FILENAME.equals(key)) {
-          filename = val;
-        }
-      }
-    }
-    if (filename == null) {
-      value = new String(body, charset);
-    }
-  }
-
-  /**
-   * 是否为属性
-   *
-   * @return true表示属性
-   */
-  public boolean isProperty() {
-    return filename == null && value != null;
-  }
 }

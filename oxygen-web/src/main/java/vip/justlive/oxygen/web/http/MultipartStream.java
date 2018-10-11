@@ -36,14 +36,10 @@ public class MultipartStream {
 
   private final InputStream inputStream;
   private final byte[] boundary;
-  private final byte[] endBoundary;
   private final Charset charset;
-
-  private List<byte[]> lines = new LinkedList<>();
-  private WrapByteArrayOutputStream current = new WrapByteArrayOutputStream();
-
-  private Map<String, String> formData;
+  Map<String, String> formData;
   List<MultipartItem> items = new LinkedList<>();
+  private WrapByteArrayOutputStream current = new WrapByteArrayOutputStream();
 
   MultipartStream(InputStream inputStream, byte[] boundary, String encoding) throws IOException {
     this.inputStream = inputStream;
@@ -52,8 +48,6 @@ public class MultipartStream {
     current.write(STREAM_TERMINATOR);
     current.write(boundary);
     this.boundary = current.toByteArray();
-    current.write(STREAM_TERMINATOR);
-    this.endBoundary = current.toByteArray();
     current.reset();
     formData = new HashMap<>(4);
   }
@@ -83,10 +77,11 @@ public class MultipartStream {
     } else {
       MultipartItem item = new MultipartItem();
       item.setContentType(contentType);
-      item.setCharset(charset);
-      item.setBody(line);
+      item.setDisposition(disposition[0]);
       item.setName(disposition[1]);
       item.setFilename(disposition[2]);
+      item.setCharset(charset);
+      item.setBody(line);
       items.add(item);
     }
     readMultipartItem();
@@ -112,7 +107,7 @@ public class MultipartStream {
   }
 
   private String parseContentType(byte[] line) {
-    String[] arr = new String(line, charset).split(Constants.SEMICOLON);
+    String[] arr = new String(line, charset).split(Constants.COLON);
     if (arr.length > 1) {
       return arr[1];
     }
@@ -123,14 +118,15 @@ public class MultipartStream {
   private byte[] readLine() throws IOException {
     current.reset();
     while (true) {
-      int read = inputStream.read();
+      int readValue = inputStream.read();
       // 结束
-      if (read == -1) {
+      if (readValue == -1) {
         return current.toByteArray();
       }
+      byte read = (byte) readValue;
       // 读取到行中断
-      if (read == LINE_SEPARATOR[1] && current.size() > 2
-          && current.byteOfIndex(current.size() - 2) == LINE_SEPARATOR[0]) {
+      if (read == LINE_SEPARATOR[1] && current.size() > 0
+          && current.byteOfIndex(current.size() - 1) == LINE_SEPARATOR[0]) {
         current.removeLastByte();
         return current.toByteArray();
       } else {
@@ -161,5 +157,6 @@ public class MultipartStream {
       count--;
     }
   }
+
 }
 
