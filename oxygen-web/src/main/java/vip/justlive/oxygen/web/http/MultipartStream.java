@@ -118,12 +118,11 @@ public class MultipartStream {
   private byte[] readLine() throws IOException {
     current.reset();
     while (true) {
-      int readValue = inputStream.read();
+      int read = inputStream.read();
       // 结束
-      if (readValue == -1) {
+      if (read == -1) {
         return current.toByteArray();
       }
-      byte read = (byte) readValue;
       // 读取到行中断
       if (read == LINE_SEPARATOR[1] && current.size() > 0
           && current.byteOfIndex(current.size() - 1) == LINE_SEPARATOR[0]) {
