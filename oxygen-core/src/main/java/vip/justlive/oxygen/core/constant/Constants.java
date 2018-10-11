@@ -90,6 +90,19 @@ public class Constants {
    */
   public static final String UNKNOWN = "unknown";
   /**
+   * The Carriage Return ASCII character value.
+   */
+  public static final byte CR = 0x0D;
+
+  /**
+   * The Line Feed ASCII character value.
+   */
+  public static final byte LF = 0x0A;
+  /**
+   * The dash (-) ASCII character value.
+   */
+  public static final byte DASH = 0x2D;
+  /**
    * 空字符串
    */
   public static final String EMPTY = "";
@@ -209,12 +222,18 @@ public class Constants {
   public static final String HTTP_PREFIX = "http://";
   public static final String HTTPS_PREFIX = "https://";
   public static final String MULTIPART = "multipart/";
+  public static final String FORM_DATA = "form-data";
+  public static final String FORM_DATA_NAME = "name";
+  public static final String FORM_DATA_FILENAME = "filename";
+
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
   public static final String ACCEPT_ENCODING = "Accept-Encoding";
   public static final String CHARSET = "charset";
   public static final String CONTENT_TYPE = "Content-Type";
+  public static final String CONTENT_DISPOSITION = "Content-disposition";
+  public static final String CONTENT_LENGTH = "Content-length";
   public static final String COOKIE = "Cookie";
   public static final String HOST_NAME = "Host";
   public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";

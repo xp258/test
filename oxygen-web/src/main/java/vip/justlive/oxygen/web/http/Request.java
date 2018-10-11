@@ -99,6 +99,20 @@ public class Request implements Serializable {
   private Map<String, Cookie> cookies;
 
   /**
+   * multipart
+   */
+  private Multipart multipart;
+
+  /**
+   * 是否为multipart请求
+   *
+   * @return true表示是multipart请求
+   */
+  public boolean isMultipart() {
+    return multipart != null;
+  }
+
+  /**
    * 根据key获取查询参数 最多返回第一个值
    *
    * @param key 键
