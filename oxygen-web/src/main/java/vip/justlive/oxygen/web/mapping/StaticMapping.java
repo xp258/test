@@ -55,7 +55,9 @@ public class StaticMapping {
     TEMP_DIR = ConfigFactory.load(CoreConf.class).getBaseTempDir() + "/static";
     File dir = new File(TEMP_DIR);
     if (!dir.exists() && !dir.mkdirs()) {
-      log.error("temp dir make error");
+      log.error("create temp static dir [{}] error", dir.getAbsolutePath());
+    } else {
+      log.info("temp static dir is [{}]", dir.getAbsolutePath());
     }
   }
 
@@ -132,6 +134,7 @@ public class StaticMapping {
     try (InputStream is = sourceResource.getInputStream()) {
       File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
       Files.copy(is, savedFile.toPath());
+      savedFile.deleteOnExit();
       return new StaticSource(savedFile, path);
     } catch (IOException e) {
       // not found or error happens ignore
