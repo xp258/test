@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
@@ -44,15 +46,6 @@ public class StaticMapping {
   private static final String TEMP_DIR;
   private static final Properties MIME_TYPES = new Properties();
 
-  private final Map<String, String> resources;
-  private final ExpiringMap<String, StaticSource> expiringMap;
-
-  public StaticMapping() {
-    resources = new ConcurrentHashMap<>(4, 1f);
-    expiringMap = ExpiringMap.<String, StaticSource>builder().expiration(10, TimeUnit.MINUTES)
-        .asyncExpiredListeners(this::cleanExpiredFile).build();
-  }
-
   static {
     try {
       MIME_TYPES.load(StaticMapping.class.getResourceAsStream("/mime-types.properties"));
@@ -64,6 +57,15 @@ public class StaticMapping {
     if (!dir.exists() && !dir.mkdirs()) {
       log.error("temp dir make error");
     }
+  }
+
+  private final Map<String, Set<String>> resources;
+  private final ExpiringMap<String, StaticSource> expiringMap;
+
+  public StaticMapping() {
+    resources = new ConcurrentHashMap<>(4, 1f);
+    expiringMap = ExpiringMap.<String, StaticSource>builder().expiration(10, TimeUnit.MINUTES)
+        .asyncExpiredListeners(this::cleanExpiredFile).build();
   }
 
   private void cleanExpiredFile(String key, StaticSource source) {
@@ -84,10 +86,12 @@ public class StaticMapping {
    * @param basePath base路径
    */
   public void addStaticResource(String prefix, String basePath) {
-    if (resources.putIfAbsent(prefix, basePath) != null) {
-      throw new IllegalArgumentException(
-          String.format("the request prefix [%s] is defined", prefix));
+    Set<String> paths = resources.get(prefix);
+    if (paths == null) {
+      resources.putIfAbsent(prefix, new HashSet<>(2));
     }
+    paths = resources.get(prefix);
+    paths.add(basePath);
   }
 
   /**
@@ -102,12 +106,14 @@ public class StaticMapping {
       return cachedSource;
     }
 
-    for (Map.Entry<String, String> entry : resources.entrySet()) {
+    for (Map.Entry<String, Set<String>> entry : resources.entrySet()) {
       if (path.startsWith(entry.getKey())) {
-        StaticSource source = findMappedSource(path, entry.getKey(), entry.getValue());
-        if (source != null) {
-          expiringMap.put(path, source);
-          return source;
+        for (String value : entry.getValue()) {
+          StaticSource source = findMappedSource(path, entry.getKey(), value);
+          if (source != null) {
+            expiringMap.put(path, source);
+            return source;
+          }
         }
         break;
       }
@@ -124,33 +130,12 @@ public class StaticMapping {
       sourceResource = new ClassPathResource(filePath);
     }
     try (InputStream is = sourceResource.getInputStream()) {
-      File savedFile = new File(TEMP_DIR,
-          SnowflakeIdWorker.defaultNextId() + Constants.DOT + getSuffix(path));
+      File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
       Files.copy(is, savedFile.toPath());
-      return new StaticSource(savedFile);
+      return new StaticSource(savedFile, path);
     } catch (IOException e) {
       // not found or error happens ignore
       return null;
-    }
-  }
-
-  private String getSuffix(String filename) {
-    return filename.substring(filename.lastIndexOf(Constants.DOT) + 1);
-  }
-
-  /**
-   * 静态资源
-   */
-  @Getter
-  public class StaticSource {
-
-    private final Path path;
-    private final String contentType;
-
-    StaticSource(File file) {
-      this.path = file.toPath();
-      String suffix = getSuffix(file.getName());
-      contentType = MIME_TYPES.getProperty(suffix, Constants.APPLICATION_OCTET_STREAM);
     }
   }
 
@@ -169,9 +154,22 @@ public class StaticMapping {
     }
   }
 
+  /**
+   * 静态资源
+   */
+  @Getter
+  public class StaticSource {
 
-  public static void main(String[] args) {
+    private final Path path;
+    private final String contentType;
+    private final String requestPath;
 
+    StaticSource(File file, String requestPath) {
+      this.path = file.toPath();
+      this.requestPath = requestPath;
+      String suffix = requestPath.substring(requestPath.lastIndexOf(Constants.DOT) + 1);
+      contentType = MIME_TYPES.getProperty(suffix, Constants.APPLICATION_OCTET_STREAM);
+    }
   }
 
 }

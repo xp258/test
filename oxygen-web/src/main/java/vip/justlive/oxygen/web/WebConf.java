@@ -32,8 +32,8 @@ public class WebConf {
   /**
    * 默认静态资源目录
    */
-  @Value("${web.static.default.path:/public}")
-  private String defaultStaticPaths;
+  @Value("${web.static.default.path:/public,/static}")
+  private String[] defaultStaticPaths;
 
   /**
    * web jsp路径前缀

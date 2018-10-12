@@ -293,8 +293,11 @@ public class WebPlugin implements Plugin {
 
   private void loadStaticMapping() {
     WebConf conf = ConfigFactory.load(WebConf.class);
-    String path = conf.getDefaultStaticPaths();
-    if (path != null && path.length() > 0) {
+    String[] paths = conf.getDefaultStaticPaths();
+    if (paths == null) {
+      return;
+    }
+    for (String path : paths) {
       addStaticResources(conf.getDefaultStaticPrefix(), path);
     }
   }
