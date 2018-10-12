@@ -29,7 +29,7 @@ import vip.justlive.oxygen.core.constant.Constants;
  *
  * @author wubo
  */
-public class MultipartStream {
+class MultipartStream {
 
   private static final byte[] LINE_SEPARATOR = {Constants.CR, Constants.LF};
   private static final byte[] STREAM_TERMINATOR = {Constants.DASH, Constants.DASH};
@@ -52,7 +52,7 @@ public class MultipartStream {
     formData = new HashMap<>(4);
   }
 
-  public void readMultipartItem() throws IOException {
+  void readMultipartItem() throws IOException {
     // boundary
     byte[] line = readLine();
     if (line.length == 0 || !Arrays.equals(line, boundary)) {
