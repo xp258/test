@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +26,8 @@ import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
+import vip.justlive.oxygen.web.mapping.StaticMapping.StaticException;
+import vip.justlive.oxygen.web.mapping.StaticMapping.StaticSource;
 import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
@@ -44,13 +47,17 @@ public class DispatcherServlet extends HttpServlet {
           httpMethod);
     }
 
-    Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
-    if (action == null) {
-      handlerNotFound(req, resp);
-      return;
+    try {
+      Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
+      if (action == null) {
+        handlerNotFound(req, resp);
+        return;
+      }
+      handlerAction(action, req, resp);
+    } catch (StaticException e) {
+      handlerStatic(req, resp, e.getSource());
     }
 
-    handlerAction(action, req, resp);
   }
 
   void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
@@ -111,6 +118,19 @@ public class DispatcherServlet extends HttpServlet {
       resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     } catch (IOException ie) {
       throw Exceptions.wrap(ie);
+    }
+  }
+
+  private void handlerStatic(HttpServletRequest req, HttpServletResponse resp,
+      StaticSource source) {
+    if (log.isDebugEnabled()) {
+      log.debug("handle static source [{}] for path [{}]", source.getPath(), req.getServletPath());
+    }
+    resp.setContentType(source.getContentType());
+    try {
+      Files.copy(source.getPath(), resp.getOutputStream());
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
     }
   }
 

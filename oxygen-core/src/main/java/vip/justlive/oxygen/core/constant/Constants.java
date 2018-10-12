@@ -25,44 +25,12 @@ public class Constants {
   /**
    * 配置文件默认地址
    */
-  public static final String[] CONFIG_PATHS = {"classpath:/config/*.properties",
-      "classpath:/*.properties"};
-  /**
-   * override配置文件地址属性key
-   */
-  public static final String CONFIG_OVERRIDE_PATH_KEY = "config.override.path";
-  /**
-   * 类扫描路径属性key
-   */
-  public static final String CLASS_SCAN_KEY = "main.class.scan";
+  public static final String[] CONFIG_PATHS = {"classpath*:config.properties",
+      "classpath*:/config/*.properties"};
   /**
    * 默认profile
    */
   public static final String DEFAULT_PROFILE = "default";
-  /**
-   * job核心线程池大小key
-   */
-  public static final String JOB_CORE_POOL_SIZE_KEY = "job.core.pool.size";
-  /**
-   * job核心线程池默认大小
-   */
-  public static final int DEFAULT_JOB_CORE_POOL_SIZE = 10;
-  /**
-   * job线程名称格式
-   */
-  public static final String JOB_THREAD_NAME_FORMAT_KEY = "job.thread.name.format";
-  /**
-   * job线程名称默认格式
-   */
-  public static final String DEFAULT_JOB_THREAD_NAME_FORMAT = "jobs-%d";
-  /**
-   * 缓存实现类
-   */
-  public static final String CACHE_IMPL_CLASS = "cache.impl.class";
-  /**
-   * web jsp路径前缀
-   */
-  public static final String WEB_JSP_PREFIX = "web.view.jsp.prefix";
 
 
   /**
