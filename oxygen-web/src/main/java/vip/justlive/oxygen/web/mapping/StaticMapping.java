@@ -173,6 +173,26 @@ public class StaticMapping {
       String suffix = requestPath.substring(requestPath.lastIndexOf(Constants.DOT) + 1);
       contentType = MIME_TYPES.getProperty(suffix, Constants.APPLICATION_OCTET_STREAM);
     }
+
+    /**
+     * 修改时间
+     *
+     * @return lastModified
+     */
+    public long lastModified() {
+      // 去除毫秒值
+      return path.toFile().lastModified() / 1000 * 1000;
+    }
+
+    /**
+     * etag
+     *
+     * @return etag
+     */
+    public String eTag() {
+      return Constants.DOUBLE_QUOTATION_MARK + lastModified() + Constants.HYPHEN
+          + path.hashCode() + Constants.DOUBLE_QUOTATION_MARK;
+    }
   }
 
 }

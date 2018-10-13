@@ -36,6 +36,12 @@ public class WebConf {
   private String[] defaultStaticPaths;
 
   /**
+   * 静态资源缓存时间
+   */
+  @Value("${web.static.cache:3600}")
+  private Integer staticCache;
+
+  /**
    * web jsp路径前缀
    */
   @Value("${web.view.jsp.prefix:/WEB-INF/}")

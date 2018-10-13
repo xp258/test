@@ -107,6 +107,10 @@ public class Constants {
    */
   public static final String AND = "&";
   /**
+   * 连字符
+   */
+  public static final String HYPHEN = "-";
+  /**
    * 数组类名前缀: "[]"
    */
   public static final String ARRAY_SUFFIX = "[]";
@@ -189,6 +193,7 @@ public class Constants {
 
   // http
 
+  public static final String ETAG_DATA_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
   public static final String BODY_STORE_KEY = "_body";
   public static final String BOUNDARY = "boundary";
   public static final String HTTP_PREFIX = "http://";
@@ -197,17 +202,25 @@ public class Constants {
   public static final String FORM_DATA = "form-data";
   public static final String FORM_DATA_NAME = "name";
   public static final String FORM_DATA_FILENAME = "filename";
+  public static final String MAX_AGE = "max-age";
 
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
   public static final String ACCEPT_ENCODING = "Accept-Encoding";
+  public static final String CACHE_CONTROL = "Cache-Control";
   public static final String CHARSET = "charset";
   public static final String CONTENT_TYPE = "Content-Type";
   public static final String CONTENT_DISPOSITION = "Content-disposition";
   public static final String CONTENT_LENGTH = "Content-length";
   public static final String COOKIE = "Cookie";
+  public static final String ETAG = "ETag";
+  public static final String EXPIRES = "Expires";
   public static final String HOST_NAME = "Host";
+  public static final String IF_MATCH = "If-Match";
+  public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+  public static final String IF_NONE_MATCH = "If-None-Match";
+  public static final String LAST_MODIFIED = "Last-Modified";
   public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
   public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
