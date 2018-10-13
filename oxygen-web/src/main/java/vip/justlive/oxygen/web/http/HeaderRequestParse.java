@@ -46,10 +46,10 @@ public class HeaderRequestParse extends AbstractRequestParse {
       }
       margeParam(request.getHeaders(), headerName, values.toArray(new String[0]));
     }
-    parseContentType(request);
+    parseContentType(request, req);
   }
 
-  void parseContentType(Request request) {
+  void parseContentType(Request request, HttpServletRequest req) {
     String contentType = request.getHeader(Constants.CONTENT_TYPE);
     if (contentType != null) {
       String[] arr = contentType.split(Constants.SEMICOLON);
@@ -64,7 +64,7 @@ public class HeaderRequestParse extends AbstractRequestParse {
         if (key.equalsIgnoreCase(Constants.CHARSET)) {
           request.setEncoding(value);
         } else if (key.equalsIgnoreCase(Constants.BOUNDARY) && HttpMethod.POST.name()
-            .equalsIgnoreCase(request.getOriginalRequest().getMethod()) && contentType
+            .equalsIgnoreCase(req.getMethod()) && contentType
             .toLowerCase(Locale.ENGLISH).startsWith(Constants.MULTIPART)) {
           request.setMultipart(new Multipart(value, request.getEncoding()));
         }

@@ -14,6 +14,9 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 
@@ -29,6 +32,16 @@ public class Response implements Serializable {
   private static final ThreadLocal<Response> LOCAL = new ThreadLocal<>();
 
   private final transient HttpServletResponse originalResponse;
+
+  /**
+   * 编码
+   */
+  private String encoding = StandardCharsets.UTF_8.name();
+  /**
+   * cookies
+   */
+  private Map<String, Cookie> cookies = new HashMap<>(4);
+
 
   /**
    * 设置线程值response

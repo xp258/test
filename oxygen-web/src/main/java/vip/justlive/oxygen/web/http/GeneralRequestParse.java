@@ -39,7 +39,7 @@ public class GeneralRequestParse extends AbstractRequestParse {
     if (request.getQueryString() != null) {
       request.setUrl(request.getUrl() + Constants.QUESTION_MARK + request.getQueryString());
     }
-    String host = request.getOriginalRequest().getHeader(Constants.HOST_NAME);
+    String host = req.getHeader(Constants.HOST_NAME);
     if (host.contains(Constants.COLON)) {
       String[] arr = host.split(Constants.COLON);
       request.setHost(arr[0]);
