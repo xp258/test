@@ -45,4 +45,8 @@ public class Cookie implements Serializable {
    * Cookie max-age in second
    */
   private Integer maxAge;
+  /**
+   * Secure ... e.g. use SSL
+   */
+  private boolean secure;
 }

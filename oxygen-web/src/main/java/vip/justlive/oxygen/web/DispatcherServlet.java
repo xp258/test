@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
@@ -78,6 +79,7 @@ public class DispatcherServlet extends HttpServlet {
 
     try {
       Object result = action.invoke();
+      copyResponse(Response.current(), resp);
       if (action.needRenderView()) {
         ViewResolver viewResolver = WebPlugin.findViewResolver(result);
         if (viewResolver == null) {
@@ -91,6 +93,28 @@ public class DispatcherServlet extends HttpServlet {
     } finally {
       Request.clear();
       Response.clear();
+    }
+
+  }
+
+  private void copyResponse(Response response, HttpServletResponse resp) {
+    if (response.getContentType() != null) {
+      resp.setContentType(response.getContentType());
+    }
+    resp.setCharacterEncoding(response.getEncoding());
+    response.getHeaders().forEach(resp::addHeader);
+    for (Cookie cookie : response.getCookies().values()) {
+      javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),
+          cookie.getValue());
+      jCookie.setPath(cookie.getPath());
+      jCookie.setSecure(cookie.isSecure());
+      if (cookie.getMaxAge() != null) {
+        jCookie.setMaxAge(cookie.getMaxAge());
+      }
+      if (cookie.getDomain() != null) {
+        jCookie.setDomain(cookie.getDomain());
+      }
+      resp.addCookie(jCookie);
     }
 
   }
