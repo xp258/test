@@ -32,7 +32,7 @@ public class WebConf {
   /**
    * 默认静态资源目录
    */
-  @Value("${web.static.default.path:/public,/static}")
+  @Value("${web.static.default.path:/public,/static,classpath:/META-INF/resources/webjars}")
   private String[] defaultStaticPaths;
 
   /**
