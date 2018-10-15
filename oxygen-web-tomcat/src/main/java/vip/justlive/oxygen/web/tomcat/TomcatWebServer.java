@@ -13,6 +13,7 @@ import org.apache.coyote.http11.AbstractHttp11Protocol;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.server.WebServer;
 
@@ -33,11 +34,15 @@ public class TomcatWebServer implements WebServer {
     WebConf webConf = ConfigFactory.load(WebConf.class);
     String baseDir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
         Tomcat.class.getSimpleName()).getAbsolutePath();
-    String docBase = new File(webConf.getDocBase()).getAbsolutePath();
+    String docBase = ClassUtils.getDefaultClassLoader().getResource("").getPath();
     tomcat.setBaseDir(baseDir);
     tomcat.getHost().setAutoDeploy(false);
-    tomcat.addWebapp(webConf.getContextPath(), docBase);
+    tomcat.getHost().setAppBase(".");
+    tomcat.addWebapp(webConf.getContextPath(), ".");
     tomcat.setPort(webConf.getPort());
+
+    System.out.println("baseDir : " + baseDir);
+    System.out.println("docBase : " + docBase);
 
     TomcatConf tomcatConf = ConfigFactory.load(TomcatConf.class);
     configConnector(tomcat.getConnector(), tomcatConf);
