@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -35,13 +36,12 @@ import org.apache.tomcat.JarScanFilter;
 import org.apache.tomcat.JarScanType;
 import org.apache.tomcat.JarScanner;
 import org.apache.tomcat.JarScannerCallback;
-import org.apache.tomcat.util.ExceptionUtils;
 import org.apache.tomcat.util.buf.UriUtil;
 import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.res.StringManager;
-import org.apache.tomcat.util.scan.Constants;
 import org.apache.tomcat.util.scan.JarFactory;
 import org.apache.tomcat.util.scan.StandardJarScanFilter;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * fat-jar scanner
@@ -60,7 +60,7 @@ public class FatJarScanner implements JarScanner {
   /**
    * The string resources for this package.
    */
-  private static final StringManager sm = StringManager.getManager(Constants.Package);
+  private static final StringManager SM = StringManager.getManager("org.apache.tomcat.util.scan");
 
   private static final Set<ClassLoader> CLASSLOADER_HIERARCHY;
 
@@ -72,62 +72,8 @@ public class FatJarScanner implements JarScanner {
       cls.add(cl);
       cl = cl.getParent();
     }
-
     CLASSLOADER_HIERARCHY = Collections.unmodifiableSet(cls);
   }
-
-  /**
-   * Controls the classpath scanning extension.
-   */
-  private boolean scanClassPath = true;
-
-  public boolean isScanClassPath() {
-    return scanClassPath;
-  }
-
-  public void setScanClassPath(boolean scanClassPath) {
-    this.scanClassPath = scanClassPath;
-  }
-
-  /**
-   * Controls the JAR file Manifest scanning extension.
-   */
-  private boolean scanManifest = true;
-
-  public boolean isScanManifest() {
-    return scanManifest;
-  }
-
-  public void setScanManifest(boolean scanManifest) {
-    this.scanManifest = scanManifest;
-  }
-
-  /**
-   * Controls the testing all files to see of they are JAR files extension.
-   */
-  private boolean scanAllFiles = false;
-
-  public boolean isScanAllFiles() {
-    return scanAllFiles;
-  }
-
-  public void setScanAllFiles(boolean scanAllFiles) {
-    this.scanAllFiles = scanAllFiles;
-  }
-
-  /**
-   * Controls the testing all directories to see of they are exploded JAR files extension.
-   */
-  private boolean scanAllDirectories = true;
-
-  public boolean isScanAllDirectories() {
-    return scanAllDirectories;
-  }
-
-  public void setScanAllDirectories(boolean scanAllDirectories) {
-    this.scanAllDirectories = scanAllDirectories;
-  }
-
 
   /**
    * Controls the filtering of the results from the scan for JARs
@@ -158,39 +104,49 @@ public class FatJarScanner implements JarScanner {
       JarScannerCallback callback) {
 
     if (log.isTraceEnabled()) {
-      log.trace(sm.getString("jarScan.webinflibStart"));
+      log.trace(SM.getString("jarScan.webinflibStart"));
     }
 
     Set<URL> processedURLs = new HashSet<>();
-
     // Scan WEB-INF/lib
+    doScanWebInfLib(scanType, context, callback, processedURLs);
+    // Scan WEB-INF/classes
+    doScanWebInf(context, callback, processedURLs);
+    // Scan the classpath
+    doScanClassPath(scanType, context, callback, processedURLs);
+  }
+
+  private void doScanWebInfLib(JarScanType scanType, ServletContext context,
+      JarScannerCallback callback, Set<URL> processedURLs) {
     Set<String> dirList = context.getResourcePaths(Constants.WEB_INF_LIB);
-    if (dirList != null) {
-      for (String path : dirList) {
-        if (path.endsWith(Constants.JAR_EXT) &&
-            getJarScanFilter().check(scanType,
-                path.substring(path.lastIndexOf('/') + 1))) {
-          // Need to scan this JAR
-          if (log.isDebugEnabled()) {
-            log.debug(sm.getString("jarScan.webinflibJarScan", path));
-          }
-          URL url = null;
-          try {
-            url = context.getResource(path);
-            processedURLs.add(url);
-            process(scanType, callback, url, path, true, null);
-          } catch (IOException e) {
-            log.warn(sm.getString("jarScan.webinflibFail", url), e);
-          }
-        } else {
-          if (log.isTraceEnabled()) {
-            log.trace(sm.getString("jarScan.webinflibJarNoScan", path));
-          }
+    if (dirList == null) {
+      return;
+    }
+    for (String path : dirList) {
+      if (path.endsWith(Constants.JAR_EXT) && getJarScanFilter()
+          .check(scanType, path.substring(path.lastIndexOf(Constants.ROOT_PATH) + 1))) {
+        // Need to scan this JAR
+        if (log.isDebugEnabled()) {
+          log.debug(SM.getString("jarScan.webinflibJarScan", path));
+        }
+        URL url = null;
+        try {
+          url = context.getResource(path);
+          processedURLs.add(url);
+          process(scanType, callback, url, path, true, null);
+        } catch (IOException e) {
+          log.warn(SM.getString("jarScan.webinflibFail", url), e);
+        }
+      } else {
+        if (log.isTraceEnabled()) {
+          log.trace(SM.getString("jarScan.webinflibJarNoScan", path));
         }
       }
     }
+  }
 
-    // Scan WEB-INF/classes
+  private void doScanWebInf(ServletContext context, JarScannerCallback callback,
+      Set<URL> processedURLs) {
     try {
       URL webInfURL = context.getResource(Constants.WEB_INF_CLASSES);
       if (webInfURL != null) {
@@ -199,32 +155,20 @@ public class FatJarScanner implements JarScanner {
         // scanning below does not re-scan this location.
         processedURLs.add(webInfURL);
 
-        if (isScanAllDirectories()) {
-          URL url = context.getResource(Constants.WEB_INF_CLASSES + "/META-INF");
-          if (url != null) {
-            try {
-              callback.scanWebInfClasses();
-            } catch (IOException e) {
-              log.warn(sm.getString("jarScan.webinfclassesFail"), e);
-            }
-          }
+        URL url = context.getResource(Constants.WEB_INF_CLASSES + Constants.META_INF_PATH);
+        if (url != null) {
+          callback.scanWebInfClasses();
         }
       }
-    } catch (MalformedURLException e) {
-      // Ignore. Won't happen. URLs are of the correct form.
-    }
-
-    // Scan the classpath
-    if (isScanClassPath()) {
-      doScanClassPath(scanType, context, callback, processedURLs);
+    } catch (IOException e) {
+      log.warn(SM.getString("jarScan.webinfclassesFail"), e);
     }
   }
 
-
-  protected void doScanClassPath(JarScanType scanType, ServletContext context,
+  private void doScanClassPath(JarScanType scanType, ServletContext context,
       JarScannerCallback callback, Set<URL> processedURLs) {
     if (log.isTraceEnabled()) {
-      log.trace(sm.getString("jarScan.classloaderStart"));
+      log.trace(SM.getString("jarScan.classloaderStart"));
     }
     ClassLoader classLoader = context.getClassLoader();
 
@@ -269,7 +213,7 @@ public class FatJarScanner implements JarScanner {
   }
 
 
-  protected void processURLs(JarScanType scanType, JarScannerCallback callback,
+  private void processURLs(JarScanType scanType, JarScannerCallback callback,
       Set<URL> processedURLs, boolean isWebapp, Deque<URL> classPathUrlsToProcess) {
     while (!classPathUrlsToProcess.isEmpty()) {
       URL url = classPathUrlsToProcess.pop();
@@ -278,30 +222,14 @@ public class FatJarScanner implements JarScanner {
         // Skip this URL it has already been processed
         continue;
       }
-
-      ClassPathEntry cpe = new ClassPathEntry(url);
-
-      // JARs are scanned unless the filter says not to.
-      // Directories are scanned for pluggability scans or
-      // if scanAllDirectories is enabled unless the
-      // filter says not to.
-      boolean b = (cpe.jar || scanType == JarScanType.PLUGGABILITY || isScanAllDirectories())
-          && getJarScanFilter().check(scanType, cpe.name);
-      if (b) {
-        if (log.isDebugEnabled()) {
-          log.debug(sm.getString("jarScan.classloaderJarScan", url));
-        }
-        try {
-          processedURLs.add(url);
-          process(scanType, callback, url, null, isWebapp, classPathUrlsToProcess);
-        } catch (IOException ioe) {
-          log.warn(sm.getString("jarScan.classloaderFail", url), ioe);
-        }
-      } else {
-        // JAR / directory has been skipped
-        if (log.isTraceEnabled()) {
-          log.trace(sm.getString("jarScan.classloaderJarNoScan", url));
-        }
+      if (log.isDebugEnabled()) {
+        log.debug(SM.getString("jarScan.classloaderJarScan", url));
+      }
+      try {
+        processedURLs.add(url);
+        process(scanType, callback, url, null, isWebapp, classPathUrlsToProcess);
+      } catch (IOException ioe) {
+        log.warn(SM.getString("jarScan.classloaderFail", url), ioe);
       }
     }
   }
@@ -320,7 +248,7 @@ public class FatJarScanner implements JarScanner {
       try {
         classPathUrlsToProcess.add(f.toURI().toURL());
       } catch (MalformedURLException e) {
-        log.warn(sm.getString("jarScan.classPath.badEntry", classPathEntry), e);
+        log.warn(SM.getString("jarScan.classPath.badEntry", classPathEntry), e);
       }
     }
   }
@@ -349,122 +277,89 @@ public class FatJarScanner implements JarScanner {
       throws IOException {
 
     if (log.isTraceEnabled()) {
-      log.trace(sm.getString("jarScan.jarUrlStart", url));
+      log.trace(SM.getString("jarScan.jarUrlStart", url));
     }
 
-    if ("jar".equals(url.getProtocol()) || url.getPath().endsWith(Constants.JAR_EXT)) {
+    if (Constants.URL_PROTOCOL_JAR.equals(url.getProtocol()) || url.getPath()
+        .endsWith(Constants.JAR_EXT)) {
       try (Jar jar = JarFactory.newInstance(url)) {
-        if (isScanManifest()) {
-          processManifest(jar, isWebapp, classPathUrlsToProcess);
-        }
+        processManifest(jar, isWebapp, classPathUrlsToProcess);
         callback.scan(jar, webappPath, isWebapp);
       }
-    } else if ("file".equals(url.getProtocol())) {
-      File f;
-      try {
-        f = new File(url.toURI());
-        if (f.isFile() && isScanAllFiles()) {
-          // Treat this file as a JAR
-          URL jarURL = UriUtil.buildJarUrl(f);
-          try (Jar jar = JarFactory.newInstance(jarURL)) {
-            if (isScanManifest()) {
-              processManifest(jar, isWebapp, classPathUrlsToProcess);
-            }
-            callback.scan(jar, webappPath, isWebapp);
-          }
-        } else if (f.isDirectory()) {
-          if (scanType == JarScanType.PLUGGABILITY) {
+    } else if (Constants.URL_PROTOCOL_FILE.equals(url.getProtocol())) {
+      processFile(scanType, callback, url, webappPath, isWebapp, classPathUrlsToProcess);
+    }
+  }
+
+  private void processFile(JarScanType scanType, JarScannerCallback callback,
+      URL url, String webappPath, boolean isWebapp, Deque<URL> classPathUrlsToProcess)
+      throws IOException {
+    try {
+      File f = new File(url.toURI());
+      if (f.isFile()) {
+        // Treat this file as a JAR
+        try (Jar jar = JarFactory.newInstance(UriUtil.buildJarUrl(f))) {
+          processManifest(jar, isWebapp, classPathUrlsToProcess);
+          callback.scan(jar, webappPath, isWebapp);
+        }
+      } else if (f.isDirectory()) {
+        if (scanType == JarScanType.PLUGGABILITY) {
+          callback.scan(f, webappPath, isWebapp);
+        } else {
+          if (new File(f.getAbsoluteFile(), Constants.META_INF).isDirectory()) {
             callback.scan(f, webappPath, isWebapp);
-          } else {
-            File metainf = new File(f.getAbsoluteFile() + File.separator + "META-INF");
-            if (metainf.isDirectory()) {
-              callback.scan(f, webappPath, isWebapp);
-            }
           }
         }
-      } catch (Throwable t) {
-        ExceptionUtils.handleThrowable(t);
-        // Wrap the exception and re-throw
-        IOException ioe = new IOException();
-        ioe.initCause(t);
-        throw ioe;
       }
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
     }
   }
 
 
-  private void processManifest(Jar jar, boolean isWebapp,
-      Deque<URL> classPathUrlsToProcess) throws IOException {
+  private void processManifest(Jar jar, boolean isWebapp, Deque<URL> classPathUrlsToProcess)
+      throws IOException {
 
-    // Not processed for web application JARs nor if the caller did not
-    // provide a Deque of URLs to append to.
+    // Not processed for web application JARs nor if the caller did not provide a Deque of URLs to append to.
     if (isWebapp || classPathUrlsToProcess == null) {
       return;
     }
 
     Manifest manifest = jar.getManifest();
-    if (manifest != null) {
-      Attributes attributes = manifest.getMainAttributes();
-      String classPathAttribute = attributes.getValue("Class-Path");
-      if (classPathAttribute == null) {
-        return;
+    if (manifest == null) {
+      return;
+    }
+    Attributes attributes = manifest.getMainAttributes();
+    String classPathAttribute = attributes.getValue("Class-Path");
+    if (classPathAttribute == null) {
+      return;
+    }
+    String[] classPathEntries = classPathAttribute.split(" ");
+    for (String classPathEntry : classPathEntries) {
+      classPathEntry = classPathEntry.trim();
+      if (classPathEntry.length() == 0) {
+        continue;
       }
-      String[] classPathEntries = classPathAttribute.split(" ");
-      for (String classPathEntry : classPathEntries) {
-        classPathEntry = classPathEntry.trim();
-        if (classPathEntry.length() == 0) {
-          continue;
+      URL jarURL = jar.getJarFileURL();
+      try {
+        /*
+         * Note: Resolving the relative URLs from the manifest has the
+         *       potential to introduce security concerns. However, since
+         *       only JARs provided by the container and NOT those provided
+         *       by web applications are processed, there should be no
+         *       issues.
+         *       If this feature is ever extended to include JARs provided
+         *       by web applications, checks should be added to ensure that
+         *       any relative URL does not step outside the web application.
+         */
+        URI classPathEntryURI = jar.getJarFileURL().toURI().resolve(classPathEntry);
+        classPathUrlsToProcess.add(classPathEntryURI.toURL());
+      } catch (Exception e) {
+        if (log.isDebugEnabled()) {
+          log.debug(SM.getString("jarScan.invalidUri", jarURL), e);
         }
-        URL jarURL = jar.getJarFileURL();
-        URL classPathEntryURL;
-        try {
-          URI jarURI = jarURL.toURI();
-          /*
-           * Note: Resolving the relative URLs from the manifest has the
-           *       potential to introduce security concerns. However, since
-           *       only JARs provided by the container and NOT those provided
-           *       by web applications are processed, there should be no
-           *       issues.
-           *       If this feature is ever extended to include JARs provided
-           *       by web applications, checks should be added to ensure that
-           *       any relative URL does not step outside the web application.
-           */
-          URI classPathEntryURI = jarURI.resolve(classPathEntry);
-          classPathEntryURL = classPathEntryURI.toURL();
-        } catch (Exception e) {
-          if (log.isDebugEnabled()) {
-            log.debug(sm.getString("jarScan.invalidUri", jarURL), e);
-          }
-          continue;
-        }
-        classPathUrlsToProcess.add(classPathEntryURL);
       }
     }
   }
 
-
-  private static class ClassPathEntry {
-
-    private final boolean jar;
-    private final String name;
-
-    private ClassPathEntry(URL url) {
-      String path = url.getPath();
-      int end = path.lastIndexOf(Constants.JAR_EXT);
-      if (end != -1) {
-        jar = true;
-        int start = path.lastIndexOf('/', end);
-        name = path.substring(start + 1, end + 4);
-      } else {
-        jar = false;
-        if (path.endsWith("/")) {
-          path = path.substring(0, path.length() - 1);
-        }
-        int start = path.lastIndexOf('/');
-        name = path.substring(start + 1);
-      }
-
-    }
-
-  }
 }

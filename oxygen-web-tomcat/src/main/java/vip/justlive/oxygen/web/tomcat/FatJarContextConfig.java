@@ -47,28 +47,16 @@ public class FatJarContextConfig extends ContextConfig {
           urlString = urlString.substring(0, urlString.length() - 2);
         }
         url = new URL(urlString);
-        if ("jar".equals(url.getProtocol()) || url.toString().endsWith(".jar")) {
-          try (Jar jar = JarFactory.newInstance(url)) {
-            jar.nextEntry();
-            String entryName = jar.getEntryName();
-            while (entryName != null) {
-              if (entryName.startsWith("META-INF/resources/")) {
-                context.getResources()
-                    .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, "/", url,
-                        "/META-INF/resources");
-                break;
-              }
-              jar.nextEntry();
-              entryName = jar.getEntryName();
-            }
-          }
-        } else if ("file".equals(url.getProtocol())) {
+        if (Constants.URL_PROTOCOL_JAR.equals(url.getProtocol()) || url.toString()
+            .endsWith(Constants.JAR_EXT)) {
+          processJar(url);
+        } else if (Constants.URL_PROTOCOL_FILE.equals(url.getProtocol())) {
           File file = new File(url.toURI());
-          File resources = new File(file, "META-INF/resources/");
+          File resources = new File(file, Constants.META_INF_RESOURCES);
           if (resources.isDirectory()) {
-            context.getResources().createWebResourceSet(
-                WebResourceRoot.ResourceSetType.RESOURCE_JAR,
-                "/", resources.getAbsolutePath(), null, "/");
+            context.getResources()
+                .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR,
+                    Constants.ROOT_PATH, resources.getAbsolutePath(), null, Constants.ROOT_PATH);
           }
         }
       } catch (IOException | URISyntaxException e) {
@@ -77,4 +65,20 @@ public class FatJarContextConfig extends ContextConfig {
     }
   }
 
+  private void processJar(URL url) throws IOException {
+    try (Jar jar = JarFactory.newInstance(url)) {
+      jar.nextEntry();
+      String entryName = jar.getEntryName();
+      while (entryName != null) {
+        if (entryName.startsWith(Constants.META_INF_RESOURCES)) {
+          context.getResources()
+              .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR,
+                  Constants.ROOT_PATH, url, Constants.META_INF_RESOURCES_PATH);
+          break;
+        }
+        jar.nextEntry();
+        entryName = jar.getEntryName();
+      }
+    }
+  }
 }
