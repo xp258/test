@@ -66,4 +66,16 @@ public class WebConf {
   @Value("${web.view.jsp.prefix:/WEB-INF/}")
   private String jspPrefix;
 
+  /**
+   * thymeleaf 路径前缀
+   */
+  @Value("${web.view.thymeleaf.prefix:/templates}")
+  private String thymeleafPrefix;
+
+  /**
+   * view cache
+   */
+  @Value("${web.view.cache.enabled:true}")
+  private boolean viewCacheEnabled;
+
 }
