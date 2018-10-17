@@ -62,7 +62,12 @@ public class DefaultErrorHandler implements ErrorHandler {
       if (errorPage == null || errorPage.length() == 0) {
         response.sendError(errorCode);
       } else {
-        request.getRequestDispatcher(errorPage).forward(request, response);
+        String redirectUrl = errorPage;
+        if (!redirectUrl.startsWith(Constants.HTTP_PREFIX) && !redirectUrl
+            .startsWith(Constants.HTTPS_PREFIX)) {
+          redirectUrl = request.getContextPath() + errorPage;
+        }
+        response.sendRedirect(redirectUrl);
       }
     } catch (Exception e) {
       // nothing to do

@@ -36,7 +36,7 @@ public interface Strategy {
   /**
    * 是否需要
    *
-   * @return
+   * @return true需要
    */
   boolean isRequired();
 
