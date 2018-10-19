@@ -68,6 +68,8 @@ public class JdbcTest {
     Record.delete(new Option());
     Jdbc.rollbackTx();
 
+    Jdbc.closeTx();
+
     list = Record.find(new Option());
     Assert.assertEquals(1, list.size());
 

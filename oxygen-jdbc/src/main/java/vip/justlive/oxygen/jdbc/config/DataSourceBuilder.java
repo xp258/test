@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.jdbc.config;
 
 import javax.sql.DataSource;
-import vip.justlive.oxygen.jdbc.config.DataSourceConf.TYPE;
 
 /**
  * dataSource构造器
@@ -33,7 +32,7 @@ public class DataSourceBuilder {
    * @return DataSource
    */
   public static DataSource build(DataSourceConf conf) {
-    if (TYPE.HIKARI.name().equalsIgnoreCase(conf.getUrl()) && HikariBuilder.isEnabled()) {
+    if (HikariBuilder.isEnabled(conf)) {
       return HikariBuilder.build(conf);
     }
     return new SimpleDataSource(conf);
@@ -47,7 +46,7 @@ public class DataSourceBuilder {
    * @return DataSource
    */
   public static DataSource build(DataSourceConf conf, String name) {
-    if (TYPE.HIKARI.name().equalsIgnoreCase(conf.getUrl()) && HikariBuilder.isEnabled()) {
+    if (HikariBuilder.isEnabled(conf)) {
       return HikariBuilder.build(conf, name);
     }
     return new SimpleDataSource(conf);

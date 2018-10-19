@@ -18,6 +18,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.jdbc.config.DataSourceConf.TYPE;
 
 /**
  * Hikari数据源构造
@@ -36,8 +37,9 @@ public class HikariBuilder {
    *
    * @return true为可用
    */
-  public static boolean isEnabled() {
-    return ENABLED;
+  public static boolean isEnabled(DataSourceConf conf) {
+    return ENABLED && (conf.getType() == null || conf.getType().length() == 0 || TYPE.HIKARI.name()
+        .equalsIgnoreCase(conf.getType()));
   }
 
   /**
