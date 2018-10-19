@@ -16,14 +16,18 @@ package vip.justlive.oxygen.jdbc;
 import java.math.BigDecimal;
 import java.util.Date;
 import lombok.Data;
+import vip.justlive.oxygen.jdbc.record.Column;
+import vip.justlive.oxygen.jdbc.record.Table;
 
 /**
  * @author wubo
  */
 @Data
+@Table
 public class Option {
 
-  private long id;
+  @Column(pk = true)
+  private Long id;
 
   private String st;
 
@@ -38,5 +42,8 @@ public class Option {
   private BigDecimal bd;
 
   private Date dt;
+
+  @Column("lo")
+  private Long ll;
 
 }
