@@ -95,7 +95,7 @@ public final class Record {
    */
   public static <T> int count(T obj) {
     Model model = parseClass(obj.getClass());
-    StringBuilder sb = new StringBuilder(COUNT).append(model.table);
+    StringBuilder sb = new StringBuilder(COUNT).append(model.table).append(WHERE);
     List<Object> params = new LinkedList<>();
     margeWhere(model, obj, sb, params);
     return Jdbc.query(sb.toString(), INT_HANDLER, params);
