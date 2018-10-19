@@ -14,12 +14,14 @@
 package vip.justlive.oxygen.jdbc.record;
 
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.jdbc.Jdbc;
 import vip.justlive.oxygen.jdbc.JdbcException;
+import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 
 /**
  * record utils
@@ -44,6 +46,15 @@ public final class Record {
   private static final String FROM = " from ";
   private static final String WHERE = " where 1 = 1 ";
   private static final String DELETE = "delete from ";
+  private static final String COUNT = "select count(*) from ";
+
+  private static final ResultSetHandler<Integer> INT_HANDLER = rs -> {
+    try {
+      return rs.next() ? rs.getInt(1) : 0;
+    } catch (SQLException e) {
+      throw JdbcException.wrap(e);
+    }
+  };
 
   /**
    * 根据主键获取record
@@ -73,6 +84,21 @@ public final class Record {
     StringBuilder sb = new StringBuilder(model.getBaseQuery());
     margeWhere(model, obj, sb, params);
     return Jdbc.queryForList(sb.toString(), clazz, params);
+  }
+
+  /**
+   * count
+   *
+   * @param obj record
+   * @param <T> 泛型
+   * @return count
+   */
+  public static <T> int count(T obj) {
+    Model model = parseClass(obj.getClass());
+    StringBuilder sb = new StringBuilder(COUNT).append(model.table);
+    List<Object> params = new LinkedList<>();
+    margeWhere(model, obj, sb, params);
+    return Jdbc.query(sb.toString(), INT_HANDLER, params);
   }
 
   /**

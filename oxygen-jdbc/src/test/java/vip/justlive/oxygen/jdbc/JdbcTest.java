@@ -59,8 +59,7 @@ public class JdbcTest {
     option.setFl(0.2f);
     Record.insert(option);
 
-    list = Record.find(new Option());
-    Assert.assertEquals(2, list.size());
+    Assert.assertEquals(2, Record.count(new Option()));
 
     Record.deleteById(Option.class, 123);
 
@@ -70,8 +69,7 @@ public class JdbcTest {
 
     Jdbc.closeTx();
 
-    list = Record.find(new Option());
-    Assert.assertEquals(1, list.size());
+    Assert.assertEquals(1, Record.count(new Option()));
 
   }
 
