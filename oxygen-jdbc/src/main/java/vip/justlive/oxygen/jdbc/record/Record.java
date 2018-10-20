@@ -78,6 +78,7 @@ public final class Record {
    * @return list
    */
   public static <T> List<T> find(T obj) {
+    @SuppressWarnings("unchecked")
     Class<T> clazz = (Class<T>) obj.getClass();
     Model model = parseClass(clazz);
     List<Object> params = new LinkedList<>();
