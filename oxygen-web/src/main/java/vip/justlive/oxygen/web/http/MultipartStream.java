@@ -14,15 +14,22 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 
 /**
  * multipart 流解析
@@ -138,16 +145,25 @@ class MultipartStream {
   }
 
   private void readFile(byte[] line, MultipartItem item) throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    Path path = createPath();
+    item.setPath(path);
     while (true) {
-      out.write(line);
+      Files.write(path, line, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
       line = readLine();
       if (Arrays.equals(line, boundary) || Arrays.equals(line, endOfBoundary)) {
         break;
       }
-      out.write(LINE_SEPARATOR);
+      Files.write(path, LINE_SEPARATOR, StandardOpenOption.APPEND);
     }
-    item.setBody(out.toByteArray());
+  }
+
+  private Path createPath() {
+    File dir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
+        MultipartItem.class.getSimpleName());
+    if (!dir.exists() && !dir.mkdirs()) {
+      throw new IllegalArgumentException("cannot make directory for " + dir.getAbsolutePath());
+    }
+    return new File(dir, String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
   }
 
   class WrapByteArrayOutputStream extends ByteArrayOutputStream {
