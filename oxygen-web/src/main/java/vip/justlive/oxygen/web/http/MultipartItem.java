@@ -15,6 +15,7 @@ package vip.justlive.oxygen.web.http;
 
 import java.nio.charset.Charset;
 import lombok.Data;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * multipart item
@@ -28,7 +29,17 @@ public class MultipartItem {
   private Charset charset;
   private String name;
   private String filename;
+  private String extension = Constants.EMPTY;
   private String contentType;
   private byte[] body;
 
+  public void setFilename(String filename) {
+    this.filename = filename;
+    if (filename != null) {
+      int index = filename.lastIndexOf(Constants.DOT);
+      if (index > -1) {
+        this.extension = filename.substring(index + 1);
+      }
+    }
+  }
 }

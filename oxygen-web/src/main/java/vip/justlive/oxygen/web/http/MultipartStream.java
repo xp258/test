@@ -36,6 +36,7 @@ class MultipartStream {
 
   private final InputStream inputStream;
   private final byte[] boundary;
+  private final byte[] endOfBoundary;
   private final Charset charset;
   Map<String, String> formData;
   List<MultipartItem> items = new LinkedList<>();
@@ -48,6 +49,8 @@ class MultipartStream {
     current.write(STREAM_TERMINATOR);
     current.write(boundary);
     this.boundary = current.toByteArray();
+    current.write(STREAM_TERMINATOR);
+    this.endOfBoundary = current.toByteArray();
     current.reset();
     formData = new HashMap<>(4);
   }
@@ -81,7 +84,7 @@ class MultipartStream {
       item.setName(disposition[1]);
       item.setFilename(disposition[2]);
       item.setCharset(charset);
-      item.setBody(line);
+      readFile(line, item);
       items.add(item);
     }
     readMultipartItem();
@@ -132,6 +135,19 @@ class MultipartStream {
         current.write(read);
       }
     }
+  }
+
+  private void readFile(byte[] line, MultipartItem item) throws IOException {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    while (true) {
+      out.write(line);
+      line = readLine();
+      if (Arrays.equals(line, boundary) || Arrays.equals(line, endOfBoundary)) {
+        break;
+      }
+      out.write(LINE_SEPARATOR);
+    }
+    item.setBody(out.toByteArray());
   }
 
   class WrapByteArrayOutputStream extends ByteArrayOutputStream {
