@@ -16,7 +16,7 @@ package vip.justlive.oxygen.core.util.retry;
 /**
  * 终止策略
  *
- * @param <T> T 泛型
+ * @param <T> 泛型
  * @author wubo
  */
 public interface StopStrategy<T> {
@@ -28,4 +28,25 @@ public interface StopStrategy<T> {
    * @return true终止
    */
   boolean check(Attempt<T> attempt);
+
+  /**
+   * never stop
+   *
+   * @param <T> 泛型
+   * @return NoStopStrategy
+   */
+  static <T> StopStrategy<T> neverStop() {
+    return new NoStopStrategy<>();
+  }
+
+  /**
+   * 最大尝试次数终止器
+   *
+   * @param maxAttempt 最大尝试次数
+   * @param <T> 泛型
+   * @return MaxAttemptStopStrategy
+   */
+  static <T> StopStrategy<T> maxAttemptStopStrategy(long maxAttempt) {
+    return new MaxAttemptStopStrategy<>(maxAttempt);
+  }
 }

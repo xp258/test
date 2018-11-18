@@ -18,6 +18,7 @@ import lombok.Data;
 /**
  * 尝试
  *
+ * @param <T> 泛型
  * @author wubo
  */
 @Data
