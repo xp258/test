@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
@@ -27,18 +28,25 @@ import vip.justlive.oxygen.core.util.ThreadUtils;
  */
 public class RetryBuilder<T> {
 
-  private RetryBuilder() {
-  }
+  private static final long DEAULT_MAX_ATTEMPT = 3;
 
   /**
    * 等待时间
    */
   private long waitTime = 0;
+  /**
+   * 使用sleep还是wait
+   */
+  private boolean sleepOrWait = true;
+  private Predicate<Attempt<T>> retryPredicate = attempt -> false;
   private List<StopStrategy<T>> stopStrategies = new LinkedList<>();
   /**
    * 超时限制器
    */
   private TimeLimiter<T> timeLimiter;
+
+  private RetryBuilder() {
+  }
 
   /**
    * 创建构造器
@@ -56,7 +64,7 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> withMaxAttempt(long maxAttempt) {
-    this.stopStrategies.add(StopStrategy.maxAttemptStopStrategy(maxAttempt));
+    this.stopStrategies.add(new MaxAttemptStopStrategy<>(maxAttempt));
     return this;
   }
 
@@ -101,13 +109,79 @@ public class RetryBuilder<T> {
   }
 
   /**
+   * 使用sleep进行阻塞
+   *
+   * @return builder
+   */
+  public RetryBuilder<T> withSleepBlock() {
+    this.sleepOrWait = true;
+    return this;
+  }
+
+  /**
+   * 使用wait进行阻塞
+   *
+   * @return builder
+   */
+  public RetryBuilder<T> withWaitBlock() {
+    this.sleepOrWait = false;
+    return this;
+  }
+
+  /**
+   * 发生异常重试
+   *
+   * @return builder
+   */
+  public RetryBuilder<T> retryIfException() {
+    return retryIf(Attempt::hasException);
+  }
+
+  /**
+   * 发生指定异常进行重试
+   *
+   * @param exceptionClass 异常类型
+   * @return builder
+   */
+  public RetryBuilder<T> retryIfException(Class<? extends Exception> exceptionClass) {
+    return retryIf(attempt -> attempt.hasException() && exceptionClass
+        .isAssignableFrom(attempt.getException().getClass()));
+  }
+
+  /**
+   * 判断结果是否重试
+   *
+   * @param resultPredicate 结果判断
+   * @return builder
+   */
+  public RetryBuilder<T> retryIfResult(Predicate<T> resultPredicate) {
+    return retryIf(attempt -> !attempt.hasException() && resultPredicate.test(attempt.getResult()));
+  }
+
+  /**
+   * 判断是否重试
+   *
+   * @param predicate 判断
+   * @return builder
+   */
+  public RetryBuilder<T> retryIf(Predicate<Attempt<T>> predicate) {
+    this.retryPredicate = this.retryPredicate.or(predicate);
+    return this;
+  }
+
+  /**
    * 构造同步重试器
    *
    * @return Retryer
    */
   public Retryer<T> build() {
-
-    return new Retryer<>(stopStrategies, waitTime, timeLimiter);
+    if (timeLimiter == null) {
+      timeLimiter = TimeLimiter.noTimeLimit();
+    }
+    if (stopStrategies.isEmpty()) {
+      stopStrategies.add(new MaxAttemptStopStrategy<>(DEAULT_MAX_ATTEMPT));
+    }
+    return new Retryer<>(waitTime, timeLimiter, retryPredicate, stopStrategies, sleepOrWait);
   }
 
 }

@@ -35,6 +35,6 @@ public class MaxAttemptStopStrategy<T> implements StopStrategy<T> {
 
   @Override
   public boolean check(Attempt<T> attempt) {
-    return attempt.getAttemptNumber() > maxAttempt;
+    return attempt.getAttemptNumber() >= maxAttempt;
   }
 }

@@ -50,7 +50,7 @@ public class Attempt<T> {
    * @return true表示存在
    */
   public boolean hasException() {
-    return exception == null;
+    return exception != null;
   }
 
   /**
@@ -65,5 +65,16 @@ public class Attempt<T> {
     return result;
   }
 
+  public Attempt(long attemptNumber, T result, long millsAfterFirstAttempt) {
+    this.attemptNumber = attemptNumber;
+    this.result = result;
+    this.millsAfterFirstAttempt = millsAfterFirstAttempt;
+  }
+
+  public Attempt(long attemptNumber, Exception exception, long millsAfterFirstAttempt) {
+    this.attemptNumber = attemptNumber;
+    this.exception = exception;
+    this.millsAfterFirstAttempt = millsAfterFirstAttempt;
+  }
 
 }
