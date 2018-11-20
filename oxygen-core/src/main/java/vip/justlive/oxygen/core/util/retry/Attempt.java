@@ -13,7 +13,7 @@
  */
 package vip.justlive.oxygen.core.util.retry;
 
-import lombok.Data;
+import lombok.Getter;
 
 /**
  * 尝试
@@ -21,7 +21,7 @@ import lombok.Data;
  * @param <T> 泛型
  * @author wubo
  */
-@Data
+@Getter
 public class Attempt<T> {
 
   /**

@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.util.retry;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -25,66 +26,83 @@ import java.util.function.Predicate;
  */
 public class Retryer<T> {
 
-  private final long waitTime;
-  private final TimeLimiter<T> timeLimiter;
-  private final Predicate<Attempt<T>> retryPredicate;
-  private final List<StopStrategy<T>> stopStrategies;
-  private final boolean sleepOrWait;
+  protected final TimeLimiter<T> timeLimiter;
+  /**
+   * 重试判断
+   */
+  protected final Predicate<Attempt<T>> retryPredicate;
+  /**
+   * 终止判断
+   */
+  protected final Predicate<Attempt<T>> stopPredicate;
+  /**
+   * 阻塞策略
+   */
+  protected final Consumer<Attempt<T>> blockConsumer;
+  /**
+   * 重试监听
+   */
+  protected final List<Consumer<Attempt<T>>> retryListeners;
+  /**
+   * 失败监听
+   */
+  protected final List<Consumer<Attempt<T>>> failListeners;
+  /**
+   * 成功监听
+   */
+  protected final List<Consumer<Attempt<T>>> successListeners;
 
-  Retryer(long waitTime, TimeLimiter<T> timeLimiter, Predicate<Attempt<T>> retryPredicate,
-      List<StopStrategy<T>> stopStrategies,
-      boolean sleepOrWait) {
-    this.waitTime = waitTime;
+  Retryer(TimeLimiter<T> timeLimiter, Predicate<Attempt<T>> retryPredicate,
+      Predicate<Attempt<T>> stopPredicate, Consumer<Attempt<T>> blockConsumer,
+      List<Consumer<Attempt<T>>> retryListeners, List<Consumer<Attempt<T>>> failListeners,
+      List<Consumer<Attempt<T>>> successListeners) {
     this.timeLimiter = timeLimiter;
     this.retryPredicate = retryPredicate;
-    this.stopStrategies = stopStrategies;
-    this.sleepOrWait = sleepOrWait;
+    this.stopPredicate = stopPredicate;
+    this.blockConsumer = blockConsumer;
+    this.retryListeners = retryListeners;
+    this.failListeners = failListeners;
+    this.successListeners = successListeners;
   }
 
   /**
    * 执行
    *
-   * @param callable Callbale
+   * @param callable Callable
    * @return result
    */
   public T call(Callable<T> callable) {
     long startTime = System.currentTimeMillis();
-    long attempNums = 0;
+    long attemptNumbers = 0;
     while (true) {
-      attempNums++;
+      attemptNumbers++;
       Attempt<T> attempt;
       try {
         T value = timeLimiter.call(callable);
-        attempt = new Attempt<>(attempNums, value, System.currentTimeMillis() - startTime);
+        attempt = new Attempt<>(attemptNumbers, value, System.currentTimeMillis() - startTime);
       } catch (Exception e) {
-        attempt = new Attempt<>(attempNums, e, System.currentTimeMillis() - startTime);
+        attempt = new Attempt<>(attemptNumbers, e, System.currentTimeMillis() - startTime);
       }
-
-      if (!retryPredicate.test(attempt)) {
-        if (attempt.hasException()) {
-          throw new RetryException(attempt.getException());
+      // on retry
+      final Attempt<T> tAttempt = attempt;
+      retryListeners.forEach(listener -> listener.accept(tAttempt));
+      // should retry
+      if (!retryPredicate.test(tAttempt)) {
+        if (tAttempt.hasException()) {
+          failListeners.forEach(listener -> listener.accept(tAttempt));
+          return null;
         } else {
-          return attempt.getResult();
+          successListeners.forEach(listener -> listener.accept(tAttempt));
+          return tAttempt.getResult();
         }
       }
-
-      for (StopStrategy<T> stopStrategy : stopStrategies) {
-        if (stopStrategy.check(attempt)) {
-          throw new RetryException(attempt.getException());
-        }
+      // should stop
+      if (stopPredicate.test(tAttempt)) {
+        failListeners.forEach(listener -> listener.accept(tAttempt));
+        return null;
       }
-
-      try {
-        if (sleepOrWait) {
-          Thread.sleep(waitTime);
-        } else {
-          synchronized (this) {
-            this.wait(waitTime);
-          }
-        }
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
+      // block
+      blockConsumer.accept(tAttempt);
     }
   }
 
