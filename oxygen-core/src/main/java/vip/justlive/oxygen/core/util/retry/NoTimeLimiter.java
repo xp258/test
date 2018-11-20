@@ -16,6 +16,8 @@ package vip.justlive.oxygen.core.util.retry;
 import java.util.concurrent.Callable;
 
 /**
+ * 无超时限制
+ *
  * @author wubo
  */
 public class NoTimeLimiter<V> implements TimeLimiter<V> {
