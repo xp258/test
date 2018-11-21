@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.jdbc.record.Record;
 
 /**
  * @author wubo
@@ -47,5 +49,25 @@ public class BatchTest {
     batch1.commit();
     map = Jdbc.queryForMapList("select * from system");
     Assert.assertEquals(4, map.size());
+
+    List<System> list = new ArrayList<>();
+    System system = new System();
+    system.setValue(1);
+    list.add(system);
+    system = new System();
+    system.setValue(2);
+    list.add(system);
+    system = new System();
+    system.setKey(3);
+    list.add(system);
+    system = new System();
+    system.setKey(3);
+    system.setValue(4);
+    list.add(system);
+
+    Record.insertBatch(list);
+    map = Jdbc.queryForMapList("select * from system");
+    Assert.assertEquals(8, map.size());
   }
+
 }
