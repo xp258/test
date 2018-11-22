@@ -34,15 +34,15 @@ import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
  */
 public class Jdbc {
 
-  Jdbc() {
-  }
-
   static final String TEMPLATE = "datasource.%s";
   static final String PRIMARY_KEY = Jdbc.class.getSimpleName();
   static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
   static final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal
       .withInitial(ConcurrentHashMap::new);
+
+  Jdbc() {
+  }
 
   /**
    * 添加主数据源
@@ -692,8 +692,7 @@ public class Jdbc {
     return rows;
   }
 
-  private static void fillStatement(PreparedStatement stmt, List<Object> params)
-      throws SQLException {
+  static void fillStatement(PreparedStatement stmt, List<Object> params) throws SQLException {
     if (params != null && !params.isEmpty()) {
       for (int i = 0, len = params.size(); i < len; i++) {
         stmt.setObject(i + 1, params.get(i));
