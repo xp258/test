@@ -36,18 +36,12 @@ public class BatchTest {
 
   @Test
   public void test() {
-    Batch batch = Batch.use();
-    batch.addBatch("insert into system (key, value) values (?,?)", 1, 3);
-    batch.addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4));
-    batch.commit();
-    List<Map<String, Object>> map = Jdbc.queryForMapList("select * from system");
-    Assert.assertEquals(2, map.size());
+    Batch.use().addBatch("insert into system (key, value) values (?,?)", 1, 3)
+        .addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
+        .addBatch("insert into system (key,value) values(1,2)")
+        .addBatch("insert into system (key,value) values(2,2)").commit();
 
-    Batch batch1 = Batch.use();
-    batch1.addBatch("insert into system (key,value) values(1,2)");
-    batch1.addBatch("insert into system (key,value) values(2,2)");
-    batch1.commit();
-    map = Jdbc.queryForMapList("select * from system");
+    List<Map<String, Object>> map = Jdbc.queryForMapList("select * from system");
     Assert.assertEquals(4, map.size());
 
     List<System> list = new ArrayList<>();

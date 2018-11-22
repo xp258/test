@@ -58,11 +58,6 @@ public class Batch {
   public static Batch use(String dataSourceName) {
     Batch batch = new Batch(dataSourceName);
     Jdbc.startTx(dataSourceName);
-    try {
-      batch.statement = Jdbc.getConnection(dataSourceName).createStatement();
-    } catch (SQLException e) {
-      throw JdbcException.wrap(e);
-    }
     return batch;
   }
 
@@ -70,13 +65,15 @@ public class Batch {
    * 添加sql
    *
    * @param sql sql
+   * @return batch
    */
-  public void addBatch(String sql) {
+  public Batch addBatch(String sql) {
     try {
       if (statement == null) {
         statement = Jdbc.getConnection(dataSourceName).createStatement();
       }
       statement.addBatch(sql);
+      return this;
     } catch (SQLException e) {
       throw JdbcException.wrap(e);
     }
@@ -118,8 +115,6 @@ public class Batch {
 
   /**
    * 提交
-   *
-   * @return rs
    */
   public void commit() {
     try {
