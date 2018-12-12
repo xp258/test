@@ -39,7 +39,7 @@ public class Lang extends AbstractResourceLoader implements Plugin {
 
   private static final Properties PROPS = new Properties();
   private static final Map<String, Properties> I18N = new HashMap<>(2);
-  private static final ThreadLocal<Locale> LOCAL = ThreadLocal.withInitial(Lang::defaultLocale);
+  private static final ThreadLocal<Locale> LOCALE = ThreadLocal.withInitial(Lang::defaultLocale);
 
   public Lang() {
     init();
@@ -84,10 +84,10 @@ public class Lang extends AbstractResourceLoader implements Plugin {
   /**
    * 设置当前线程区域
    *
-   * @param local 区域
+   * @param locale 区域
    */
-  public static void setThreadLocal(Locale local) {
-    LOCAL.set(local);
+  public static void setThreadLocal(Locale locale) {
+    LOCALE.set(locale);
   }
 
   /**
@@ -97,7 +97,7 @@ public class Lang extends AbstractResourceLoader implements Plugin {
    * @return message
    */
   public static String getMessage(String key) {
-    Locale locale = LOCAL.get();
+    Locale locale = LOCALE.get();
     if (locale == null) {
       locale = Locale.getDefault();
     }
