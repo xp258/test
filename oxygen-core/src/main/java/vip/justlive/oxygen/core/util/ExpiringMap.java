@@ -458,7 +458,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   private void runScheduleCleanPolicy() {
     if (log.isDebugEnabled()) {
-      log.debug("enter into runScheduleCleanPolicy and now is {}", System.currentTimeMillis());
+      log.debug("enter into runScheduleCleanPolicy and realSize is [{}]", this.realSize());
     }
     this.expiredClean();
   }

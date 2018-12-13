@@ -32,9 +32,9 @@ public class LangTest {
   @Test
   public void getMessage() {
     Assert.assertEquals("key_zh_CN", Lang.getMessage("i18n.k1"));
-    Lang.setThreadLocal(new Locale("en", "US"));
+    Lang.setThreadLocale(new Locale("en", "US"));
     Assert.assertEquals("key_en_US", Lang.getMessage("i18n.k1"));
-    Lang.setThreadLocal(new Locale("en"));
+    Lang.setThreadLocale(new Locale("en"));
     Assert.assertEquals("key", Lang.getMessage("i18n.k1"));
 
   }

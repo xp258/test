@@ -51,6 +51,11 @@ public class Lang extends AbstractResourceLoader implements Plugin {
     this.ignoreNotFound = true;
   }
 
+  @Override
+  public int order() {
+    return Integer.MIN_VALUE + 5;
+  }
+
   /**
    * 加载i18n文件
    *
@@ -82,13 +87,30 @@ public class Lang extends AbstractResourceLoader implements Plugin {
   }
 
   /**
+   * 当前线程区域
+   *
+   * @return 区域
+   */
+  public static Locale currentThreadLocale() {
+    return LOCALE.get();
+  }
+
+  /**
    * 设置当前线程区域
    *
    * @param locale 区域
    */
-  public static void setThreadLocal(Locale locale) {
+  public static void setThreadLocale(Locale locale) {
     LOCALE.set(locale);
   }
+
+  /**
+   * 清除当前线程区域设置
+   */
+  public static void clearThreadLocale() {
+    LOCALE.remove();
+  }
+
 
   /**
    * 根据key获取message
@@ -97,7 +119,7 @@ public class Lang extends AbstractResourceLoader implements Plugin {
    * @return message
    */
   public static String getMessage(String key) {
-    Locale locale = LOCALE.get();
+    Locale locale = currentThreadLocale();
     if (locale == null) {
       locale = Locale.getDefault();
     }

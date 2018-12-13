@@ -75,4 +75,16 @@ public class CoreConf {
    */
   @Value("${i18n.default.language:CN}")
   private String i18nDefaultCountry;
+
+  /**
+   * i18n参数key
+   */
+  @Value("${i18n.param.key:locale}")
+  private String i18nParamKey;
+
+  /**
+   * i18n Session key
+   */
+  @Value("${i18n.session.key:I18N_SESSION_LOCALE}")
+  private String i18nSessionKey;
 }
