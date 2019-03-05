@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -302,5 +303,32 @@ public class ClassUtils {
       }
     }
     return methods;
+  }
+
+  /**
+   * 获取构造参数类型
+   *
+   * @param clazz 类
+   * @param args 参数
+   * @return class[]
+   */
+  public static Class<?>[] getConstructorArgsTypes(Class<?> clazz, Object... args) {
+    for (Constructor<?> constructor : clazz.getConstructors()) {
+      if (constructor.getParameterCount() != args.length) {
+        continue;
+      }
+      Class<?>[] paramsTypes = constructor.getParameterTypes();
+      boolean matched = true;
+      for (int i = 0; i < args.length; i++) {
+        if (!paramsTypes[i].isAssignableFrom(args[i].getClass())) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) {
+        return paramsTypes;
+      }
+    }
+    return new Class<?>[args.length];
   }
 }
