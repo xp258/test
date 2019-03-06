@@ -36,7 +36,8 @@ public abstract class AbstractInterceptor implements Interceptor {
     return aopWrapper.getOrder();
   }
 
-  protected boolean doIntercept(Invocation invocation) {
+  @Override
+  public boolean intercept(Invocation invocation) {
     try {
       int count = aopWrapper.getMethod().getParameterCount();
       check(aopWrapper);

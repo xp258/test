@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.aop.interceptor;
 
+import java.lang.reflect.Method;
 import vip.justlive.oxygen.aop.Invocation;
 import vip.justlive.oxygen.core.Order;
 
@@ -24,32 +25,23 @@ import vip.justlive.oxygen.core.Order;
 public interface Interceptor extends Order {
 
   /**
-   * 前置增强
+   * 是否匹配
    *
-   * @param invocation 调用封装
-   * @return true为继续执行下一个拦截
+   * @param method 方法
+   * @return true则拦截
    */
-  default boolean before(Invocation invocation) {
-    return true;
+  default boolean match(Method method) {
+    return false;
   }
 
   /**
-   * 后置增强
+   * 拦截
    *
    * @param invocation 调用封装
    * @return true为继续执行下一个拦截
    */
-  default boolean after(Invocation invocation) {
+  default boolean intercept(Invocation invocation) {
     return true;
   }
 
-  /**
-   * 异常增强
-   *
-   * @param invocation 调用封装
-   * @return true为继续执行下一个拦截
-   */
-  default boolean catching(Invocation invocation) {
-    return true;
-  }
 }
