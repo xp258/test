@@ -1,28 +1,42 @@
 /*
- * Copyright (C) 2018 justlive1
+ *  Copyright (C) 2019 justlive1
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License
+ *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ *  or implied. See the License for the specific language governing permissions and limitations under
+ *  the License.
  */
 package vip.justlive.oxygen.ioc;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ServiceLoader;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.ValueConfig;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
+import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.ioc.annotation.Inject;
+import vip.justlive.oxygen.ioc.annotation.Named;
+import vip.justlive.oxygen.ioc.store.BeanProxy;
+import vip.justlive.oxygen.ioc.store.BeanStore;
+import vip.justlive.oxygen.ioc.store.DefaultBeanProxy;
+import vip.justlive.oxygen.ioc.store.DefaultBeanStore;
 
 /**
  * IocPlugin
@@ -36,17 +50,63 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 @Slf4j
 public class IocPlugin implements Plugin {
 
-  private static final Strategy STRATEGY = new ConstructorStrategy();
-  private static final AtomicInteger TODO_INJECT = new AtomicInteger();
+  private static final BeanStore BEAN_STORE = new DefaultBeanStore();
+  private static final BeanProxy BEAN_PROXY;
+
+  static {
+    List<BeanProxy> list = new ArrayList<>();
+    for (BeanProxy proxy : ServiceLoader.load(BeanProxy.class)) {
+      list.add(proxy);
+    }
+    if (list.isEmpty()) {
+      BEAN_PROXY = new DefaultBeanProxy();
+    } else {
+      Collections.sort(list);
+      BEAN_PROXY = list.get(0);
+    }
+  }
 
   /**
-   * 实例bean， 通过构造函数实例
+   * 获取beanStore
+   *
+   * @return beanStore
+   */
+  public static BeanStore beanStore() {
+    return BEAN_STORE;
+  }
+
+  /**
+   * 获取beanProxy
+   *
+   * @return beanProxy
+   */
+  public static BeanProxy beanProxy() {
+    return BEAN_PROXY;
+  }
+
+  /**
+   * try instance
    *
    * @param clazz 类
-   * @return 实例
+   * @param beanName name of bean
+   * @param order order of bean
+   * @return instance successful if true
    */
-  public static Object instanceBean(Class<?> clazz) {
-    return STRATEGY.instance(clazz);
+  public static boolean tryInstance(Class<?> clazz, String beanName, int order) {
+    Constructor<?> constructor = ClassUtils.getConstructorAnnotatedWith(clazz, Inject.class);
+    if (constructor != null) {
+      Object bean = dependencyInstance(clazz, constructor);
+      if (bean == null) {
+        return false;
+      }
+      ConfigFactory.load(bean);
+      BEAN_STORE.addBean(beanName, bean, order);
+      return true;
+    }
+    Object bean = BEAN_PROXY.proxy(clazz);
+    ConfigFactory.load(bean);
+    BEAN_STORE.addBean(beanName, bean, order);
+    return true;
   }
 
   @Override
@@ -56,104 +116,92 @@ public class IocPlugin implements Plugin {
 
   @Override
   public void start() {
-    scan();
     ioc();
-    merge();
+  }
+
+  private static Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
+    Parameter[] params = constructor.getParameters();
+    Object[] args = new Object[params.length];
+    for (int i = 0; i < params.length; i++) {
+      if (params[i].isAnnotationPresent(Named.class)) {
+        args[i] = BEAN_STORE.getBean(params[i].getAnnotation(Named.class).value());
+      } else {
+        args[i] = BEAN_STORE.getBean(params[i].getType());
+      }
+      if (args[i] == null) {
+        return null;
+      }
+    }
+    return BEAN_PROXY.proxy(clazz, args);
   }
 
   @Override
   public void stop() {
-    BeanStore.BEANS.clear();
-    TODO_INJECT.set(0);
+    BEAN_STORE.clean();
   }
 
-  private void scan() {
-    // Configuration
-    for (Class<?> clazz : ClassScannerPlugin.getTypesAnnotatedWith(Configuration.class)) {
-      configBeans(clazz);
-    }
-    // Bean
-    for (Class<?> clazz : ClassScannerPlugin.getTypesAnnotatedWith(Bean.class)) {
-      Bean singleton = clazz.getAnnotation(Bean.class);
-      String beanName = singleton.value();
+  private void ioc() {
+    Set<Class<?>> beanClasses = ClassScannerPlugin.getTypesAnnotatedWith(Bean.class);
+    Map<Class<?>, ClassInfo> iocMap = new HashMap<>(8);
+    for (Class<?> clazz : beanClasses) {
+      Bean bean = clazz.getAnnotation(Bean.class);
+      String beanName = bean.value();
       if (beanName.length() == 0) {
         beanName = clazz.getName();
       }
-      BeanStore.seize(clazz, beanName);
-      TODO_INJECT.incrementAndGet();
+      tryInstance(clazz, beanName, bean.order(), iocMap);
     }
-  }
-
-  private void configBeans(Class<?> clazz) {
-    Object obj;
-    try {
-      obj = clazz.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new IllegalStateException(String.format("@Configuration注解的类[%s]无法实例化", clazz), e);
-    }
-    try {
-      for (Method method : clazz.getDeclaredMethods()) {
-        if (method.isAnnotationPresent(Bean.class)) {
-          if (method.getParameterCount() > 0) {
-            throw new IllegalStateException("@Configuration下实例Bean不支持有参方式");
-          }
-          method.setAccessible(true);
-          Object bean = method.invoke(obj);
-          if (method.isAnnotationPresent(ValueConfig.class)) {
-            ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
-          } else {
-            ConfigFactory.load(bean);
-          }
-          Bean singleton = method.getAnnotation(Bean.class);
-          String name = singleton.value();
-          if (name.length() == 0) {
-            name = method.getName();
-          }
-          BeanStore.putBean(name, bean);
+    int count = iocMap.size();
+    while (count > 0) {
+      reIoc(iocMap);
+      if (count == iocMap.size()) {
+        if (log.isDebugEnabled()) {
+          log.debug("ioc失败 出现循环依赖或缺失Bean fail-ioc-map {}", iocMap);
         }
+        throw Exceptions.fail("发生循环依赖或者缺失Bean ");
       }
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      throw new IllegalStateException("@Configuration下实例方法出错", e);
+      count = iocMap.size();
     }
   }
 
-  void ioc() {
-    int pre = TODO_INJECT.get();
-    while (TODO_INJECT.get() > 0) {
-      instance();
-      int now = TODO_INJECT.get();
-      if (now > 0 && now == pre) {
-        if (!STRATEGY.isRequired()) {
-          if (log.isDebugEnabled()) {
-            log.debug("ioc失败 出现循环依赖或缺失Bean TODO_INJECT={}, beans={}", now, BeanStore.BEANS);
-          }
-          throw new IllegalStateException("发生循环依赖或者缺失Bean ");
-        } else {
-          STRATEGY.nonRequired();
-        }
+  private void reIoc(Map<Class<?>, ClassInfo> iocMap) {
+    Iterator<Entry<Class<?>, ClassInfo>> it = iocMap.entrySet().iterator();
+    while (it.hasNext()) {
+      Entry<Class<?>, ClassInfo> entry = it.next();
+      ClassInfo classInfo = entry.getValue();
+      Object bean = dependencyInstance(entry.getKey(), classInfo.constructor);
+      if (bean != null) {
+        ConfigFactory.load(bean);
+        BEAN_STORE.addBean(classInfo.name, bean, classInfo.order);
+        it.remove();
       }
-      pre = now;
     }
   }
 
-
-  private void instance() {
-    BeanStore.BEANS.forEach((clazz, value) -> value.forEach((name, v) -> {
-      if (v == BeanStore.EMPTY) {
-        Object inst = instanceBean(clazz);
-        if (inst != null) {
-          BeanStore.putBean(name, inst);
-          TODO_INJECT.decrementAndGet();
-        }
-      }
-    }));
-  }
-
-  private void merge() {
-    for (Entry<Class<?>, ConcurrentMap<String, Object>> entry : BeanStore.BEANS.entrySet()) {
-      Class<?> clazz = entry.getKey();
-      BeanStore.merge(clazz, entry.getValue().values().iterator().next());
+  private void tryInstance(Class<?> clazz, String beanName, int order,
+      Map<Class<?>, ClassInfo> iocMap) {
+    if (!tryInstance(clazz, beanName, order)) {
+      iocMap.put(clazz,
+          new ClassInfo(beanName, ClassUtils.getConstructorAnnotatedWith(clazz, Inject.class),
+              order));
     }
   }
 
+  private static class ClassInfo {
+
+    final String name;
+    final Constructor<?> constructor;
+    final int order;
+
+    ClassInfo(String name, Constructor<?> constructor, int order) {
+      this.name = name;
+      this.constructor = constructor;
+      this.order = order;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("[name=%s, %s]", name, constructor);
+    }
+  }
 }

@@ -1,15 +1,15 @@
 /*
- * Copyright (C) 2018 justlive1
+ *  Copyright (C) 2019 justlive1
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License
+ *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ *  or implied. See the License for the specific language governing permissions and limitations under
+ *  the License.
  */
 package vip.justlive.oxygen.job;
 
@@ -28,7 +28,7 @@ import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.ThreadUtils;
-import vip.justlive.oxygen.ioc.BeanStore;
+import vip.justlive.oxygen.ioc.IocPlugin;
 
 /**
  * job插件
@@ -163,7 +163,7 @@ public class JobPlugin implements Plugin {
 
   private Object getDeclaringBean(Method method) {
     Class<?> beanClass = method.getDeclaringClass();
-    Object bean = BeanStore.getBean(beanClass);
+    Object bean = IocPlugin.beanStore().getBean(beanClass);
     if (bean != null) {
       return bean;
     }

@@ -11,26 +11,26 @@
  *  or implied. See the License for the specific language governing permissions and limitations under
  *  the License.
  */
-package vip.justlive.oxygen.ioc;
+package vip.justlive.oxygen.ioc.annotation;
 
-import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * default bean proxy
+ * 自动注入
+ * <br>
+ * 默认使用类型注入
+ * <br>
+ * 只支持在构造方法上使用，便于切换IOC框架
  *
  * @author wubo
  */
-public class DefaultBeanProxy implements BeanProxy {
-
-  @Override
-  public Object proxy(Class<?> clazz, Object... args) {
-    try {
-      return clazz.getConstructor(ClassUtils.getConstructorArgsTypes(clazz, args))
-          .newInstance(args);
-    } catch (Exception e) {
-      throw Exceptions.wrap(e);
-    }
-  }
+@Target({ElementType.CONSTRUCTOR})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Inject {
 
 }

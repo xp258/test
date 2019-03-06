@@ -11,22 +11,40 @@
  *  or implied. See the License for the specific language governing permissions and limitations under
  *  the License.
  */
+package vip.justlive.oxygen.ioc.store;
 
-package vip.justlive.oxygen.ioc;
+import lombok.Getter;
+import lombok.ToString;
+import vip.justlive.oxygen.core.Order;
 
 /**
- * bean proxy
+ * bean info
  *
  * @author wubo
  */
-public interface BeanProxy {
+@Getter
+@ToString
+public class BeanInfo implements Order {
+
+  private final String name;
+  private final Object bean;
+  private final int order;
 
   /**
-   * 定义bean
+   * 构造有优先级的bean
    *
-   * @param clazz 类
-   * @param args 构造参数
-   * @return obj
+   * @param name name of bean
+   * @param bean bean instance
+   * @param order 优先级
    */
-  Object proxy(Class<?> clazz, Object... args);
+  public BeanInfo(String name, Object bean, int order) {
+    this.name = name;
+    this.bean = bean;
+    this.order = order;
+  }
+
+  @Override
+  public int order() {
+    return order;
+  }
 }
