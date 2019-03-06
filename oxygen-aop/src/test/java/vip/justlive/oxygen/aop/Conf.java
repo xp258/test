@@ -13,7 +13,10 @@
  */
 package vip.justlive.oxygen.aop;
 
+import vip.justlive.oxygen.aop.annotation.Aspect;
+import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.ioc.annotation.Inject;
 
 /**
  * @author wubo
@@ -21,29 +24,39 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
 @Bean
 public class Conf {
 
-  @Before(annotation = Log.class)
-  public void log(Invocation invocation) {
-    System.out.println("aop before log " + invocation.getMethod());
+  private final LogService logService;
+
+  @Inject
+  public Conf(LogService logService) {
+    this.logService = logService;
   }
 
-  @Before(annotation = Log.class)
+  @Aspect(annotation = Log.class, type = {TYPE.BEFORE, TYPE.AFTER, TYPE.CATCHING}, order = 1)
+  public void log() {
+    System.out.println("aop all log");
+  }
+
+  @Aspect(annotation = Log.class, type = TYPE.BEFORE)
   public boolean log1(Invocation invocation) {
     System.out.println("aop before log1 " + invocation.getMethod());
-    return false;
+    logService.log();
+    return true;
   }
 
-  @After(annotation = Log.class)
+  @Aspect(annotation = Log.class, type = TYPE.AFTER)
   public void log2(Invocation invocation) {
     System.out.println("aop after log2 " + invocation.getMethod());
+    logService.log();
   }
 
-  @Catching(annotation = Log.class)
+  @Aspect(annotation = Log.class, type = TYPE.CATCHING)
   public void log3(Invocation invocation) {
     System.out.println("aop catching log3 " + invocation.getMethod());
+    logService.log();
   }
 
   @Log
-  public void print(){
+  public void print() {
     System.out.println("print");
   }
 }

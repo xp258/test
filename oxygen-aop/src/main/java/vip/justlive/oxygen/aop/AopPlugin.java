@@ -20,11 +20,17 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import vip.justlive.oxygen.aop.annotation.Aspect;
+import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
+import vip.justlive.oxygen.aop.interceptor.AfterInterceptor;
+import vip.justlive.oxygen.aop.interceptor.BeforeInterceptor;
+import vip.justlive.oxygen.aop.interceptor.CatchingInterceptor;
+import vip.justlive.oxygen.aop.interceptor.Interceptor;
+import vip.justlive.oxygen.aop.proxy.ProxyInterceptorStore;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
 /**
@@ -34,20 +40,25 @@ import vip.justlive.oxygen.ioc.IocPlugin;
  */
 public class AopPlugin implements Plugin {
 
-  private static final Map<Class<? extends Annotation>, Map<Class<? extends Annotation>, List<AopWrapper>>> CACHE = new ConcurrentHashMap<>(
+  private static final Map<TYPE, Map<Class<? extends Annotation>, List<AopWrapper>>> CACHE = new ConcurrentHashMap<>(
       8, 0.75F);
-  private static final Map<Class<?>, Object> AOP_CACHE = new ConcurrentHashMap<>(8, 1F);
+
+  static {
+    for (TYPE type : TYPE.values()) {
+      CACHE.put(type, new HashMap<>(4));
+    }
+  }
 
   /**
    * 获取aop增强方法
    *
-   * @param annotation 注解
+   * @param type 类型
    * @param targetAnnotation 目标注解
    * @return 增强方法
    */
-  public static List<AopWrapper> getAopMethod(Class<? extends Annotation> annotation,
+  public static List<AopWrapper> getAopMethod(TYPE type,
       Class<? extends Annotation> targetAnnotation) {
-    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = CACHE.get(annotation);
+    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = CACHE.get(type);
     if (listMultimap != null) {
       return listMultimap.get(targetAnnotation);
     }
@@ -61,77 +72,78 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void start() {
-    handleBefore();
-    handleAfter();
-    handleCatching();
+    handleAspect();
+    prepareAspect();
   }
 
-  void handleBefore() {
-    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = new HashMap<>(8, 1f);
-    CACHE.put(Before.class, listMultimap);
-    Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(Before.class);
-    for (Method method : methods) {
-      Before before = method.getAnnotation(Before.class);
-      Class<? extends Annotation> annotation = before.annotation();
-      if (annotation != Annotation.class) {
-        if (!listMultimap.containsKey(annotation)) {
-          listMultimap.put(annotation, new LinkedList<>());
-        }
-        listMultimap.get(annotation)
-            .add(new AopWrapper(instance(method.getDeclaringClass()), method));
+  @Override
+  public void stop() {
+    ProxyInterceptorStore.clean();
+  }
+
+  void handleAspect() {
+    IocPlugin.beanStore().getBeans().forEach(
+        bean -> ClassUtils.getMethodsAnnotatedWith(bean.getClass(), Aspect.class)
+            .forEach(method -> handleMethod(method, bean)));
+  }
+
+  private void prepareAspect() {
+    for (Object bean : IocPlugin.beanStore().getBeans()) {
+      for (Method method : ClassUtils.getCglibActualClass(bean.getClass()).getDeclaredMethods()) {
+        handleAnnotation(method);
       }
     }
   }
 
-  void handleAfter() {
-    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = new HashMap<>(8, 1f);
-    CACHE.put(After.class, listMultimap);
-    Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(After.class);
-    for (Method method : methods) {
-      After after = method.getAnnotation(After.class);
-      Class<? extends Annotation> annotation = after.annotation();
-      if (annotation != Annotation.class) {
-        if (!listMultimap.containsKey(annotation)) {
-          listMultimap.put(annotation, new LinkedList<>());
-        }
-        listMultimap.get(annotation)
-            .add(new AopWrapper(instance(method.getDeclaringClass()), method));
-      }
+  private void handleAnnotation(Method method) {
+    Annotation[] annotations = method.getAnnotations();
+    List<Interceptor> list = new LinkedList<>();
+    for (Annotation annotation : annotations) {
+      parseBeforeInterceptor(annotation, list);
+      parseAfterInterceptor(annotation, list);
+      parseCatchingInterceptor(annotation, list);
     }
+    ProxyInterceptorStore.addInterceptors(method, list);
   }
 
-  void handleCatching() {
-    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = new HashMap<>(8, 1f);
-    CACHE.put(Catching.class, listMultimap);
-    Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(Catching.class);
-    for (Method method : methods) {
-      Catching catching = method.getAnnotation(Catching.class);
-      Class<? extends Annotation> annotation = catching.annotation();
-      if (annotation != Annotation.class) {
-        if (!listMultimap.containsKey(annotation)) {
-          listMultimap.put(annotation, new LinkedList<>());
-        }
-        listMultimap.get(annotation)
-            .add(new AopWrapper(instance(method.getDeclaringClass()), method));
-      }
+  private void parseBeforeInterceptor(Annotation annotation, List<Interceptor> list) {
+    List<AopWrapper> aopWrappers = AopPlugin.getAopMethod(TYPE.BEFORE, annotation.annotationType());
+    if (aopWrappers == null) {
+      return;
     }
+    aopWrappers.forEach(aopWrapper -> list.add(new BeforeInterceptor(aopWrapper)));
   }
 
-  private Object instance(Class<?> clazz) {
-    Object obj = IocPlugin.beanStore().getBean(clazz);
-    if (obj != null) {
-      return obj;
+  private void parseAfterInterceptor(Annotation annotation, List<Interceptor> list) {
+    List<AopWrapper> aopWrappers = AopPlugin.getAopMethod(TYPE.AFTER, annotation.annotationType());
+    if (aopWrappers == null) {
+      return;
     }
-    obj = AOP_CACHE.get(clazz);
-    if (obj != null) {
-      return obj;
+    aopWrappers.forEach(aopWrapper -> list.add(new AfterInterceptor(aopWrapper)));
+  }
+
+  private void parseCatchingInterceptor(Annotation annotation, List<Interceptor> list) {
+    List<AopWrapper> aopWrappers = AopPlugin
+        .getAopMethod(TYPE.CATCHING, annotation.annotationType());
+    if (aopWrappers == null) {
+      return;
     }
+    aopWrappers.forEach(aopWrapper -> list.add(new CatchingInterceptor(aopWrapper)));
+  }
+
+  private void handleMethod(Method method, Object bean) {
+    Aspect aspect = method.getAnnotation(Aspect.class);
+    AopWrapper wrapper;
     try {
-      obj = clazz.newInstance();
-      AOP_CACHE.putIfAbsent(clazz, obj);
-      return AOP_CACHE.get(clazz);
-    } catch (InstantiationException | IllegalAccessException e) {
+      wrapper = new AopWrapper(bean,
+          bean.getClass().getMethod(method.getName(), method.getParameterTypes()), aspect.order());
+    } catch (NoSuchMethodException e) {
       throw Exceptions.wrap(e);
     }
+    for (TYPE type : aspect.type()) {
+      CACHE.get(type).computeIfAbsent(aspect.annotation(), k -> new LinkedList<>());
+      CACHE.get(type).get(aspect.annotation()).add(wrapper);
+    }
   }
+
 }

@@ -1,28 +1,26 @@
 /*
- * Copyright (C) 2018 justlive1
+ *  Copyright (C) 2019 justlive1
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License
+ *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ *  or implied. See the License for the specific language governing permissions and limitations under
+ *  the License.
  */
-package vip.justlive.oxygen.aop;
+package vip.justlive.oxygen.aop.proxy;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import vip.justlive.oxygen.aop.Invocation;
+import vip.justlive.oxygen.aop.interceptor.Interceptor;
 import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
@@ -34,18 +32,6 @@ import vip.justlive.oxygen.core.util.ClassUtils;
 public class CglibProxy implements MethodInterceptor {
 
   private static final CglibProxy CGLIB_PROXY = new CglibProxy();
-  private static final Map<Method, List<Interceptor>> CACHE = new ConcurrentHashMap<>(16, 1);
-
-  /**
-   * 代理
-   *
-   * @param targetClass 目标
-   * @param <T> 泛型
-   * @return 代理对象
-   */
-  public static <T> T proxy(Class<T> targetClass) {
-    return targetClass.cast(Enhancer.create(targetClass, CGLIB_PROXY));
-  }
 
   /**
    * 代理
@@ -66,13 +52,10 @@ public class CglibProxy implements MethodInterceptor {
   @Override
   public Object intercept(Object obj, Method method, Object[] args, MethodProxy methodProxy)
       throws Throwable {
-    List<Interceptor> interceptors = CACHE.get(method);
+    List<Interceptor> interceptors = ProxyInterceptorStore.get(method);
     if (interceptors == null) {
-      List<Interceptor> list = new ArrayList<>();
-      parseInterceptor(method, list);
-      CACHE.putIfAbsent(method, list);
+      return methodProxy.invokeSuper(obj, args);
     }
-    interceptors = CACHE.get(method);
     Invocation invocation = new Invocation(obj, method, args);
     boolean interrupted = doBefore(interceptors, invocation);
     try {
@@ -129,37 +112,6 @@ public class CglibProxy implements MethodInterceptor {
       }
     }
     return false;
-  }
-
-  private void parseInterceptor(Method method, List<Interceptor> list) {
-    Annotation[] annotations = method.getAnnotations();
-    for (Annotation annotation : annotations) {
-      parseBeforeInterceptor(annotation, list);
-      parseAfterInterceptor(annotation, list);
-      parseCatchingInterceptor(annotation, list);
-    }
-  }
-
-  private void parseBeforeInterceptor(Annotation annotation, List<Interceptor> list) {
-    List<AopWrapper> aopWrapper = AopPlugin.getAopMethod(Before.class, annotation.annotationType());
-    if (aopWrapper != null && !aopWrapper.isEmpty()) {
-      list.add(new BeforeInterceptor(aopWrapper));
-    }
-  }
-
-  private void parseAfterInterceptor(Annotation annotation, List<Interceptor> list) {
-    List<AopWrapper> aopWrapper = AopPlugin.getAopMethod(After.class, annotation.annotationType());
-    if (aopWrapper != null && !aopWrapper.isEmpty()) {
-      list.add(new AfterInterceptor(aopWrapper));
-    }
-  }
-
-  private void parseCatchingInterceptor(Annotation annotation, List<Interceptor> list) {
-    List<AopWrapper> aopWrapper = AopPlugin
-        .getAopMethod(Catching.class, annotation.annotationType());
-    if (aopWrapper != null && !aopWrapper.isEmpty()) {
-      list.add(new CatchingInterceptor(aopWrapper));
-    }
   }
 
 }

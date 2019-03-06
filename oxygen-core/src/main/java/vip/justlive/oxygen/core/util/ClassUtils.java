@@ -57,11 +57,8 @@ public class ClassUtils {
     WRAPPER_TO_PRIMITIVE_TYPE = Collections.unmodifiableMap(wrapToPrim);
   }
 
-  private static void add(
-      Map<Class<?>, Class<?>> forward,
-      Map<Class<?>, Class<?>> backward,
-      Class<?> key,
-      Class<?> value) {
+  private static void add(Map<Class<?>, Class<?>> forward, Map<Class<?>, Class<?>> backward,
+      Class<?> key, Class<?> value) {
     forward.put(key, value);
     backward.put(value, key);
   }
@@ -297,7 +294,7 @@ public class ClassUtils {
   public static Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
-    for (Method method : clazz.getDeclaredMethods()) {
+    for (Method method : getCglibActualClass(clazz).getDeclaredMethods()) {
       if (method.isAnnotationPresent(annotation)) {
         methods.add(method);
       }

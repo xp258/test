@@ -16,9 +16,9 @@ package vip.justlive.oxygen.cache;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import vip.justlive.oxygen.aop.After;
-import vip.justlive.oxygen.aop.Before;
 import vip.justlive.oxygen.aop.Invocation;
+import vip.justlive.oxygen.aop.annotation.Aspect;
+import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.ioc.annotation.Inject;
@@ -41,7 +41,7 @@ public class CacheAspect {
     this.argsKeyGenerator = argsKeyGenerator;
   }
 
-  @Before(annotation = Cacheable.class)
+  @Aspect(annotation = Cacheable.class, type = TYPE.BEFORE)
   public boolean cacheRead(Invocation invocation) {
     Ctx ctx = parse(invocation);
     Cache cache = JCache.cache(ctx.cacheName);
@@ -53,7 +53,7 @@ public class CacheAspect {
     return true;
   }
 
-  @After(annotation = Cacheable.class)
+  @Aspect(annotation = Cacheable.class, type = TYPE.AFTER)
   public boolean cacheWrite(Invocation invocation) {
     Ctx ctx = parse(invocation);
     Object obj = JCache.cache(ctx.cacheName).get(ctx.key);

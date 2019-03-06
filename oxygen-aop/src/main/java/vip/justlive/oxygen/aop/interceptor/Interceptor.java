@@ -11,14 +11,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.aop;
+package vip.justlive.oxygen.aop.interceptor;
+
+import vip.justlive.oxygen.aop.Invocation;
+import vip.justlive.oxygen.core.Order;
 
 /**
  * 拦截接口
  *
  * @author wubo
  */
-public interface Interceptor {
+public interface Interceptor extends Order {
 
   /**
    * 前置增强

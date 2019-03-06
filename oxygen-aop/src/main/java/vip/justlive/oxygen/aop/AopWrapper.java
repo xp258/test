@@ -26,4 +26,5 @@ public class AopWrapper {
 
   private final Object target;
   private final Method method;
+  private final int order;
 }

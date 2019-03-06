@@ -16,9 +16,8 @@ package vip.justlive.oxygen.web.i18n;
 import java.util.Locale;
 import javax.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.aop.After;
-import vip.justlive.oxygen.aop.Before;
-import vip.justlive.oxygen.aop.Catching;
+import vip.justlive.oxygen.aop.annotation.Aspect;
+import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
@@ -36,7 +35,7 @@ import vip.justlive.oxygen.web.mapping.Mapping;
 @Bean
 public class I18nAop {
 
-  @Before(annotation = Mapping.class)
+  @Aspect(annotation = Mapping.class, type = TYPE.BEFORE)
   public void before() {
     Request request = Request.current();
     if (request == null) {
@@ -68,13 +67,9 @@ public class I18nAop {
     }
   }
 
-  @After(annotation = Mapping.class)
+  @Aspect(annotation = Mapping.class, type = {TYPE.AFTER, TYPE.CATCHING})
   public void after() {
     Lang.clearThreadLocale();
   }
 
-  @Catching(annotation = Mapping.class)
-  public void catching() {
-    Lang.clearThreadLocale();
-  }
 }

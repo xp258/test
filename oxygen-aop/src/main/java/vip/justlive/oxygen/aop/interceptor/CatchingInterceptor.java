@@ -11,24 +11,24 @@
  *  or implied. See the License for the specific language governing permissions and limitations under
  *  the License.
  */
-package vip.justlive.oxygen.aop;
+package vip.justlive.oxygen.aop.interceptor;
 
-import vip.justlive.oxygen.ioc.store.BeanProxy;
+import vip.justlive.oxygen.aop.AopWrapper;
+import vip.justlive.oxygen.aop.Invocation;
 
 /**
- * cglib bean proxy
+ * 异常拦截
  *
  * @author wubo
  */
-public class CglibBeanProxy implements BeanProxy {
+public class CatchingInterceptor extends AbstractInterceptor {
 
-  @Override
-  public Object proxy(Class<?> clazz, Object... args) {
-    return CglibProxy.proxy(clazz, args);
+  public CatchingInterceptor(AopWrapper aopWrapper) {
+    super(aopWrapper);
   }
 
   @Override
-  public int order() {
-    return -100;
+  public boolean catching(Invocation invocation) {
+    return doIntercept(invocation);
   }
 }
