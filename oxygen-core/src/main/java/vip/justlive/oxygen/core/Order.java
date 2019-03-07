@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core;
  * order
  *
  * @author wubo
+ * @since 2.0.0
  */
 public interface Order extends Comparable<Order> {
 

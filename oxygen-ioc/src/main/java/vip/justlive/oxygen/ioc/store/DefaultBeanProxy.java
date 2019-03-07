@@ -20,6 +20,7 @@ import vip.justlive.oxygen.core.util.ClassUtils;
  * default bean proxy
  *
  * @author wubo
+ * @since 2.0.0
  */
 public class DefaultBeanProxy implements BeanProxy {
 

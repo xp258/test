@@ -31,6 +31,7 @@ import vip.justlive.oxygen.core.util.ClassUtils;
  * proxy interceptor store
  *
  * @author wubo
+ * @since 2.0.0
  */
 @UtilityClass
 public class ProxyStore {

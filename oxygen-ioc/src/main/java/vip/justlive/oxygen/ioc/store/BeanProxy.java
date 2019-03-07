@@ -19,6 +19,7 @@ import vip.justlive.oxygen.core.Order;
  * bean proxy
  *
  * @author wubo
+ * @since 2.0.0
  */
 public interface BeanProxy extends Order {
 

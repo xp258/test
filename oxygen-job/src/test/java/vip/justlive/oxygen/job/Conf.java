@@ -14,10 +14,12 @@
 package vip.justlive.oxygen.job;
 
 import java.util.concurrent.TimeUnit;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * @author wubo
  */
+@Bean
 public class Conf {
 
   @Scheduled(fixedDelay = "500")

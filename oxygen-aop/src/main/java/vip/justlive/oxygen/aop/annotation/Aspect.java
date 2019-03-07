@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
  * aspect
  *
  * @author wubo
+ * @since 2.0.0
  */
 @Documented
 @Target(ElementType.METHOD)

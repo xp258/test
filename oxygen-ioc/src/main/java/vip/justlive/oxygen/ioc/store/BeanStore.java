@@ -22,6 +22,7 @@ import vip.justlive.oxygen.core.Order;
  * bean store
  *
  * @author wubo
+ * @since 2.0.0
  */
 public interface BeanStore extends Order {
 

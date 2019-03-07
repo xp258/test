@@ -21,6 +21,7 @@ import vip.justlive.oxygen.aop.AopWrapper;
  * aop注解拦截
  *
  * @author wubo
+ * @since 2.0.0
  */
 public class AnnotationInterceptor extends AbstractInterceptor {
 

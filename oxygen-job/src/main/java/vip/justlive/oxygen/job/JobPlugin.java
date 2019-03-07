@@ -17,7 +17,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +25,7 @@ import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.ThreadUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
@@ -76,26 +75,34 @@ public class JobPlugin implements Plugin {
   }
 
   private void parseJobs() {
-    Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(Scheduled.class);
-    for (Method method : methods) {
-      Job job = createJob(method);
-      Scheduled scheduled = method.getAnnotation(Scheduled.class);
-      check(scheduled);
-      if (scheduled.fixedDelay().length() > 0) {
-        addFixedDelayJob(job, scheduled.fixedDelay(), scheduled.initialDelay());
-      }
-      if (scheduled.fixedRate().length() > 0) {
-        addFixedRateJob(job, scheduled.fixedRate(), scheduled.initialDelay());
-      }
-      if (scheduled.cron().length() > 0) {
-        addCronJob(job, scheduled.cron());
-      }
-      if (scheduled.onApplicationStart()) {
-        addOnApplicationStartJob(job, scheduled.async());
-      }
-      if (log.isDebugEnabled()) {
-        log.debug("add a job [{}]", job);
-      }
+    IocPlugin.beanStore().getBeans().forEach(
+        bean -> ClassUtils.getMethodsAnnotatedWith(bean.getClass(), Scheduled.class)
+            .forEach(method -> handleMethod(method, bean)));
+  }
+
+  private void handleMethod(Method method, Object bean) {
+    Job job;
+    try {
+      job = new Job(bean, bean.getClass().getMethod(method.getName(), method.getParameterTypes()));
+    } catch (NoSuchMethodException e) {
+      throw Exceptions.wrap(e);
+    }
+    Scheduled scheduled = method.getAnnotation(Scheduled.class);
+    check(scheduled);
+    if (scheduled.fixedDelay().length() > 0) {
+      addFixedDelayJob(job, scheduled.fixedDelay(), scheduled.initialDelay());
+    }
+    if (scheduled.fixedRate().length() > 0) {
+      addFixedRateJob(job, scheduled.fixedRate(), scheduled.initialDelay());
+    }
+    if (scheduled.cron().length() > 0) {
+      addCronJob(job, scheduled.cron());
+    }
+    if (scheduled.onApplicationStart()) {
+      addOnApplicationStartJob(job, scheduled.async());
+    }
+    if (log.isDebugEnabled()) {
+      log.debug("add a job [{}]", job);
     }
   }
 
@@ -154,30 +161,6 @@ public class JobPlugin implements Plugin {
       job.run();
     }
     SCHEDULED_JOBS.add(job);
-  }
-
-  private Job createJob(Method method) {
-    Object target = getDeclaringBean(method);
-    return new Job(target, method);
-  }
-
-  private Object getDeclaringBean(Method method) {
-    Class<?> beanClass = method.getDeclaringClass();
-    Object bean = IocPlugin.beanStore().getBean(beanClass);
-    if (bean != null) {
-      return bean;
-    }
-    bean = JOB_CACHE.get(beanClass);
-    if (bean != null) {
-      return bean;
-    }
-    try {
-      bean = beanClass.newInstance();
-      JOB_CACHE.putIfAbsent(beanClass, bean);
-      return JOB_CACHE.get(beanClass);
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw Exceptions.wrap(e);
-    }
   }
 
 }

@@ -21,6 +21,7 @@ import vip.justlive.oxygen.core.Order;
  * bean info
  *
  * @author wubo
+ * @since 2.0.0
  */
 @Getter
 @ToString

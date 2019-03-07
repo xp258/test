@@ -21,6 +21,7 @@ import lombok.experimental.Accessors;
  *
  * @param <T> 泛型
  * @author wubo
+ * @since 2.0.0
  */
 @Data
 @Accessors(chain = true)

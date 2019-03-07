@@ -29,6 +29,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  * bean存储
  *
  * @author wubo
+ * @since 2.0.0
  */
 public class DefaultBeanStore implements BeanStore {
 

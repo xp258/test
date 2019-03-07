@@ -19,6 +19,7 @@ import vip.justlive.oxygen.ioc.store.BeanProxy;
  * cglib bean proxy
  *
  * @author wubo
+ * @since 2.0.0
  */
 public class CglibBeanProxy implements BeanProxy {
 

@@ -31,26 +31,25 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @Slf4j
 public class Job implements Runnable {
 
-  /**
-   * job类型
-   */
-  public enum TYPE {
-    /**
-     * fixed delay job
-     */
-    FIXED_DELAY,
-    /**
-     * fixed rate job
-     */
-    FIXED_RATE,
-    /**
-     * cron job
-     */
-    CRON,
-    /**
-     * when application start
-     */
-    ON_APPLICATION_START;
+  void scheduleCron() {
+    if (cron != null && cronExpression != null) {
+      Date now = new Date();
+      Date nextDate = cronExpression.getNextValidTimeAfter(now);
+      if (nextDate == null) {
+        log.warn(
+            "The cron expression for job %s doesn't have any match in the future, will never be executed [{}]",
+            this);
+        return;
+      }
+      if (nextPlannedExecution.get() == nextDate.getTime()) {
+        //避免同时运行两次作业（当我们在计划时间前几分钟运行作业时发生）
+        Date nextInvalid = cronExpression.getNextInvalidTimeAfter(nextDate);
+        nextDate = cronExpression.getNextValidTimeAfter(nextInvalid);
+      }
+      nextPlannedExecution.set(nextDate.getTime());
+      JobPlugin.executorService
+          .schedule(this, nextDate.getTime() - now.getTime(), TimeUnit.MILLISECONDS);
+    }
   }
 
   private final Object target;
@@ -65,7 +64,6 @@ public class Job implements Runnable {
   private final AtomicLong runCount = new AtomicLong();
   private final AtomicLong nextPlannedExecution = new AtomicLong();
   private Instant startAt;
-
 
   public Job(Object target, Method method) {
     this.target = target;
@@ -136,25 +134,26 @@ public class Job implements Runnable {
     scheduleCron();
   }
 
-  protected void scheduleCron() {
-    if (cron != null && cronExpression != null) {
-      Date now = new Date();
-      Date nextDate = cronExpression.getNextValidTimeAfter(now);
-      if (nextDate == null) {
-        log.warn(
-            "The cron expression for job %s doesn't have any match in the future, will never be executed [{}]",
-            this);
-        return;
-      }
-      if (nextPlannedExecution.get() == nextDate.getTime()) {
-        //避免同时运行两次作业（当我们在计划时间前几分钟运行作业时发生）
-        Date nextInvalid = cronExpression.getNextInvalidTimeAfter(nextDate);
-        nextDate = cronExpression.getNextValidTimeAfter(nextInvalid);
-      }
-      nextPlannedExecution.set(nextDate.getTime());
-      JobPlugin.executorService
-          .schedule(this, nextDate.getTime() - now.getTime(), TimeUnit.MILLISECONDS);
-    }
+  /**
+   * job类型
+   */
+  public enum TYPE {
+    /**
+     * fixed delay job
+     */
+    FIXED_DELAY,
+    /**
+     * fixed rate job
+     */
+    FIXED_RATE,
+    /**
+     * cron job
+     */
+    CRON,
+    /**
+     * when application start
+     */
+    ON_APPLICATION_START
   }
 
   @Override
