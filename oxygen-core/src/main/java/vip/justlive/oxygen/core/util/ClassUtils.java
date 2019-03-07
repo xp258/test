@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
@@ -31,10 +32,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  *
  * @author wubo
  */
+@UtilityClass
 public class ClassUtils {
-
-  ClassUtils() {
-  }
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
   private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;

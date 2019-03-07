@@ -20,12 +20,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.experimental.UtilityClass;
 
 /**
  * 数字工具类
  *
  * @author wubo
  */
+@UtilityClass
 public class NumberUtils {
 
   /**
@@ -58,9 +60,6 @@ public class NumberUtils {
     FUNCTIONS.put(Double.class, Double::valueOf);
     FUNCTIONS.put(BigDecimal.class, NumberUtils::stringToBigDecimal);
     FUNCTIONS.put(Number.class, NumberUtils::stringToBigDecimal);
-  }
-
-  private NumberUtils() {
   }
 
   /**

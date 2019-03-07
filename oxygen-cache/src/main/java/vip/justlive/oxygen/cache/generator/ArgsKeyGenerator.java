@@ -11,7 +11,7 @@
  *  or implied. See the License for the specific language governing permissions and limitations under
  *  the License.
  */
-package vip.justlive.oxygen.cache;
+package vip.justlive.oxygen.cache.generator;
 
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
@@ -29,7 +29,7 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
 public class ArgsKeyGenerator implements KeyGenerator {
 
   private static final Pattern ARGS_PATTERN = Pattern.compile("args\\[(\\d+)[]]");
-  private static final Pattern FIELD_PATTERN = Pattern.compile("\\[([^\\[\\]]+)\\]");
+  private static final Pattern FIELD_PATTERN = Pattern.compile("\\[([^\\[\\]]+)[]]");
 
   @Override
   public Object generate(Object target, Method method, Object... params) {

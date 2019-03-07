@@ -68,6 +68,10 @@ public class ProxyStore {
    * 初始化
    */
   public static void init() {
+    if (ready) {
+      return;
+    }
+    STORE.forEach((k, v) -> v.clear());
     PROXIES.forEach(
         bean -> Stream.of(ClassUtils.getCglibActualClass(bean.getClass()).getDeclaredMethods())
             .forEach(ProxyStore::handleMethod));
@@ -133,4 +137,5 @@ public class ProxyStore {
     STORE.clear();
     PROXIES.clear();
   }
+
 }

@@ -11,7 +11,7 @@
  *  or implied. See the License for the specific language governing permissions and limitations under
  *  the License.
  */
-package vip.justlive.oxygen.cache;
+package vip.justlive.oxygen.cache.generator;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

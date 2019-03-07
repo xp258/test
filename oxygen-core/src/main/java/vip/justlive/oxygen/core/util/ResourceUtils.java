@@ -23,6 +23,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.constant.Constants;
 
 /**
@@ -30,10 +31,8 @@ import vip.justlive.oxygen.core.constant.Constants;
  *
  * @author wubo
  */
+@UtilityClass
 public class ResourceUtils {
-
-  ResourceUtils() {
-  }
 
   /**
    * 判断URL是否是jar文件

@@ -16,9 +16,16 @@ package vip.justlive.oxygen.cache;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import lombok.ToString;
 import vip.justlive.oxygen.aop.Invocation;
 import vip.justlive.oxygen.aop.annotation.Aspect;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
+import vip.justlive.oxygen.cache.annotation.Cacheable;
+import vip.justlive.oxygen.cache.generator.ArgsKeyGenerator;
+import vip.justlive.oxygen.cache.generator.DefaultKeyGenerator;
+import vip.justlive.oxygen.cache.store.Cache;
+import vip.justlive.oxygen.cache.store.JCache;
+import vip.justlive.oxygen.cache.store.LocalCacheImpl;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.ioc.annotation.Inject;
@@ -68,7 +75,7 @@ public class CacheAspect {
     return true;
   }
 
-  Ctx parse(Invocation invocation) {
+  private Ctx parse(Invocation invocation) {
     String cacheKey = String.join(Constants.COLON, invocation.getTarget().getClass().getName(),
         invocation.getMethod().getName(), Arrays.deepToString(invocation.getArgs()));
     Ctx ctx = CACHE.get(cacheKey, Ctx.class);
@@ -99,7 +106,8 @@ public class CacheAspect {
     return ctx;
   }
 
-  class Ctx {
+  @ToString
+  static class Ctx {
 
     String key;
     String cacheName;

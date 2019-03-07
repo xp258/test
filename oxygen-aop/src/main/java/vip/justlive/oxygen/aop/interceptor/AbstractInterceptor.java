@@ -41,18 +41,15 @@ public abstract class AbstractInterceptor implements Interceptor {
     try {
       int count = aopWrapper.getMethod().getParameterCount();
       check(aopWrapper);
+      Object result;
       if (count == 0) {
-        aopWrapper.getMethod().invoke(aopWrapper.getTarget());
-      } else if (count == 1) {
-        Class<?> returnType = aopWrapper.getMethod().getReturnType();
-        if (returnType == Void.TYPE) {
-          aopWrapper.getMethod().invoke(aopWrapper.getTarget(), invocation);
-        } else if (returnType == boolean.class) {
-          boolean b = (boolean) aopWrapper.getMethod().invoke(aopWrapper.getTarget(), invocation);
-          if (!b) {
-            return false;
-          }
-        }
+        result = aopWrapper.getMethod().invoke(aopWrapper.getTarget());
+      } else {
+        result = aopWrapper.getMethod().invoke(aopWrapper.getTarget(), invocation);
+      }
+      Class<?> returnType = aopWrapper.getMethod().getReturnType();
+      if (returnType == boolean.class) {
+        return (boolean) result;
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw Exceptions.wrap(e);

@@ -58,12 +58,10 @@ public class CglibProxy implements MethodInterceptor {
     Invocation invocation = new Invocation(obj, method, args);
     boolean interrupted = doIntercept(TYPE.BEFORE, method, invocation);
     try {
-      if (interrupted && invocation.getReturnValue() != null) {
-        if (log.isDebugEnabled()) {
-          log.debug("aop intercepted and return an updated value before invoke super method {}",
-              invocation);
-        }
-      } else {
+      if (interrupted && log.isDebugEnabled()) {
+        log.debug("aop intercepted and return an updated value before invoke super method {}",
+            invocation);
+      } else if (!interrupted) {
         invocation.setReturnValue(methodProxy.invokeSuper(obj, args));
       }
     } catch (Exception e) {
@@ -78,7 +76,7 @@ public class CglibProxy implements MethodInterceptor {
   private boolean doIntercept(TYPE type, Method method, Invocation invocation) {
     List<Interceptor> interceptors = ProxyStore.get(type, method);
     if (interceptors == null) {
-      return true;
+      return false;
     }
     for (int index = 0, len = interceptors.size(); index < len; index++) {
       if (!interceptors.get(index).intercept(invocation)) {
