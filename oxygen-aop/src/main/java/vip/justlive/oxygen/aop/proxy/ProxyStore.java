@@ -15,6 +15,7 @@ package vip.justlive.oxygen.aop.proxy;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class ProxyStore {
   static final List<Object> PROXIES = new LinkedList<>();
   private static final ConcurrentMap<TYPE, List<Interceptor>> INTERCEPTORS = new ConcurrentHashMap<>(
       4, 1);
-  private static final Map<TYPE, Map<Method, List<Interceptor>>> STORE = new HashMap<>(4, 1);
+  private static final Map<TYPE, Map<Method, List<Interceptor>>> STORE = new EnumMap<>(TYPE.class);
   private static volatile boolean ready = false;
 
   static {

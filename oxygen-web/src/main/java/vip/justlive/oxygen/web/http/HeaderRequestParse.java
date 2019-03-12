@@ -26,7 +26,7 @@ import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
  *
  * @author wubo
  */
-public class HeaderRequestParse extends AbstractRequestParse {
+public class HeaderRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {

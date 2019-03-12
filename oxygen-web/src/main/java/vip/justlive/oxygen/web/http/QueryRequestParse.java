@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author wubo
  */
-public class QueryRequestParse extends AbstractRequestParse {
+public class QueryRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {

@@ -149,9 +149,7 @@ public abstract class AbstractResourceLoader {
     List<SourceResource> list = new LinkedList<>();
     for (String location : locations) {
       try {
-        if (log.isDebugEnabled()) {
-          log.debug("parsing resource for [{}]", location);
-        }
+        log.info("parsing resource for [{}]", location);
         if (location.startsWith(ALL_CLASSPATH_PREFIX)) {
           list.addAll(
               this.resolveAllClassPathResource(location.substring(ALL_CLASSPATH_PREFIX.length())));
@@ -163,9 +161,7 @@ public abstract class AbstractResourceLoader {
           list.addAll(this.resolveClassPathResource(location));
         }
       } catch (IOException e) {
-        if (log.isDebugEnabled()) {
-          log.debug("location [{}] cannot find resource", location, e);
-        }
+        log.warn("location [{}] cannot find resource", location, e);
         if (!ignoreNotFound) {
           throw Exceptions.wrap(e);
         }

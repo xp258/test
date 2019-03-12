@@ -14,1282 +14,268 @@
 package vip.justlive.oxygen.job;
 
 import java.io.Serializable;
-import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.util.TreeSet;
+import lombok.Getter;
+import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
- * Thanks to Quartz project, https://quartz.dev.java.net
+ * Cron
  *
- * @author Sharada Jambula, James House
- * @author Contributions from Mads Henderson
- * @author Refactoring from CronTrigger to CronExpression by Aaron Craven
+ * @author wubo
  */
-public final class CronExpression implements Serializable {
+public class CronExpression implements Serializable {
 
-  private static final long serialVersionUID = 12423409423L;
-
-  private static final int SECOND = 0;
-  private static final int MINUTE = 1;
-  private static final int HOUR = 2;
-  private static final int DAY_OF_MONTH = 3;
-  private static final int MONTH = 4;
-  private static final int DAY_OF_WEEK = 5;
-  private static final int YEAR = 6;
-  /**
-   * '*'
-   */
-
-  private static final int ALL_SPEC_INT = 99;
-  /**
-   * '?'
-   */
-  private static final int NO_SPEC_INT = 98;
-  private static final Integer ALL_SPEC = ALL_SPEC_INT;
-  private static final Integer NO_SPEC = NO_SPEC_INT;
-
-  private static final Map<String, Integer> MONTH_MAP = new HashMap<>(20);
-  private static final Map<String, Integer> DAY_MAP = new HashMap<>(60);
+  private static final Map<String, String> MONTH_MAP = new HashMap<>(12, 1);
+  private static final Map<String, String> WEEK_MAP = new HashMap<>(7, 1);
+  private static final String MONTH_VALUES = "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC,FOO";
+  private static final String WEEK_VALUES = "SUN,MON,TUE,WED,THU,FRI,SAT";
+  private static final int MAX_DEEP = 4;
 
   static {
-    MONTH_MAP.put("JAN", 0);
-    MONTH_MAP.put("FEB", 1);
-    MONTH_MAP.put("MAR", 2);
-    MONTH_MAP.put("APR", 3);
-    MONTH_MAP.put("MAY", 4);
-    MONTH_MAP.put("JUN", 5);
-    MONTH_MAP.put("JUL", 6);
-    MONTH_MAP.put("AUG", 7);
-    MONTH_MAP.put("SEP", 8);
-    MONTH_MAP.put("OCT", 9);
-    MONTH_MAP.put("NOV", 10);
-    MONTH_MAP.put("DEC", 11);
-
-    DAY_MAP.put("SUN", 1);
-    DAY_MAP.put("MON", 2);
-    DAY_MAP.put("TUE", 3);
-    DAY_MAP.put("WED", 4);
-    DAY_MAP.put("THU", 5);
-    DAY_MAP.put("FRI", 6);
-    DAY_MAP.put("SAT", 7);
-  }
-
-  private final String cronExpression;
-  private TimeZone timeZone = TimeZone.getDefault();
-  private transient TreeSet<Integer> seconds = new TreeSet<>();
-  private transient TreeSet<Integer> minutes = new TreeSet<>();
-  private transient TreeSet<Integer> hours = new TreeSet<>();
-  private transient TreeSet<Integer> daysOfMonth = new TreeSet<>();
-  private transient TreeSet<Integer> months = new TreeSet<>();
-  private transient TreeSet<Integer> daysOfWeek = new TreeSet<>();
-  private transient TreeSet<Integer> years = new TreeSet<>();
-
-  private transient boolean lastdayOfWeek = false;
-  private transient int nthdayOfWeek = 0;
-  private transient boolean lastdayOfMonth = false;
-  private transient boolean nearestWeekday = false;
-  private transient int lastdayOffset = 0;
-
-  public static final int MAX_YEAR = Calendar.getInstance().get(Calendar.YEAR) + 100;
-
-  public CronExpression(String cronExpression) throws ParseException {
-    if (cronExpression == null) {
-      throw new IllegalArgumentException("cronExpression cannot be null");
+    int i = 1;
+    for (String month : MONTH_VALUES.split(Constants.COMMA)) {
+      MONTH_MAP.put(month, String.valueOf(i++));
     }
-
-    this.cronExpression = cronExpression.toUpperCase(Locale.US);
-
-    buildExpression(this.cronExpression);
-  }
-
-
-  public Date getNextValidTimeAfter(Date date) {
-    return getTimeAfter(date);
-  }
-
-  public Date getNextInvalidTimeAfter(Date date) {
-    long difference = 1000;
-
-    Calendar adjustCal = Calendar.getInstance(timeZone);
-    adjustCal.setTime(date);
-    adjustCal.set(Calendar.MILLISECOND, 0);
-    Date lastDate = adjustCal.getTime();
-
-    Date newDate;
-
-    while (difference == 1000) {
-      newDate = getTimeAfter(lastDate);
-      if (newDate == null) {
-        break;
-      }
-
-      difference = newDate.getTime() - lastDate.getTime();
-
-      if (difference == 1000) {
-        lastDate = newDate;
-      }
+    i = 0;
+    for (String week : WEEK_VALUES.split(Constants.COMMA)) {
+      WEEK_MAP.put(week, String.valueOf(i++));
     }
+  }
 
-    return new Date(lastDate.getTime() + 1000);
+  @Getter
+  private final String expression;
+  @Getter
+  private final TimeZone timeZone;
+
+  private final BitSet months = new BitSet(12);
+  private final BitSet daysOfMonth = new BitSet(31);
+  private final BitSet daysOfWeek = new BitSet(7);
+  private final BitSet hours = new BitSet(24);
+  private final BitSet minutes = new BitSet(60);
+  private final BitSet seconds = new BitSet(60);
+
+
+  public CronExpression(String expression) {
+    this(expression, TimeZone.getDefault());
+  }
+
+  public CronExpression(String expression, TimeZone timeZone) {
+    this.expression = expression;
+    this.timeZone = timeZone;
+    parse();
   }
 
   /**
-   * Returns the string representation of the <CODE>CronExpression</CODE>
+   * Get the next {@link Date} in the sequence matching the Cron pattern and after the value
+   * provided. The return value will have a whole number of seconds, and will be after the input
+   * value.
    *
-   * @return a string representation of the <CODE>CronExpression</CODE>
+   * @param date a seed value
+   * @return the next value matching the pattern
    */
-  @Override
-  public String toString() {
-    return cronExpression;
+  public Date next(Date date) {
+    Calendar calendar = new GregorianCalendar();
+    calendar.setTimeZone(this.timeZone);
+    calendar.setTime(date);
+
+    // First, just reset the milliseconds and try to calculate from there...
+    calendar.set(Calendar.MILLISECOND, 0);
+    long originalTimestamp = calendar.getTimeInMillis();
+    doNext(calendar, calendar.get(Calendar.YEAR));
+
+    if (calendar.getTimeInMillis() == originalTimestamp) {
+      // We arrived at the original timestamp - round up to the next whole second and try again...
+      calendar.add(Calendar.SECOND, 1);
+      doNext(calendar, calendar.get(Calendar.YEAR));
+    }
+
+    return calendar.getTime();
   }
 
-  private void buildExpression(String expression) throws ParseException {
-    try {
+  private void doNext(Calendar calendar, int dot) {
+    List<Integer> resets = new ArrayList<>();
 
-      int exprOn = SECOND;
-
-      StringTokenizer exprsTok = new StringTokenizer(expression, " \t",
-          false);
-
-      while (exprsTok.hasMoreTokens() && exprOn <= YEAR) {
-        String expr = exprsTok.nextToken().trim();
-
-        // throw an exception if L is used with other days of the month
-        if (exprOn == DAY_OF_MONTH && expr.indexOf('L') != -1 && expr.length() > 1 && expr
-            .contains(",")) {
-          throw new ParseException(
-              "Support for specifying 'L' and 'LW' with other days of the month is not implemented",
-              -1);
-        }
-        // throw an exception if L is used with other days of the week
-        if (exprOn == DAY_OF_WEEK && expr.indexOf('L') != -1 && expr.length() > 1 && expr
-            .contains(",")) {
-          throw new ParseException(
-              "Support for specifying 'L' with other days of the week is not implemented", -1);
-        }
-        if (exprOn == DAY_OF_WEEK && expr.indexOf('#') != -1
-            && expr.indexOf('#', expr.indexOf('#') + 1) != -1) {
-          throw new ParseException(
-              "Support for specifying multiple \"nth\" days is not implemented.", -1);
-        }
-
-        StringTokenizer vTok = new StringTokenizer(expr, ",");
-        while (vTok.hasMoreTokens()) {
-          String v = vTok.nextToken();
-          storeExpressionVals(0, v, exprOn);
-        }
-
-        exprOn++;
-      }
-
-      if (exprOn <= DAY_OF_WEEK) {
-        throw new ParseException("Unexpected end of expression.",
-            expression.length());
-      }
-
-      if (exprOn <= YEAR) {
-        storeExpressionVals(0, "*", YEAR);
-      }
-
-      TreeSet<Integer> dow = getSet(DAY_OF_WEEK);
-      TreeSet<Integer> dom = getSet(DAY_OF_MONTH);
-
-      // Copying the logic from the UnsupportedOperationException below
-      boolean dayOfMSpec = !dom.contains(NO_SPEC);
-      boolean dayOfWSpec = !dow.contains(NO_SPEC);
-
-      if (!dayOfMSpec || dayOfWSpec) {
-        if (!dayOfWSpec || dayOfMSpec) {
-          throw new ParseException(
-              "Support for specifying both a day-of-week AND a day-of-month parameter is not implemented.",
-              0);
-        }
-      }
-    } catch (ParseException pe) {
-      throw pe;
-    } catch (Exception e) {
-      throw new ParseException("Illegal cron expression format ("
-          + e.toString() + ")", 0);
-    }
-  }
-
-  private int storeExpressionVals(int pos, String s, int type)
-      throws ParseException {
-
-    int incr = 0;
-    int i = skipWhiteSpace(pos, s);
-    if (i >= s.length()) {
-      return i;
-    }
-    char c = s.charAt(i);
-    if ((c >= 'A') && (c <= 'Z') && (!s.equals("L")) && (!s.equals("LW")) && (!s
-        .matches("^L-[0-9]*[W]?"))) {
-      String sub = s.substring(i, i + 3);
-      int sval = -1;
-      int eval = -1;
-      if (type == MONTH) {
-        sval = getMonthNumber(sub) + 1;
-        if (sval <= 0) {
-          throw new ParseException("Invalid Month value: '" + sub + "'", i);
-        }
-        if (s.length() > i + 3) {
-          c = s.charAt(i + 3);
-          if (c == '-') {
-            i += 4;
-            sub = s.substring(i, i + 3);
-            eval = getMonthNumber(sub) + 1;
-            if (eval <= 0) {
-              throw new ParseException("Invalid Month value: '" + sub + "'", i);
-            }
-          }
-        }
-      } else if (type == DAY_OF_WEEK) {
-        sval = getDayOfWeekNumber(sub);
-        if (sval < 0) {
-          throw new ParseException("Invalid Day-of-Week value: '"
-              + sub + "'", i);
-        }
-        if (s.length() > i + 3) {
-          c = s.charAt(i + 3);
-          if (c == '-') {
-            i += 4;
-            sub = s.substring(i, i + 3);
-            eval = getDayOfWeekNumber(sub);
-            if (eval < 0) {
-              throw new ParseException(
-                  "Invalid Day-of-Week value: '" + sub
-                      + "'", i);
-            }
-          } else if (c == '#') {
-            try {
-              i += 4;
-              nthdayOfWeek = Integer.parseInt(s.substring(i));
-              if (nthdayOfWeek < 1 || nthdayOfWeek > 5) {
-                throw new Exception();
-              }
-            } catch (Exception e) {
-              throw new ParseException(
-                  "A numeric value between 1 and 5 must follow the '#' option",
-                  i);
-            }
-          } else if (c == 'L') {
-            lastdayOfWeek = true;
-            i++;
-          }
-        }
-
-      } else {
-        throw new ParseException(
-            "Illegal characters for this position: '" + sub + "'",
-            i);
-      }
-      if (eval != -1) {
-        incr = 1;
-      }
-      addToSet(sval, eval, incr, type);
-      return (i + 3);
+    int second = calendar.get(Calendar.SECOND);
+    List<Integer> emptyList = Collections.emptyList();
+    int updateSecond = findNext(this.seconds, second, calendar, Calendar.SECOND, Calendar.MINUTE,
+        emptyList);
+    if (second == updateSecond) {
+      resets.add(Calendar.SECOND);
     }
 
-    if (c == '?') {
-      i++;
-      if ((i + 1) < s.length()
-          && (s.charAt(i) != ' ' && s.charAt(i + 1) != '\t')) {
-        throw new ParseException("Illegal character after '?': "
-            + s.charAt(i), i);
-      }
-      if (type != DAY_OF_WEEK && type != DAY_OF_MONTH) {
-        throw new ParseException(
-            "'?' can only be specified for Day-of-Month or Day-of-Week.",
-            i);
-      }
-      if (type == DAY_OF_WEEK && !lastdayOfMonth) {
-        int val = daysOfMonth.last();
-        if (val == NO_SPEC_INT) {
-          throw new ParseException(
-              "'?' can only be specified for Day-of-Month -OR- Day-of-Week.",
-              i);
-        }
-      }
-
-      addToSet(NO_SPEC_INT, -1, 0, type);
-      return i;
-    }
-
-    if (c == '*' || c == '/') {
-      if (c == '*' && (i + 1) >= s.length()) {
-        addToSet(ALL_SPEC_INT, -1, incr, type);
-        return i + 1;
-      } else if (c == '/'
-          && ((i + 1) >= s.length() || s.charAt(i + 1) == ' ' || s
-          .charAt(i + 1) == '\t')) {
-        throw new ParseException("'/' must be followed by an integer.", i);
-      } else if (c == '*') {
-        i++;
-      }
-      c = s.charAt(i);
-      if (c == '/') {
-        // is an increment specified?
-        i++;
-        if (i >= s.length()) {
-          throw new ParseException("Unexpected end of string.", i);
-        }
-
-        incr = getNumericValue(s, i);
-
-        i++;
-        if (incr > 10) {
-          i++;
-        }
-        checkIncrementRange(incr, type, i);
-      } else {
-        incr = 1;
-      }
-
-      addToSet(ALL_SPEC_INT, -1, incr, type);
-      return i;
-    } else if (c == 'L') {
-      i++;
-      if (type == DAY_OF_MONTH) {
-        lastdayOfMonth = true;
-      }
-      if (type == DAY_OF_WEEK) {
-        addToSet(7, 7, 0, type);
-      }
-      if (type == DAY_OF_MONTH && s.length() > i) {
-        c = s.charAt(i);
-        if (c == '-') {
-          ValueSet vs = getValue(0, s, i + 1);
-          lastdayOffset = vs.value;
-          if (lastdayOffset > 30) {
-            throw new ParseException("Offset from last day must be <= 30", i + 1);
-          }
-          i = vs.pos;
-        }
-        if (s.length() > i) {
-          c = s.charAt(i);
-          if (c == 'W') {
-            nearestWeekday = true;
-            i++;
-          }
-        }
-      }
-      return i;
-    } else if (c >= '0' && c <= '9') {
-      int val = Integer.parseInt(String.valueOf(c));
-      i++;
-      if (i >= s.length()) {
-        addToSet(val, -1, -1, type);
-      } else {
-        c = s.charAt(i);
-        if (c >= '0' && c <= '9') {
-          ValueSet vs = getValue(val, s, i);
-          val = vs.value;
-          i = vs.pos;
-        }
-        i = checkNext(i, s, val, type);
-        return i;
-      }
+    int minute = calendar.get(Calendar.MINUTE);
+    int updateMinute = findNext(this.minutes, minute, calendar, Calendar.MINUTE,
+        Calendar.HOUR_OF_DAY, resets);
+    if (minute == updateMinute) {
+      resets.add(Calendar.MINUTE);
     } else {
-      throw new ParseException("Unexpected character: " + c, i);
+      doNext(calendar, dot);
     }
 
-    return i;
+    int hour = calendar.get(Calendar.HOUR_OF_DAY);
+    int updateHour = findNext(this.hours, hour, calendar, Calendar.HOUR_OF_DAY,
+        Calendar.DAY_OF_WEEK, resets);
+    if (hour == updateHour) {
+      resets.add(Calendar.HOUR_OF_DAY);
+    } else {
+      doNext(calendar, dot);
+    }
+
+    int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+    int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+    int updateDayOfMonth = findNextDay(calendar, this.daysOfMonth, dayOfMonth, daysOfWeek,
+        dayOfWeek, resets);
+    if (dayOfMonth == updateDayOfMonth) {
+      resets.add(Calendar.DAY_OF_MONTH);
+    } else {
+      doNext(calendar, dot);
+    }
+
+    int month = calendar.get(Calendar.MONTH);
+    int updateMonth = findNext(this.months, month, calendar, Calendar.MONTH, Calendar.YEAR, resets);
+    if (month != updateMonth) {
+      if (calendar.get(Calendar.YEAR) - dot > MAX_DEEP) {
+        throw new IllegalArgumentException("Invalid cron expression \"" + this.expression +
+            "\" led to runaway search for next trigger");
+      }
+      doNext(calendar, dot);
+    }
   }
 
-  private void checkIncrementRange(int incr, int type, int idxPos) throws ParseException {
-    if (incr > 59 && (type == SECOND || type == MINUTE)) {
-      throw new ParseException("Increment > 60 : " + incr, idxPos);
-    } else if (incr > 23 && (type == HOUR)) {
-      throw new ParseException("Increment > 24 : " + incr, idxPos);
-    } else if (incr > 31 && (type == DAY_OF_MONTH)) {
-      throw new ParseException("Increment > 31 : " + incr, idxPos);
-    } else if (incr > 7 && (type == DAY_OF_WEEK)) {
-      throw new ParseException("Increment > 7 : " + incr, idxPos);
-    } else if (incr > 12 && (type == MONTH)) {
-      throw new ParseException("Increment > 12 : " + incr, idxPos);
+  private int findNextDay(Calendar calendar, BitSet daysOfMonth, int dayOfMonth, BitSet daysOfWeek,
+      int dayOfWeek,
+      List<Integer> resets) {
+
+    int count = 0;
+    int max = 366;
+    // the DAY_OF_WEEK values in java.util.Calendar start with 1 (Sunday),
+    // but in the cron pattern, they start with 0, so we subtract 1 here
+    while ((!daysOfMonth.get(dayOfMonth) || !daysOfWeek.get(dayOfWeek - 1)) && count++ < max) {
+      calendar.add(Calendar.DAY_OF_MONTH, 1);
+      dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+      dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+      reset(calendar, resets);
+    }
+    if (count >= max) {
+      throw new IllegalArgumentException(
+          "Overflow in day for expression \"" + this.expression + "\"");
+    }
+    return dayOfMonth;
+  }
+
+  private int findNext(BitSet bits, int value, Calendar calendar, int field, int nextField,
+      List<Integer> lowerOrders) {
+    int nextValue = bits.nextSetBit(value);
+    // roll over if needed
+    if (nextValue == -1) {
+      calendar.add(nextField, 1);
+      reset(calendar, Collections.singletonList(field));
+      nextValue = bits.nextSetBit(0);
+    }
+    if (nextValue != value) {
+      calendar.set(field, nextValue);
+      reset(calendar, lowerOrders);
+    }
+    return nextValue;
+  }
+
+  private void reset(Calendar calendar, List<Integer> fields) {
+    for (int field : fields) {
+      calendar.set(field, field == Calendar.DAY_OF_MONTH ? 1 : 0);
     }
   }
 
-  private int checkNext(int pos, String s, int val, int type)
-      throws ParseException {
-
-    int end = -1;
-    int i = pos;
-
-    if (i >= s.length()) {
-      addToSet(val, end, -1, type);
-      return i;
+  private void parse() {
+    String[] fields = this.expression.split("\\s+");
+    if (fields.length != 6) {
+      throw Exceptions.fail("expression should have 6 fields");
     }
+    setNumberBit(seconds, fields[0], 60);
+    setNumberBit(minutes, fields[1], 60);
+    setNumberBit(hours, fields[2], 24);
+    setDaysOfMonth(fields[3]);
+    setMonths(fields[4]);
+    setDaysOfWeek(fields[5]);
+  }
 
-    char c = s.charAt(pos);
+  private void setDaysOfWeek(String field) {
+    for (Map.Entry<String, String> entry : WEEK_MAP.entrySet()) {
+      field = field.replace(entry.getKey(), entry.getValue());
+    }
+    setNumberBit(daysOfWeek, field, 7);
+  }
 
-    if (c == 'L') {
-      if (type == DAY_OF_WEEK) {
-        if (val < 1 || val > 7) {
-          throw new ParseException("Day-of-Week values must be between 1 and 7", -1);
+  private void setMonths(String field) {
+    for (Map.Entry<String, String> entry : MONTH_MAP.entrySet()) {
+      field = field.replace(entry.getKey(), entry.getValue());
+    }
+    setNumberBit(months, field, 13);
+    for (int i = 1; i <= MONTH_MAP.size(); i++) {
+      months.set(i - 1, months.get(i));
+    }
+  }
+
+  private void setDaysOfMonth(String field) {
+    setNumberBit(daysOfMonth, field, 32);
+    this.daysOfMonth.clear(0);
+  }
+
+  private void setNumberBit(BitSet bit, String field, int size) {
+    for (String line : field.split(Constants.COMMA)) {
+      if (Constants.ANY.equals(line.trim()) || Constants.QUESTION_MARK.equals(line.trim())) {
+        bit.set(0, size);
+      } else if (line.contains(Constants.SLASH)) {
+        parseDuration(bit, line, size);
+      } else if (line.contains(Constants.HYPHEN)) {
+        String[] fromTo = line.split(Constants.HYPHEN);
+        if (fromTo.length != 2) {
+          throw Exceptions.fail(errorMessage());
         }
-        lastdayOfWeek = true;
+        bit.set(Integer.parseInt(fromTo[0].trim()), Integer.parseInt(fromTo[1].trim()) + 1);
       } else {
-        throw new ParseException("'L' option is not valid here. (pos=" + i + ")", i);
-      }
-      TreeSet<Integer> set = getSet(type);
-      set.add(val);
-      i++;
-      return i;
-    }
-
-    if (c == 'W') {
-      if (type == DAY_OF_MONTH) {
-        nearestWeekday = true;
-      } else {
-        throw new ParseException("'W' option is not valid here. (pos=" + i + ")", i);
-      }
-      if (val > 31) {
-        throw new ParseException(
-            "The 'W' option does not make sense with values larger than 31 (max number of days in a month)",
-            i);
-      }
-      TreeSet<Integer> set = getSet(type);
-      set.add(val);
-      i++;
-      return i;
-    }
-
-    if (c == '#') {
-      if (type != DAY_OF_WEEK) {
-        throw new ParseException("'#' option is not valid here. (pos=" + i + ")", i);
-      }
-      i++;
-      try {
-        nthdayOfWeek = Integer.parseInt(s.substring(i));
-        if (nthdayOfWeek < 1 || nthdayOfWeek > 5) {
-          throw new Exception();
-        }
-      } catch (Exception e) {
-        throw new ParseException(
-            "A numeric value between 1 and 5 must follow the '#' option",
-            i);
-      }
-
-      TreeSet<Integer> set = getSet(type);
-      set.add(val);
-      i++;
-      return i;
-    }
-
-    if (c == '-') {
-      i++;
-      c = s.charAt(i);
-      int v = Integer.parseInt(String.valueOf(c));
-      end = v;
-      i++;
-      if (i >= s.length()) {
-        addToSet(val, end, 1, type);
-        return i;
-      }
-      c = s.charAt(i);
-      if (c >= '0' && c <= '9') {
-        ValueSet vs = getValue(v, s, i);
-        end = vs.value;
-        i = vs.pos;
-      }
-      if (i < s.length() && ((c = s.charAt(i)) == '/')) {
-        i++;
-        c = s.charAt(i);
-        int v2 = Integer.parseInt(String.valueOf(c));
-        i++;
-        if (i >= s.length()) {
-          addToSet(val, end, v2, type);
-          return i;
-        }
-        c = s.charAt(i);
-        if (c >= '0' && c <= '9') {
-          ValueSet vs = getValue(v2, s, i);
-          int v3 = vs.value;
-          addToSet(val, end, v3, type);
-          i = vs.pos;
-          return i;
-        } else {
-          addToSet(val, end, v2, type);
-          return i;
-        }
-      } else {
-        addToSet(val, end, 1, type);
-        return i;
-      }
-    }
-
-    if (c == '/') {
-      if ((i + 1) >= s.length() || s.charAt(i + 1) == ' ' || s.charAt(i + 1) == '\t') {
-        throw new ParseException("'/' must be followed by an integer.", i);
-      }
-
-      i++;
-      c = s.charAt(i);
-      int v2 = Integer.parseInt(String.valueOf(c));
-      i++;
-      if (i >= s.length()) {
-        checkIncrementRange(v2, type, i);
-        addToSet(val, end, v2, type);
-        return i;
-      }
-      c = s.charAt(i);
-      if (c >= '0' && c <= '9') {
-        ValueSet vs = getValue(v2, s, i);
-        int v3 = vs.value;
-        checkIncrementRange(v3, type, i);
-        addToSet(val, end, v3, type);
-        i = vs.pos;
-        return i;
-      } else {
-        throw new ParseException("Unexpected character '" + c + "' after '/'", i);
-      }
-    }
-
-    addToSet(val, end, 0, type);
-    i++;
-    return i;
-  }
-
-
-  private String getExpressionSetSummary(java.util.Collection<Integer> set) {
-
-    if (set.contains(NO_SPEC)) {
-      return "?";
-    }
-    if (set.contains(ALL_SPEC)) {
-      return "*";
-    }
-
-    StringBuilder buf = new StringBuilder();
-
-    Iterator<Integer> itr = set.iterator();
-    boolean first = true;
-    while (itr.hasNext()) {
-      Integer iVal = itr.next();
-      String val = iVal.toString();
-      if (!first) {
-        buf.append(",");
-      }
-      buf.append(val);
-      first = false;
-    }
-
-    return buf.toString();
-  }
-
-  private int skipWhiteSpace(int i, String s) {
-    for (; i < s.length() && (s.charAt(i) == ' ' || s.charAt(i) == '\t'); i++) {
-      ;
-    }
-    return i;
-  }
-
-  private int findNextWhiteSpace(int i, String s) {
-    for (; i < s.length() && (s.charAt(i) != ' ' || s.charAt(i) != '\t'); i++) {
-      ;
-    }
-    return i;
-  }
-
-  private void addToSet(int val, int end, int incr, int type)
-      throws ParseException {
-
-    TreeSet<Integer> set = getSet(type);
-
-    if (type == SECOND || type == MINUTE) {
-      if ((val < 0 || val > 59 || end > 59) && (val != ALL_SPEC_INT)) {
-        throw new ParseException(
-            "Minute and Second values must be between 0 and 59",
-            -1);
-      }
-    } else if (type == HOUR) {
-      if ((val < 0 || val > 23 || end > 23) && (val != ALL_SPEC_INT)) {
-        throw new ParseException(
-            "Hour values must be between 0 and 23", -1);
-      }
-    } else if (type == DAY_OF_MONTH) {
-      if ((val < 1 || val > 31 || end > 31) && (val != ALL_SPEC_INT)
-          && (val != NO_SPEC_INT)) {
-        throw new ParseException(
-            "Day of month values must be between 1 and 31", -1);
-      }
-    } else if (type == MONTH) {
-      if ((val < 1 || val > 12 || end > 12) && (val != ALL_SPEC_INT)) {
-        throw new ParseException(
-            "Month values must be between 1 and 12", -1);
-      }
-    } else if (type == DAY_OF_WEEK) {
-      if ((val == 0 || val > 7 || end > 7) && (val != ALL_SPEC_INT)
-          && (val != NO_SPEC_INT)) {
-        throw new ParseException(
-            "Day-of-Week values must be between 1 and 7", -1);
-      }
-    }
-
-    if ((incr == 0 || incr == -1) && val != ALL_SPEC_INT) {
-      if (val != -1) {
-        set.add(val);
-      } else {
-        set.add(NO_SPEC);
-      }
-
-      return;
-    }
-
-    int startAt = val;
-    int stopAt = end;
-
-    if (val == ALL_SPEC_INT && incr <= 0) {
-      incr = 1;
-      set.add(ALL_SPEC); // put in a marker, but also fill values
-    }
-
-    if (type == SECOND || type == MINUTE) {
-      if (stopAt == -1) {
-        stopAt = 59;
-      }
-      if (startAt == -1 || startAt == ALL_SPEC_INT) {
-        startAt = 0;
-      }
-    } else if (type == HOUR) {
-      if (stopAt == -1) {
-        stopAt = 23;
-      }
-      if (startAt == -1 || startAt == ALL_SPEC_INT) {
-        startAt = 0;
-      }
-    } else if (type == DAY_OF_MONTH) {
-      if (stopAt == -1) {
-        stopAt = 31;
-      }
-      if (startAt == -1 || startAt == ALL_SPEC_INT) {
-        startAt = 1;
-      }
-    } else if (type == MONTH) {
-      if (stopAt == -1) {
-        stopAt = 12;
-      }
-      if (startAt == -1 || startAt == ALL_SPEC_INT) {
-        startAt = 1;
-      }
-    } else if (type == DAY_OF_WEEK) {
-      if (stopAt == -1) {
-        stopAt = 7;
-      }
-      if (startAt == -1 || startAt == ALL_SPEC_INT) {
-        startAt = 1;
-      }
-    } else if (type == YEAR) {
-      if (stopAt == -1) {
-        stopAt = MAX_YEAR;
-      }
-      if (startAt == -1 || startAt == ALL_SPEC_INT) {
-        startAt = 1970;
-      }
-    }
-
-    // if the end of the range is before the start, then we need to overflow into
-    // the next day, month etc. This is done by adding the maximum amount for that
-    // type, and using modulus max to determine the value being added.
-    int max = -1;
-    if (stopAt < startAt) {
-      switch (type) {
-        case SECOND:
-          max = 60;
-          break;
-        case MINUTE:
-          max = 60;
-          break;
-        case HOUR:
-          max = 24;
-          break;
-        case MONTH:
-          max = 12;
-          break;
-        case DAY_OF_WEEK:
-          max = 7;
-          break;
-        case DAY_OF_MONTH:
-          max = 31;
-          break;
-        case YEAR:
-          throw new IllegalArgumentException("Start year must be less than stop year");
-        default:
-          throw new IllegalArgumentException("Unexpected type encountered");
-      }
-      stopAt += max;
-    }
-
-    for (int i = startAt; i <= stopAt; i += incr) {
-      if (max == -1) {
-        // ie: there's no max to overflow over
-        set.add(i);
-      } else {
-        // take the modulus to get the real value
-        int i2 = i % max;
-
-        // 1-indexed ranges should not include 0, and should include their max
-        if (i2 == 0 && (type == MONTH || type == DAY_OF_WEEK || type == DAY_OF_MONTH)) {
-          i2 = max;
-        }
-
-        set.add(i2);
+        bit.set(Integer.parseInt(line.trim()));
       }
     }
   }
 
-  TreeSet<Integer> getSet(int type) {
-    switch (type) {
-      case SECOND:
-        return seconds;
-      case MINUTE:
-        return minutes;
-      case HOUR:
-        return hours;
-      case DAY_OF_MONTH:
-        return daysOfMonth;
-      case MONTH:
-        return months;
-      case DAY_OF_WEEK:
-        return daysOfWeek;
-      case YEAR:
-        return years;
-      default:
-        return null;
+  private void parseDuration(BitSet bit, String line, int size) {
+    String[] arr = line.split(Constants.SLASH);
+    if (arr.length != 2) {
+      throw Exceptions.fail(errorMessage());
+    }
+    int step = Integer.parseInt(arr[1].trim());
+    if (step < 1) {
+      throw Exceptions.fail(errorMessage());
+    }
+    int from;
+    int to = size - 1;
+    if (arr[0].contains(Constants.HYPHEN)) {
+      String[] fromTo = arr[0].split(Constants.HYPHEN);
+      if (fromTo.length != 2) {
+        throw Exceptions.fail(errorMessage());
+      }
+      from = Integer.parseInt(fromTo[0].trim());
+      to = Integer.parseInt(fromTo[1].trim());
+    } else {
+      from = Integer.parseInt(arr[0].trim());
+    }
+    for (int i = from; i <= to; i += step) {
+      bit.set(i);
     }
   }
 
-  private ValueSet getValue(int v, String s, int i) {
-    char c = s.charAt(i);
-    StringBuilder s1 = new StringBuilder(String.valueOf(v));
-    while (c >= '0' && c <= '9') {
-      s1.append(c);
-      i++;
-      if (i >= s.length()) {
-        break;
-      }
-      c = s.charAt(i);
-    }
-    ValueSet val = new ValueSet();
-
-    val.pos = (i < s.length()) ? i : i + 1;
-    val.value = Integer.parseInt(s1.toString());
-    return val;
+  private String errorMessage() {
+    return String.format("illegal expression '%s'", this.expression);
   }
 
-  private int getNumericValue(String s, int i) {
-    int endOfVal = findNextWhiteSpace(i, s);
-    String val = s.substring(i, endOfVal);
-    return Integer.parseInt(val);
-  }
-
-  private int getMonthNumber(String s) {
-    Integer integer = MONTH_MAP.get(s);
-
-    if (integer == null) {
-      return -1;
-    }
-
-    return integer;
-  }
-
-  private int getDayOfWeekNumber(String s) {
-    Integer integer = DAY_MAP.get(s);
-
-    if (integer == null) {
-      return -1;
-    }
-
-    return integer;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  //
-  // Computation Functions
-  //
-  ////////////////////////////////////////////////////////////////////////////
-
-  public Date getTimeAfter(Date afterTime) {
-
-    // Computation is based on Gregorian year only.
-    Calendar cl = new java.util.GregorianCalendar(timeZone);
-
-    // move ahead one second, since we're computing the time *after* the
-    // given time
-    afterTime = new Date(afterTime.getTime() + 1000);
-    // CronTrigger does not deal with milliseconds
-    cl.setTime(afterTime);
-    cl.set(Calendar.MILLISECOND, 0);
-
-    boolean gotOne = false;
-    // loop until we've computed the next time, or we've past the endTime
-    while (!gotOne) {
-
-      //if (endTime != null && cl.getTime().after(endTime)) return null;
-      if (cl.get(Calendar.YEAR) > 2999) { // prevent endless loop...
-        return null;
-      }
-
-      SortedSet<Integer> st = null;
-      int t = 0;
-
-      int sec = cl.get(Calendar.SECOND);
-      int min = cl.get(Calendar.MINUTE);
-
-      // get second.................................................
-      st = seconds.tailSet(sec);
-      if (st != null && st.size() != 0) {
-        sec = st.first();
-      } else {
-        sec = seconds.first();
-        min++;
-        cl.set(Calendar.MINUTE, min);
-      }
-      cl.set(Calendar.SECOND, sec);
-
-      min = cl.get(Calendar.MINUTE);
-      int hr = cl.get(Calendar.HOUR_OF_DAY);
-      t = -1;
-
-      // get minute.................................................
-      st = minutes.tailSet(min);
-      if (st != null && st.size() != 0) {
-        t = min;
-        min = st.first();
-      } else {
-        min = minutes.first();
-        hr++;
-      }
-      if (min != t) {
-        cl.set(Calendar.SECOND, 0);
-        cl.set(Calendar.MINUTE, min);
-        setCalendarHour(cl, hr);
-        continue;
-      }
-      cl.set(Calendar.MINUTE, min);
-
-      hr = cl.get(Calendar.HOUR_OF_DAY);
-      int day = cl.get(Calendar.DAY_OF_MONTH);
-      t = -1;
-
-      // get hour...................................................
-      st = hours.tailSet(hr);
-      if (st != null && st.size() != 0) {
-        t = hr;
-        hr = st.first();
-      } else {
-        hr = hours.first();
-        day++;
-      }
-      if (hr != t) {
-        cl.set(Calendar.SECOND, 0);
-        cl.set(Calendar.MINUTE, 0);
-        cl.set(Calendar.DAY_OF_MONTH, day);
-        setCalendarHour(cl, hr);
-        continue;
-      }
-      cl.set(Calendar.HOUR_OF_DAY, hr);
-
-      day = cl.get(Calendar.DAY_OF_MONTH);
-      int mon = cl.get(Calendar.MONTH) + 1;
-      // '+ 1' because calendar is 0-based for this field, and we are
-      // 1-based
-      t = -1;
-      int tmon = mon;
-
-      // get day...................................................
-      boolean dayOfMSpec = !daysOfMonth.contains(NO_SPEC);
-      boolean dayOfWSpec = !daysOfWeek.contains(NO_SPEC);
-      if (dayOfMSpec && !dayOfWSpec) { // get day by day of month rule
-        st = daysOfMonth.tailSet(day);
-        if (lastdayOfMonth) {
-          if (!nearestWeekday) {
-            t = day;
-            day = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-            day -= lastdayOffset;
-            if (t > day) {
-              mon++;
-              if (mon > 12) {
-                mon = 1;
-                tmon = 3333; // ensure test of mon != tmon further below fails
-                cl.add(Calendar.YEAR, 1);
-              }
-              day = 1;
-            }
-          } else {
-            t = day;
-            day = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-            day -= lastdayOffset;
-
-            java.util.Calendar tcal = java.util.Calendar.getInstance(timeZone);
-            tcal.set(Calendar.SECOND, 0);
-            tcal.set(Calendar.MINUTE, 0);
-            tcal.set(Calendar.HOUR_OF_DAY, 0);
-            tcal.set(Calendar.DAY_OF_MONTH, day);
-            tcal.set(Calendar.MONTH, mon - 1);
-            tcal.set(Calendar.YEAR, cl.get(Calendar.YEAR));
-
-            int ldom = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-            int dow = tcal.get(Calendar.DAY_OF_WEEK);
-
-            if (dow == Calendar.SATURDAY && day == 1) {
-              day += 2;
-            } else if (dow == Calendar.SATURDAY) {
-              day -= 1;
-            } else if (dow == Calendar.SUNDAY && day == ldom) {
-              day -= 2;
-            } else if (dow == Calendar.SUNDAY) {
-              day += 1;
-            }
-
-            tcal.set(Calendar.SECOND, sec);
-            tcal.set(Calendar.MINUTE, min);
-            tcal.set(Calendar.HOUR_OF_DAY, hr);
-            tcal.set(Calendar.DAY_OF_MONTH, day);
-            tcal.set(Calendar.MONTH, mon - 1);
-            Date nTime = tcal.getTime();
-            if (nTime.before(afterTime)) {
-              day = 1;
-              mon++;
-            }
-          }
-        } else if (nearestWeekday) {
-          t = day;
-          day = daysOfMonth.first();
-
-          java.util.Calendar tcal = java.util.Calendar.getInstance(timeZone);
-          tcal.set(Calendar.SECOND, 0);
-          tcal.set(Calendar.MINUTE, 0);
-          tcal.set(Calendar.HOUR_OF_DAY, 0);
-          tcal.set(Calendar.DAY_OF_MONTH, day);
-          tcal.set(Calendar.MONTH, mon - 1);
-          tcal.set(Calendar.YEAR, cl.get(Calendar.YEAR));
-
-          int ldom = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-          int dow = tcal.get(Calendar.DAY_OF_WEEK);
-
-          if (dow == Calendar.SATURDAY && day == 1) {
-            day += 2;
-          } else if (dow == Calendar.SATURDAY) {
-            day -= 1;
-          } else if (dow == Calendar.SUNDAY && day == ldom) {
-            day -= 2;
-          } else if (dow == Calendar.SUNDAY) {
-            day += 1;
-          }
-
-          tcal.set(Calendar.SECOND, sec);
-          tcal.set(Calendar.MINUTE, min);
-          tcal.set(Calendar.HOUR_OF_DAY, hr);
-          tcal.set(Calendar.DAY_OF_MONTH, day);
-          tcal.set(Calendar.MONTH, mon - 1);
-          Date nTime = tcal.getTime();
-          if (nTime.before(afterTime)) {
-            day = daysOfMonth.first();
-            mon++;
-          }
-        } else if (st != null && st.size() != 0) {
-          t = day;
-          day = st.first();
-          // make sure we don't over-run a short month, such as february
-          int lastDay = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-          if (day > lastDay) {
-            day = daysOfMonth.first();
-            mon++;
-          }
-        } else {
-          day = daysOfMonth.first();
-          mon++;
-        }
-
-        if (day != t || mon != tmon) {
-          cl.set(Calendar.SECOND, 0);
-          cl.set(Calendar.MINUTE, 0);
-          cl.set(Calendar.HOUR_OF_DAY, 0);
-          cl.set(Calendar.DAY_OF_MONTH, day);
-          cl.set(Calendar.MONTH, mon - 1);
-          // '- 1' because calendar is 0-based for this field, and we
-          // are 1-based
-          continue;
-        }
-      } else if (dayOfWSpec && !dayOfMSpec) { // get day by day of week rule
-        if (lastdayOfWeek) { // are we looking for the last XXX day of
-          // the month?
-          int dow = daysOfWeek.first(); // desired
-          // d-o-w
-          int cDow = cl.get(Calendar.DAY_OF_WEEK); // current d-o-w
-          int daysToAdd = 0;
-          if (cDow < dow) {
-            daysToAdd = dow - cDow;
-          }
-          if (cDow > dow) {
-            daysToAdd = dow + (7 - cDow);
-          }
-
-          int lDay = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-
-          if (day + daysToAdd > lDay) { // did we already miss the
-            // last one?
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.HOUR_OF_DAY, 0);
-            cl.set(Calendar.DAY_OF_MONTH, 1);
-            cl.set(Calendar.MONTH, mon);
-            // no '- 1' here because we are promoting the month
-            continue;
-          }
-
-          // find date of last occurrence of this day in this month...
-          while ((day + daysToAdd + 7) <= lDay) {
-            daysToAdd += 7;
-          }
-
-          day += daysToAdd;
-
-          if (daysToAdd > 0) {
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.HOUR_OF_DAY, 0);
-            cl.set(Calendar.DAY_OF_MONTH, day);
-            cl.set(Calendar.MONTH, mon - 1);
-            // '- 1' here because we are not promoting the month
-            continue;
-          }
-
-        } else if (nthdayOfWeek != 0) {
-          // are we looking for the Nth XXX day in the month?
-          int dow = daysOfWeek.first(); // desired
-          // d-o-w
-          int cDow = cl.get(Calendar.DAY_OF_WEEK); // current d-o-w
-          int daysToAdd = 0;
-          if (cDow < dow) {
-            daysToAdd = dow - cDow;
-          } else if (cDow > dow) {
-            daysToAdd = dow + (7 - cDow);
-          }
-
-          boolean dayShifted = false;
-          if (daysToAdd > 0) {
-            dayShifted = true;
-          }
-
-          day += daysToAdd;
-          int weekOfMonth = day / 7;
-          if (day % 7 > 0) {
-            weekOfMonth++;
-          }
-
-          daysToAdd = (nthdayOfWeek - weekOfMonth) * 7;
-          day += daysToAdd;
-          if (daysToAdd < 0
-              || day > getLastDayOfMonth(mon, cl
-              .get(Calendar.YEAR))) {
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.HOUR_OF_DAY, 0);
-            cl.set(Calendar.DAY_OF_MONTH, 1);
-            cl.set(Calendar.MONTH, mon);
-            // no '- 1' here because we are promoting the month
-            continue;
-          } else if (daysToAdd > 0 || dayShifted) {
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.HOUR_OF_DAY, 0);
-            cl.set(Calendar.DAY_OF_MONTH, day);
-            cl.set(Calendar.MONTH, mon - 1);
-            // '- 1' here because we are NOT promoting the month
-            continue;
-          }
-        } else {
-          int cDow = cl.get(Calendar.DAY_OF_WEEK); // current d-o-w
-          int dow = daysOfWeek.first(); // desired
-          // d-o-w
-          st = daysOfWeek.tailSet(cDow);
-          if (st != null && st.size() > 0) {
-            dow = st.first();
-          }
-
-          int daysToAdd = 0;
-          if (cDow < dow) {
-            daysToAdd = dow - cDow;
-          }
-          if (cDow > dow) {
-            daysToAdd = dow + (7 - cDow);
-          }
-
-          int lDay = getLastDayOfMonth(mon, cl.get(Calendar.YEAR));
-
-          if (day + daysToAdd > lDay) { // will we pass the end of
-            // the month?
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.HOUR_OF_DAY, 0);
-            cl.set(Calendar.DAY_OF_MONTH, 1);
-            cl.set(Calendar.MONTH, mon);
-            // no '- 1' here because we are promoting the month
-            continue;
-          } else if (daysToAdd > 0) { // are we swithing days?
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.HOUR_OF_DAY, 0);
-            cl.set(Calendar.DAY_OF_MONTH, day + daysToAdd);
-            cl.set(Calendar.MONTH, mon - 1);
-            // '- 1' because calendar is 0-based for this field,
-            // and we are 1-based
-            continue;
-          }
-        }
-      } else { // dayOfWSpec && !dayOfMSpec
-        throw new UnsupportedOperationException(
-            "Support for specifying both a day-of-week AND a day-of-month parameter is not implemented.");
-      }
-      cl.set(Calendar.DAY_OF_MONTH, day);
-
-      mon = cl.get(Calendar.MONTH) + 1;
-      // '+ 1' because calendar is 0-based for this field, and we are
-      // 1-based
-      int year = cl.get(Calendar.YEAR);
-      t = -1;
-
-      // test for expressions that never generate a valid fire date,
-      // but keep looping...
-      if (year > MAX_YEAR) {
-        return null;
-      }
-
-      // get month...................................................
-      st = months.tailSet(mon);
-      if (st != null && st.size() != 0) {
-        t = mon;
-        mon = st.first();
-      } else {
-        mon = months.first();
-        year++;
-      }
-      if (mon != t) {
-        cl.set(Calendar.SECOND, 0);
-        cl.set(Calendar.MINUTE, 0);
-        cl.set(Calendar.HOUR_OF_DAY, 0);
-        cl.set(Calendar.DAY_OF_MONTH, 1);
-        cl.set(Calendar.MONTH, mon - 1);
-        // '- 1' because calendar is 0-based for this field, and we are
-        // 1-based
-        cl.set(Calendar.YEAR, year);
-        continue;
-      }
-      cl.set(Calendar.MONTH, mon - 1);
-      // '- 1' because calendar is 0-based for this field, and we are
-      // 1-based
-
-      year = cl.get(Calendar.YEAR);
-      t = -1;
-
-      // get year...................................................
-      st = years.tailSet(year);
-      if (st != null && st.size() != 0) {
-        t = year;
-        year = st.first();
-      } else {
-        return null; // ran out of years...
-      }
-
-      if (year != t) {
-        cl.set(Calendar.SECOND, 0);
-        cl.set(Calendar.MINUTE, 0);
-        cl.set(Calendar.HOUR_OF_DAY, 0);
-        cl.set(Calendar.DAY_OF_MONTH, 1);
-        cl.set(Calendar.MONTH, 0);
-        // '- 1' because calendar is 0-based for this field, and we are
-        // 1-based
-        cl.set(Calendar.YEAR, year);
-        continue;
-      }
-      cl.set(Calendar.YEAR, year);
-
-      gotOne = true;
-    } // while( !done )
-
-    return cl.getTime();
-  }
-
-  /**
-   * Advance the calendar to the particular hour paying particular attention to daylight saving
-   * problems.
-   *
-   * @param cal the calendar to operate on
-   * @param hour the hour to set
-   */
-  private void setCalendarHour(Calendar cal, int hour) {
-    cal.set(java.util.Calendar.HOUR_OF_DAY, hour);
-    if (cal.get(java.util.Calendar.HOUR_OF_DAY) != hour && hour != 24) {
-      cal.set(java.util.Calendar.HOUR_OF_DAY, hour + 1);
-    }
-  }
-
-
-  private boolean isLeapYear(int year) {
-    return ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0));
-  }
-
-  private int getLastDayOfMonth(int monthNum, int year) {
-
-    switch (monthNum) {
-      case 1:
-        return 31;
-      case 2:
-        return (isLeapYear(year)) ? 29 : 28;
-      case 3:
-        return 31;
-      case 4:
-        return 30;
-      case 5:
-        return 31;
-      case 6:
-        return 30;
-      case 7:
-        return 31;
-      case 8:
-        return 31;
-      case 9:
-        return 30;
-      case 10:
-        return 31;
-      case 11:
-        return 30;
-      case 12:
-        return 31;
-      default:
-        throw new IllegalArgumentException("Illegal month number: "
-            + monthNum);
-    }
-  }
-
-
-  private void readObject(java.io.ObjectInputStream stream)
-      throws java.io.IOException, ClassNotFoundException {
-
-    stream.defaultReadObject();
-    try {
-      buildExpression(cronExpression);
-    } catch (Exception ignore) {
-      // never happens
-    }
-  }
-
-}
-
-class ValueSet {
-
-  public int value;
-
-  public int pos;
 }

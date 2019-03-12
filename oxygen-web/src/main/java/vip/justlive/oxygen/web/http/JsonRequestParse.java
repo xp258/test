@@ -24,7 +24,7 @@ import vip.justlive.oxygen.core.constant.Constants;
  *
  * @author wubo
  */
-public class JsonRequestParse extends AbstractRequestParse {
+public class JsonRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {

@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author wubo
  */
-public class CookieRequestParse extends AbstractRequestParse {
+public class CookieRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {

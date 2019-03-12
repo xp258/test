@@ -23,7 +23,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  *
  * @author wubo
  */
-public class MultipartRequestParse extends AbstractRequestParse {
+public class MultipartRequestParse implements RequestParse {
 
 
   @Override

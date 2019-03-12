@@ -14,14 +14,12 @@
 package vip.justlive.oxygen.job;
 
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * job类
@@ -34,7 +32,7 @@ public class Job implements Runnable {
   void scheduleCron() {
     if (cron != null && cronExpression != null) {
       Date now = new Date();
-      Date nextDate = cronExpression.getNextValidTimeAfter(now);
+      Date nextDate = cronExpression.next(now);
       if (nextDate == null) {
         log.warn(
             "The cron expression for job %s doesn't have any match in the future, will never be executed [{}]",
@@ -43,8 +41,8 @@ public class Job implements Runnable {
       }
       if (nextPlannedExecution.get() == nextDate.getTime()) {
         //避免同时运行两次作业（当我们在计划时间前几分钟运行作业时发生）
-        Date nextInvalid = cronExpression.getNextInvalidTimeAfter(nextDate);
-        nextDate = cronExpression.getNextValidTimeAfter(nextInvalid);
+        Date nextInvalid = cronExpression.next(nextDate);
+        nextDate = cronExpression.next(nextInvalid);
       }
       nextPlannedExecution.set(nextDate.getTime());
       JobPlugin.executorService
@@ -87,11 +85,7 @@ public class Job implements Runnable {
   public Job configCron(String cron) {
     this.type = TYPE.CRON;
     this.cron = cron;
-    try {
-      this.cronExpression = new CronExpression(cron);
-    } catch (ParseException e) {
-      throw Exceptions.wrap(e);
-    }
+    this.cronExpression = new CronExpression(cron);
     return this;
   }
 
