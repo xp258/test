@@ -82,13 +82,12 @@ public class ProxyStore {
   }
 
   private static void handleMethod(Method method) {
-    for (Map.Entry<TYPE, List<Interceptor>> entry : INTERCEPTORS.entrySet()) {
-      for (Interceptor interceptor : entry.getValue()) {
-        if (interceptor.match(method)) {
-          addInterceptor(entry.getKey(), method, interceptor);
-        }
-      }
-    }
+    INTERCEPTORS.forEach((k, v) -> v.forEach(interceptor -> {
+          if (interceptor.match(method)) {
+            addInterceptor(k, method, interceptor);
+          }
+        })
+    );
   }
 
 

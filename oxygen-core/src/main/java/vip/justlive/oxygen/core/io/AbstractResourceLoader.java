@@ -17,7 +17,6 @@ import static vip.justlive.oxygen.core.constant.Constants.ALL_CLASSPATH_PREFIX;
 import static vip.justlive.oxygen.core.constant.Constants.CLASSPATH_PREFIX;
 import static vip.justlive.oxygen.core.constant.Constants.FILE_PREFIX;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.extern.slf4j.Slf4j;
@@ -328,11 +326,8 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> findFileMatchPath(SourceResource resource, String subPattern)
       throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    File rootDir = resource.getFile().getAbsoluteFile();
-    Set<File> matchedFiles = matcher.findMatchedFiles(rootDir, subPattern);
-    for (File file : matchedFiles) {
-      list.add(new FileSystemResource(file));
-    }
+    matcher.findMatchedFiles(resource.getFile().getAbsoluteFile(), subPattern)
+        .forEach(file -> list.add(new FileSystemResource(file)));
     return list;
   }
 

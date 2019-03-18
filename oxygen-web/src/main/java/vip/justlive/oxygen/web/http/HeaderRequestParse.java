@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
 
 /**
  * header解析器

@@ -15,14 +15,12 @@ package vip.justlive.oxygen.ioc;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ServiceLoader;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
@@ -30,6 +28,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.ioc.annotation.Inject;
 import vip.justlive.oxygen.ioc.annotation.Named;
@@ -54,10 +53,7 @@ public class IocPlugin implements Plugin {
   private static final BeanProxy BEAN_PROXY;
 
   static {
-    List<BeanProxy> list = new ArrayList<>();
-    for (BeanProxy proxy : ServiceLoader.load(BeanProxy.class)) {
-      list.add(proxy);
-    }
+    List<BeanProxy> list = ServiceLoaderUtils.loadServices(BeanProxy.class);
     if (list.isEmpty()) {
       BEAN_PROXY = new DefaultBeanProxy();
     } else {

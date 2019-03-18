@@ -21,6 +21,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import vip.justlive.oxygen.web.WebPlugin;
+import vip.justlive.oxygen.web.annotation.CookieParam;
+import vip.justlive.oxygen.web.annotation.HeaderParam;
+import vip.justlive.oxygen.web.annotation.Param;
+import vip.justlive.oxygen.web.annotation.PathParam;
 import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.mapping.DataBinder.SCOPE;
 
