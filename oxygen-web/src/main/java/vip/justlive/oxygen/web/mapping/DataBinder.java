@@ -13,7 +13,9 @@
  */
 package vip.justlive.oxygen.web.mapping;
 
+import java.util.function.Function;
 import lombok.Data;
+import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
  * 数据绑定
@@ -35,6 +37,9 @@ public class DataBinder {
    * 默认值
    */
   private String defaultValue;
+
+  private Function<RoutingContext, Object> func;
+
   /**
    * 数据获取的范围, 默认从参数中取值
    */

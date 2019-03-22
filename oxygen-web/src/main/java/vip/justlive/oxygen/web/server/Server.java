@@ -18,7 +18,8 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
-import vip.justlive.oxygen.web.router.Router;
+import vip.justlive.oxygen.web.router.AnnotationRouteScanner;
+import vip.justlive.oxygen.web.router.Route;
 
 /**
  * server 启动类
@@ -28,7 +29,7 @@ import vip.justlive.oxygen.web.router.Router;
 @Slf4j
 public class Server {
 
-  private List<Router> routers = new LinkedList<>();
+  private List<Route> routes = new LinkedList<>();
 
   private WebServer webServer;
 
@@ -50,10 +51,10 @@ public class Server {
    *
    * @return router
    */
-  public Router router() {
-    Router router = new Router();
-    routers.add(router);
-    return router;
+  public Route router() {
+    Route route = new Route();
+    routes.add(route);
+    return route;
   }
 
   public void start() {
@@ -73,7 +74,8 @@ public class Server {
   }
 
   private void prepareRouters() {
-    routers.forEach(Router::build);
+    new AnnotationRouteScanner(this).scan();
+    routes.forEach(Route::build);
   }
 
 }

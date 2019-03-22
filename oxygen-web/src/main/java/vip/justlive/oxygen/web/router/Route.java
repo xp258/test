@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.Data;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.web.http.HttpMethod;
@@ -33,8 +32,7 @@ import vip.justlive.oxygen.web.http.HttpMethod;
  *
  * @author wubo
  */
-@Data
-public class Router {
+public class Route {
 
   private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");
   private static final Map<HttpMethod, Map<String, RouteHandler>> SIMPLE_ACTIONS = new EnumMap<>(
@@ -102,7 +100,7 @@ public class Router {
    * @param httpMethod 请求方法
    * @return router
    */
-  public Router method(HttpMethod httpMethod) {
+  public Route method(HttpMethod httpMethod) {
     methods.add(httpMethod);
     return this;
   }
@@ -113,7 +111,7 @@ public class Router {
    * @param path request path
    * @return router
    */
-  public Router path(String path) {
+  public Route path(String path) {
     Matcher matcher = REGEX_PATH_GROUP.matcher(path);
     int start = 0;
     if (matcher.find(start)) {
@@ -134,7 +132,7 @@ public class Router {
    * @param handler 处理
    * @return router
    */
-  public Router handler(RouteHandler handler) {
+  public Route handler(RouteHandler handler) {
     this.handler = handler;
     return this;
   }

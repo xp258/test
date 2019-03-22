@@ -37,4 +37,11 @@ public interface RoutingContext {
    */
   Response response();
 
+  <T> T bindParam(Class<T> clazz);
+
+  <T> T bindCookie(Class<T> clazz);
+
+  <T> T bindHeader(Class<T> clazz);
+
+  <T> T bindPathvar(Class<T> clazz);
 }

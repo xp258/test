@@ -40,4 +40,24 @@ public class RoutingContextImpl implements RoutingContext {
   public Response response() {
     return response;
   }
+
+  @Override
+  public <T> T bindParam(Class<T> clazz) {
+    return null;
+  }
+
+  @Override
+  public <T> T bindCookie(Class<T> clazz) {
+    return null;
+  }
+
+  @Override
+  public <T> T bindHeader(Class<T> clazz) {
+    return null;
+  }
+
+  @Override
+  public <T> T bindPathvar(Class<T> clazz) {
+    return null;
+  }
 }

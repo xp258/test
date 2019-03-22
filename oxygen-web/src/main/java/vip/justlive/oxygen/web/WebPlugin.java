@@ -30,8 +30,8 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
-import vip.justlive.oxygen.core.util.Checks;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.ResourceUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
@@ -236,7 +236,7 @@ public class WebPlugin implements Plugin {
         Mapping mapping = method.getAnnotation(Mapping.class);
         String path = mapping.value();
         HttpMethod[] httpMethods = mapping.method();
-        String routePath = makePath(rootPath, path);
+        String routePath = ResourceUtils.concat(rootPath, path);
         HttpMethod[] realMethods = httpMethods;
         if (realMethods.length == 0) {
           realMethods = HttpMethod.values();
@@ -272,26 +272,6 @@ public class WebPlugin implements Plugin {
       routePath = routePath.replaceAll(Constants.REGEX_PATH_VAR, Constants.REGEX_PATH_VAR_REPLACE);
     }
     return new Action(routePath, routerBean, requestMethod, method, pathVariables);
-  }
-
-  private String makePath(String parent, String child) {
-    Checks.notNull(parent);
-    Checks.notNull(child);
-    StringBuilder sb = new StringBuilder(parent);
-    if (parent.endsWith(Constants.ROOT_PATH) && child.startsWith(Constants.ROOT_PATH)) {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-    if (!parent.endsWith(Constants.ROOT_PATH) && !child.startsWith(Constants.ROOT_PATH)) {
-      sb.append(Constants.ROOT_PATH);
-    }
-    sb.append(child);
-    if (sb.indexOf(Constants.ROOT_PATH) != 0) {
-      sb.insert(0, Constants.ROOT_PATH);
-    }
-    if (sb.length() > 1 && sb.lastIndexOf(Constants.ROOT_PATH) == sb.length() - 1) {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-    return sb.toString();
   }
 
   private void loadStaticMapping() {
