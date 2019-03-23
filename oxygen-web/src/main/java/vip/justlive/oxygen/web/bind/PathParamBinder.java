@@ -20,7 +20,7 @@ import vip.justlive.oxygen.web.annotation.PathParam;
 import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
- * path param binder
+ * 请求路径参数绑定
  *
  * @author wubo
  */
@@ -44,7 +44,7 @@ public class PathParamBinder implements ParamBinder {
       DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
       if (converterService.canConverter(String.class, dataBinder.getType())) {
         return converterService.convert(MoreObjects
-            .firstNonNull(ctx.request().getPathVariables().get(dataBinder.getName()),
+            .firstOrNull(ctx.request().getPathVariables().get(dataBinder.getName()),
                 dataBinder.getDefaultValue()), dataBinder.getType());
       }
       return ctx.bindPathvar(dataBinder.getType());

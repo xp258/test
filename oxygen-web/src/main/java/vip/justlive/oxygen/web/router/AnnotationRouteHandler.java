@@ -16,20 +16,26 @@ package vip.justlive.oxygen.web.router;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Collections;
+import java.util.List;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.web.annotation.CookieParam;
-import vip.justlive.oxygen.web.annotation.HeaderParam;
-import vip.justlive.oxygen.web.annotation.Param;
-import vip.justlive.oxygen.web.annotation.PathParam;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.mapping.DataBinder;
-import vip.justlive.oxygen.web.mapping.DataBinder.SCOPE;
 
 /**
- * annotation route handler
+ * 注解路由处理
  *
  * @author wubo
  */
 public class AnnotationRouteHandler implements RouteHandler {
+
+  private static final List<ParamBinder> BINDERS;
+
+  static {
+    BINDERS = ServiceLoaderUtils.loadServices(ParamBinder.class);
+    Collections.sort(BINDERS);
+  }
 
   private final Object router;
   private final Method proxyMethod;
@@ -47,63 +53,26 @@ public class AnnotationRouteHandler implements RouteHandler {
   private void init() {
     Parameter[] parameters = method.getParameters();
     for (int i = 0; i < parameters.length; i++) {
-      DataBinder dataBinder = new DataBinder();
-      dataBinder.setName(parameters[i].getName());
-      dataBinder.setType(parameters[i].getType());
-      parseAnnotation(dataBinder, parameters[i]);
-      dataBinders[i] = dataBinder;
-    }
-  }
-
-  private void parseAnnotation(DataBinder dataBinder, Parameter parameter) {
-    Param param = parameter.getAnnotation(Param.class);
-    if (param != null) {
-      fillDataBinder(dataBinder, param.value(), param.defaultValue());
-      return;
-    }
-    PathParam pathParam = parameter.getAnnotation(PathParam.class);
-    if (pathParam != null) {
-      fillDataBinder(dataBinder, pathParam.value(), pathParam.defaultValue());
-      dataBinder.setScope(SCOPE.PATH);
-      return;
-    }
-    HeaderParam headerParam = parameter.getAnnotation(HeaderParam.class);
-    if (headerParam != null) {
-      fillDataBinder(dataBinder, headerParam.value(), headerParam.defaultValue());
-      dataBinder.setScope(SCOPE.HEADER);
-      return;
-    }
-    CookieParam cookieParam = parameter.getAnnotation(CookieParam.class);
-    if (cookieParam != null) {
-      fillDataBinder(dataBinder, cookieParam.value(), cookieParam.defaultValue());
-      dataBinder.setScope(SCOPE.COOKIE);
-    }
-  }
-
-  private void fillDataBinder(DataBinder dataBinder, String name, String defaultValue) {
-    if (name.length() > 0) {
-      dataBinder.setName(name);
-    }
-    if (defaultValue.length() > 0) {
-      dataBinder.setDefaultValue(defaultValue);
+      for (ParamBinder binder : BINDERS) {
+        if (binder.supported(parameters[i])) {
+          dataBinders[i] = binder.build(parameters[i]);
+          break;
+        }
+      }
     }
   }
 
   @Override
   public void handle(RoutingContext ctx) {
+    Object[] args = new Object[dataBinders.length];
+    for (int i = 0; i < dataBinders.length; i++) {
+      args[i] = dataBinders[i].getFunc().apply(ctx);
+    }
     try {
-      Object[] args = prepareArgs(ctx);
       proxyMethod.invoke(router, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw Exceptions.wrap(e);
     }
-  }
-
-  private Object[] prepareArgs(RoutingContext ctx) {
-    Object[] args = new Object[dataBinders.length];
-    for (int i = 0; i < dataBinders.length; i++) {
-    }
-    return args;
   }
 
 }

@@ -20,7 +20,7 @@ import vip.justlive.oxygen.web.annotation.CookieParam;
 import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
- * cookie param binder
+ * cookie 参数绑定
  *
  * @author wubo
  */
@@ -44,7 +44,7 @@ public class CookieParamBinder implements ParamBinder {
       DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
       if (converterService.canConverter(String.class, dataBinder.getType())) {
         return converterService.convert(MoreObjects
-            .firstNonNull(ctx.request().getHeader(dataBinder.getName()),
+            .firstOrNull(ctx.request().getHeader(dataBinder.getName()),
                 dataBinder.getDefaultValue()), dataBinder.getType());
       }
       return ctx.bindCookie(dataBinder.getType());

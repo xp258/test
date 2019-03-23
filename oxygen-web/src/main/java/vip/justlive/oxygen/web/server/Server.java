@@ -13,13 +13,9 @@
  */
 package vip.justlive.oxygen.web.server;
 
-import java.util.LinkedList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
-import vip.justlive.oxygen.web.router.AnnotationRouteScanner;
-import vip.justlive.oxygen.web.router.Route;
 
 /**
  * server 启动类
@@ -28,8 +24,6 @@ import vip.justlive.oxygen.web.router.Route;
  */
 @Slf4j
 public class Server {
-
-  private List<Route> routes = new LinkedList<>();
 
   private WebServer webServer;
 
@@ -46,22 +40,10 @@ public class Server {
     return server;
   }
 
-  /**
-   * 路由
-   *
-   * @return router
-   */
-  public Route router() {
-    Route route = new Route();
-    routes.add(route);
-    return route;
-  }
-
   public void start() {
     if (!ready) {
       ready = true;
       Bootstrap.initConfig();
-      prepareRouters();
       webServer.start();
     }
   }
@@ -71,11 +53,6 @@ public class Server {
       ready = false;
       webServer.stop();
     }
-  }
-
-  private void prepareRouters() {
-    new AnnotationRouteScanner(this).scan();
-    routes.forEach(Route::build);
   }
 
 }

@@ -44,7 +44,7 @@ public class BasicParamBinder implements ParamBinder {
       DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
       if (converterService.canConverter(String.class, dataBinder.getType())) {
         return converterService.convert(MoreObjects
-            .firstNonNull(ctx.request().getParam(dataBinder.getName()),
+            .firstOrNull(ctx.request().getParam(dataBinder.getName()),
                 dataBinder.getDefaultValue()), dataBinder.getType());
       }
       return ctx.bindParam(dataBinder.getType());

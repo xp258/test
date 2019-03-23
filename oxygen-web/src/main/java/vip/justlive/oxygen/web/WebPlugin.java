@@ -44,6 +44,8 @@ import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.DataBinder;
 import vip.justlive.oxygen.web.mapping.StaticMapping;
 import vip.justlive.oxygen.web.mapping.StaticMapping.StaticSource;
+import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
+import vip.justlive.oxygen.web.router.Route;
 import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
@@ -310,4 +312,43 @@ public class WebPlugin implements Plugin {
     }
   }
 
+  private void loadAnnationRouter() {
+    Set<Class<?>> routerClasses = ClassScannerPlugin.getTypesAnnotatedWith(Router.class);
+    if (routerClasses == null || routerClasses.isEmpty()) {
+      return;
+    }
+    for (Class<?> clazz : routerClasses) {
+      Router router = clazz.getAnnotation(Router.class);
+      if (router == null) {
+        continue;
+      }
+      String rootPath = router.value();
+      if (!IocPlugin.tryInstance(clazz, clazz.getName(), Integer.MAX_VALUE)) {
+        throw Exceptions.fail(String.format("实例化Router失败 %s", clazz));
+      }
+      parseRouter(rootPath, IocPlugin.beanStore().getBean(clazz.getName()));
+    }
+  }
+
+  private void parseRouter(String rootPath, Object routerBean) {
+    Class<?> clazz = routerBean.getClass();
+    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    try {
+      for (Method method : actualClass.getDeclaredMethods()) {
+        if (!method.isAnnotationPresent(Mapping.class)) {
+          continue;
+        }
+        Method requestMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
+        Mapping mapping = method.getAnnotation(Mapping.class);
+        String routePath = ResourceUtils.concat(rootPath, mapping.value());
+        Route route = Route.router().path(routePath);
+        for (HttpMethod httpMethod : mapping.method()) {
+          route.method(httpMethod);
+        }
+        route.handler(new AnnotationRouteHandler(routerBean, requestMethod, method));
+      }
+    } catch (NoSuchMethodException e) {
+      throw Exceptions.wrap(e);
+    }
+  }
 }

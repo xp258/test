@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web.bind;
 
 import java.lang.reflect.Parameter;
+import vip.justlive.oxygen.core.Order;
 import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
@@ -21,7 +22,7 @@ import vip.justlive.oxygen.web.mapping.DataBinder;
  *
  * @author wubo
  */
-public interface ParamBinder {
+public interface ParamBinder extends Order {
 
   /**
    * 是否支持

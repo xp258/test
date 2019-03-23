@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.web.http.HttpMethod;
@@ -32,18 +33,21 @@ import vip.justlive.oxygen.web.http.HttpMethod;
  *
  * @author wubo
  */
+@Slf4j
 public class Route {
 
   private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");
-  private static final Map<HttpMethod, Map<String, RouteHandler>> SIMPLE_ACTIONS = new EnumMap<>(
+  private static final Map<HttpMethod, Map<String, RouteHandler>> SIMPLE_HANDLERS = new EnumMap<>(
       HttpMethod.class);
-  private static final Map<HttpMethod, Map<String, RouteHandler>> REGEX_ACTIONS = new EnumMap<>(
+  private static final Map<HttpMethod, Map<String, RouteHandler>> REGEX_HANDLERS = new EnumMap<>(
       HttpMethod.class);
+  private static final List<Route> ROUTES = new LinkedList<>();
+
 
   static {
     for (HttpMethod httpMethod : HttpMethod.values()) {
-      SIMPLE_ACTIONS.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
-      REGEX_ACTIONS.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
+      SIMPLE_HANDLERS.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
+      REGEX_HANDLERS.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
     }
   }
 
@@ -66,6 +70,27 @@ public class Route {
 
   private List<String> pathVars = new LinkedList<>();
 
+  private Route() {
+  }
+
+  /**
+   * 构建router
+   *
+   * @return route
+   */
+  public static Route router() {
+    Route route = new Route();
+    ROUTES.add(route);
+    return route;
+  }
+
+  /**
+   * build
+   */
+  public static void build() {
+    ROUTES.forEach(Route::buildRoute);
+  }
+
   /**
    * lookup handler
    *
@@ -74,11 +99,11 @@ public class Route {
    * @return handler
    */
   public static RouteHandler lookup(HttpMethod method, String path) {
-    RouteHandler handler = SIMPLE_ACTIONS.get(method).get(path);
+    RouteHandler handler = SIMPLE_HANDLERS.get(method).get(path);
     if (handler != null) {
       return handler;
     }
-    for (Map.Entry<String, RouteHandler> entry : REGEX_ACTIONS.get(method).entrySet()) {
+    for (Map.Entry<String, RouteHandler> entry : REGEX_HANDLERS.get(method).entrySet()) {
       if (Pattern.compile(entry.getKey()).matcher(path).matches()) {
         return entry.getValue();
       }
@@ -90,8 +115,8 @@ public class Route {
    * clear
    */
   public static void clear() {
-    SIMPLE_ACTIONS.clear();
-    REGEX_ACTIONS.clear();
+    SIMPLE_HANDLERS.clear();
+    REGEX_HANDLERS.clear();
   }
 
   /**
@@ -138,18 +163,18 @@ public class Route {
   }
 
   /**
-   * build
+   * build route
    */
-  public void build() {
+  private void buildRoute() {
     if (methods.isEmpty()) {
       methods.addAll(Arrays.asList(HttpMethod.values()));
     }
     for (HttpMethod method : methods) {
       RouteHandler exist;
       if (this.regex) {
-        exist = REGEX_ACTIONS.get(method).putIfAbsent(this.path, handler);
+        exist = REGEX_HANDLERS.get(method).putIfAbsent(this.path, handler);
       } else {
-        exist = SIMPLE_ACTIONS.get(method).putIfAbsent(this.path, handler);
+        exist = SIMPLE_HANDLERS.get(method).putIfAbsent(this.path, handler);
       }
       if (exist != null) {
         throw Exceptions.fail(String.format("path [%s] already exists", path));

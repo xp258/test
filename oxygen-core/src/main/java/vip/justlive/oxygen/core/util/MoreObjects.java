@@ -24,6 +24,33 @@ import lombok.experimental.UtilityClass;
 public class MoreObjects {
 
   /**
+   * 获取第一个不为null的值，没有则返回null
+   *
+   * @param first first value
+   * @param second second value
+   * @param others other values
+   * @param <T> 泛型
+   * @return nonNull
+   */
+  public static <T> T firstOrNull(T first, T second, T... others) {
+    if (first != null) {
+      return first;
+    }
+    if (second != null) {
+      return second;
+    }
+    if (others == null || others.length == 0) {
+      return null;
+    }
+    for (T obj : others) {
+      if (obj != null) {
+        return obj;
+      }
+    }
+    return null;
+  }
+
+  /**
    * 获取第一个不为null的值
    *
    * @param first first value
@@ -33,19 +60,9 @@ public class MoreObjects {
    * @return nonNull
    */
   public static <T> T firstNonNull(T first, T second, T... others) {
-    if (first != null) {
-      return first;
-    }
-    if (second != null) {
-      return second;
-    }
-    if (others == null || others.length == 0) {
-      throw new IllegalArgumentException();
-    }
-    for (T obj : others) {
-      if (obj != null) {
-        return obj;
-      }
+    T obj = firstOrNull(first, second, others);
+    if (obj != null) {
+      return obj;
     }
     throw new IllegalArgumentException();
   }
