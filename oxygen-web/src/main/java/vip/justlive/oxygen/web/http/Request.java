@@ -23,7 +23,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.web.mapping.Action;
+import vip.justlive.oxygen.web.router.Route;
 
 /**
  * Request
@@ -41,7 +41,6 @@ public class Request implements Serializable {
   private static final String[] EMPTY = new String[0];
 
   private final transient HttpServletRequest originalRequest;
-  private transient Action action;
   /**
    * 主机名
    */
@@ -86,6 +85,8 @@ public class Request implements Serializable {
    * multipart
    */
   Multipart multipart;
+
+  transient Route route;
   /**
    * 异常
    */
@@ -257,11 +258,11 @@ public class Request implements Serializable {
   }
 
   /**
-   * 设置action
+   * 设置route
    *
-   * @param action action
+   * @param route route
    */
-  public void setAction(Action action) {
-    this.action = action;
+  public void setRoute(Route route) {
+    this.route = route;
   }
 }

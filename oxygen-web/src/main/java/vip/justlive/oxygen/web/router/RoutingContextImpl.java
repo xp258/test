@@ -25,10 +25,12 @@ public class RoutingContextImpl implements RoutingContext {
 
   private final Request request;
   private final Response response;
+  private final String requestPath;
 
-  public RoutingContextImpl(Request request, Response response) {
+  public RoutingContextImpl(Request request, Response response, String requestPath) {
     this.request = request;
     this.response = response;
+    this.requestPath = requestPath;
   }
 
   @Override
@@ -39,6 +41,11 @@ public class RoutingContextImpl implements RoutingContext {
   @Override
   public Response response() {
     return response;
+  }
+
+  @Override
+  public String requestPath() {
+    return requestPath;
   }
 
   @Override

@@ -17,7 +17,6 @@ import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.web.annotation.Param;
-import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
  * Param注解参数绑定

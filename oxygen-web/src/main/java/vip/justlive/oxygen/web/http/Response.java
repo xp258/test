@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class Response implements Serializable {
 
   private final transient HttpServletResponse originalResponse;
 
+  private int status = 200;
   /**
    * 编码
    */
@@ -43,6 +45,11 @@ public class Response implements Serializable {
    * contentType
    */
   private String contentType;
+
+  /**
+   * out
+   */
+  private ByteArrayOutputStream out = new ByteArrayOutputStream();
 
   /**
    * cookies

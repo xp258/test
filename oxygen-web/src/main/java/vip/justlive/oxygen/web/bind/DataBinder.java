@@ -11,30 +11,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.handler;
+package vip.justlive.oxygen.web.bind;
 
-import vip.justlive.oxygen.web.mapping.DataBinder;
+import java.util.function.Function;
+import lombok.Data;
+import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
- * 参数处理
+ * 数据绑定
  *
  * @author wubo
  */
-public interface ParamHandler {
+@Data
+public class DataBinder {
 
   /**
-   * 是否支持
-   *
-   * @param dataBinder 数据绑定
-   * @return true表示支持
+   * 数据绑定名称
    */
-  boolean supported(DataBinder dataBinder);
-
+  private String name;
   /**
-   * 处理参数
-   *
-   * @param dataBinder 数据绑定
-   * @return result
+   * 数据类型
    */
-  Object handle(DataBinder dataBinder);
+  private Class<?> type;
+  /**
+   * 默认值
+   */
+  private String defaultValue;
+
+  private Function<RoutingContext, Object> func;
+
 }

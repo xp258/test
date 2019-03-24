@@ -37,6 +37,13 @@ public interface RoutingContext {
    */
   Response response();
 
+  /**
+   * 请求路径
+   *
+   * @return path
+   */
+  String requestPath();
+
   <T> T bindParam(Class<T> clazz);
 
   <T> T bindCookie(Class<T> clazz);

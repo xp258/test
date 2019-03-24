@@ -17,7 +17,6 @@ import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.web.annotation.CookieParam;
-import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
  * cookie 参数绑定

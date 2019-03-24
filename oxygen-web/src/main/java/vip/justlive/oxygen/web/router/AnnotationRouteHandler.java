@@ -21,7 +21,7 @@ import java.util.List;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.web.bind.ParamBinder;
-import vip.justlive.oxygen.web.mapping.DataBinder;
+import vip.justlive.oxygen.web.bind.DataBinder;
 
 /**
  * 注解路由处理

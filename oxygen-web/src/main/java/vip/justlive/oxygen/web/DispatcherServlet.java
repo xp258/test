@@ -14,18 +14,12 @@
 package vip.justlive.oxygen.web;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.web.http.Cookie;
@@ -33,10 +27,10 @@ import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
-import vip.justlive.oxygen.web.mapping.Action;
-import vip.justlive.oxygen.web.mapping.StaticMapping.StaticException;
-import vip.justlive.oxygen.web.mapping.StaticMapping.StaticSource;
-import vip.justlive.oxygen.web.view.ViewResolver;
+import vip.justlive.oxygen.web.router.Route;
+import vip.justlive.oxygen.web.router.RouteHandler;
+import vip.justlive.oxygen.web.router.Router;
+import vip.justlive.oxygen.web.router.RoutingContextImpl;
 
 /**
  * 请求分发器
@@ -63,16 +57,28 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     try {
-      Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
-      if (action == null) {
-        handlerNotFound(req, resp);
-        return;
+      RouteHandler handler = Router.lookupStatic(requestPath);
+      if (handler == null) {
+        Route route = Router.lookup(httpMethod, requestPath);
+        if (route == null) {
+          handlerNotFound(req, resp);
+          return;
+        }
+        Request.current().setRoute(route);
+        for (RequestParse requestParse : WebPlugin.REQUEST_PARSES) {
+          if (requestParse.supported(req)) {
+            requestParse.handle(req);
+          }
+        }
+        handler = route.handler();
       }
+
       Bootstrap.invokeBeforePlugins();
-      handlerAction(action, req, resp);
+      handler.handle(new RoutingContextImpl(Request.current(), Response.current(), requestPath));
+      copyResponse(Response.current(), resp);
       Bootstrap.invokeAfterPlugins();
-    } catch (StaticException e) {
-      handlerStatic(req, resp, e.getSource());
+    } catch (Exception e) {
+      handlerError(req, resp, e);
     } finally {
       Bootstrap.invokeFinalPlugins();
       Request.clear();
@@ -81,35 +87,12 @@ public class DispatcherServlet extends HttpServlet {
 
   }
 
-  private void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
-    Request.current().setAction(action);
-    for (RequestParse requestParse : WebPlugin.REQUEST_PARSES) {
-      if (requestParse.supported(req)) {
-        requestParse.handle(req);
-      }
-    }
 
-    try {
-      Object result = action.invoke();
-      copyResponse(Response.current(), resp);
-      if (action.needRenderView()) {
-        ViewResolver viewResolver = WebPlugin.findViewResolver(result);
-        if (viewResolver == null) {
-          handlerNoViewResolver(resp);
-          return;
-        }
-        viewResolver.resolveView(req, resp, result);
-      }
-    } catch (Exception e) {
-      handlerError(req, resp, e);
-    }
-
-  }
-
-  private void copyResponse(Response response, HttpServletResponse resp) {
+  private void copyResponse(Response response, HttpServletResponse resp) throws Exception {
     if (response.getContentType() != null) {
       resp.setContentType(response.getContentType());
     }
+    resp.setStatus(response.getStatus());
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
     for (Cookie cookie : response.getCookies().values()) {
@@ -125,6 +108,7 @@ public class DispatcherServlet extends HttpServlet {
       }
       resp.addCookie(jCookie);
     }
+    resp.getOutputStream().write(response.getOut().toByteArray());
 
   }
 
@@ -152,38 +136,6 @@ public class DispatcherServlet extends HttpServlet {
     Bootstrap.invokeOnExceptionPlugins();
     Request.current().setException(e);
     WebPlugin.ERROR_HANDLERS.get(Constants.SERVER_ERROR).handle(req, resp);
-  }
-
-  private void handlerStatic(HttpServletRequest req, HttpServletResponse resp,
-      StaticSource source) {
-    if (log.isDebugEnabled()) {
-      log.debug("handle static source [{}] for path [{}]", source.getPath(), req.getServletPath());
-    }
-    resp.setContentType(source.getContentType());
-    String browserETag = req.getHeader(Constants.IF_NONE_MATCH);
-    String ifModifiedSince = req.getHeader(Constants.IF_MODIFIED_SINCE);
-    long last = source.lastModified();
-    String eTag = source.eTag();
-    SimpleDateFormat format = new SimpleDateFormat(Constants.ETAG_DATA_FORMAT, Locale.US);
-    resp.setHeader(Constants.ETAG, eTag);
-    try {
-      if (eTag.equals(browserETag) && ifModifiedSince != null
-          && format.parse(ifModifiedSince).getTime() >= last) {
-        resp.setStatus(304);
-        return;
-      }
-    } catch (ParseException e) {
-      log.warn("Can't parse 'If-Modified-Since' header date [{}]", ifModifiedSince);
-    }
-    String lastDate = format.format(new Date(last));
-    resp.setHeader(Constants.LAST_MODIFIED, lastDate);
-    resp.setHeader(Constants.CACHE_CONTROL,
-        Constants.MAX_AGE + Constants.EQUAL + ConfigFactory.load(WebConf.class).getStaticCache());
-    try {
-      Files.copy(source.getPath(), resp.getOutputStream());
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
   }
 
 

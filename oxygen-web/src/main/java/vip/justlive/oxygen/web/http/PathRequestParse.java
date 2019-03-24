@@ -28,17 +28,17 @@ public class PathRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {
-    return !Request.current().getAction().getPathVariables().isEmpty();
+    return !Request.current().getRoute().pathVars().isEmpty();
   }
 
   @Override
   public void handle(HttpServletRequest req) {
     Request request = Request.current();
     String path = request.getPath();
-    Matcher matcher = Pattern.compile(request.getAction().getPath()).matcher(path);
+    Matcher matcher = Pattern.compile(request.getRoute().path()).matcher(path);
     if (matcher.matches()) {
       Map<String, String> map = request.getPathVariables();
-      List<String> pathVariables = request.getAction().getPathVariables();
+      List<String> pathVariables = request.getRoute().pathVars();
       for (int i = 1, len = matcher.groupCount(); i <= len; i++) {
         map.put(pathVariables.get(i - 1), matcher.group(i));
       }
