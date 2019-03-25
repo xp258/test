@@ -40,14 +40,29 @@ public class Server {
     return server;
   }
 
-  public void start() {
+  /**
+   * 监听端口并启动服务
+   */
+  public void listen() {
+    listen(-1);
+  }
+
+  /**
+   * 监听端口并启动服务
+   *
+   * @param port 端口
+   */
+  public void listen(int port) {
     if (!ready) {
       ready = true;
       Bootstrap.initConfig();
-      webServer.start();
+      webServer.listen(port);
     }
   }
 
+  /**
+   * 关闭服务
+   */
   public void stop() {
     if (ready) {
       ready = false;

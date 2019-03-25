@@ -13,6 +13,9 @@
  */
 package vip.justlive.oxygen.web.router;
 
+import com.alibaba.fastjson.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 
@@ -50,21 +53,38 @@ public class RoutingContextImpl implements RoutingContext {
 
   @Override
   public <T> T bindParam(Class<T> clazz) {
-    return null;
+    Map<String, Object> map = new HashMap<>(16);
+    request.getParams().forEach((k, v) -> map.put(k, v[0]));
+    return bind(map, clazz);
   }
 
   @Override
   public <T> T bindCookie(Class<T> clazz) {
-    return null;
+    Map<String, Object> map = new HashMap<>(16);
+    request.getCookies().forEach((k, v) -> map.put(k, v.getValue()));
+    return bind(map, clazz);
   }
 
   @Override
   public <T> T bindHeader(Class<T> clazz) {
-    return null;
+    Map<String, Object> map = new HashMap<>(16);
+    request.getHeaders().forEach((k, v) -> map.put(k, v[0]));
+    return bind(map, clazz);
   }
 
   @Override
-  public <T> T bindPathvar(Class<T> clazz) {
+  public <T> T bindPathVariables(Class<T> clazz) {
+    return bind(new HashMap<>(request.getPathVariables()), clazz);
+  }
+
+  private <T> T bind(Map<String, Object> map, Class<T> clazz) {
+    if (Map.class.isAssignableFrom(clazz)) {
+      return clazz.cast(map);
+    }
+    // 复杂类型 使用classloader判断非java内置类
+    if (clazz.getClassLoader() != null) {
+      return new JSONObject(map).toJavaObject(clazz);
+    }
     return null;
   }
 }

@@ -48,6 +48,7 @@ public class GeneralRequestParse implements RequestParse {
       request.host = host;
       request.port = 90;
     }
+    request.secure = req.isSecure();
     request.remoteAddress = getIpAddress(request, req.getRemoteAddr());
   }
 

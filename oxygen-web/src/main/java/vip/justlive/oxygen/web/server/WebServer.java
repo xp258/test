@@ -23,7 +23,7 @@ public interface WebServer {
   /**
    * 启动
    */
-  void start();
+  void listen(int port);
 
   /**
    * 停止

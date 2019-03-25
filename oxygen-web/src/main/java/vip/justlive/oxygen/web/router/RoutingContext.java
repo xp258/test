@@ -44,11 +44,39 @@ public interface RoutingContext {
    */
   String requestPath();
 
+  /**
+   * param参数绑定
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return obj
+   */
   <T> T bindParam(Class<T> clazz);
 
+  /**
+   * cookie参数绑定
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return obj
+   */
   <T> T bindCookie(Class<T> clazz);
 
+  /**
+   * header参数绑定
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return obj
+   */
   <T> T bindHeader(Class<T> clazz);
 
-  <T> T bindPathvar(Class<T> clazz);
+  /**
+   * path参数绑定
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return obj
+   */
+  <T> T bindPathVariables(Class<T> clazz);
 }

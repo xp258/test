@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.ioc.IocPlugin;
+import vip.justlive.oxygen.web.exception.ExceptionHandler;
 import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
@@ -30,6 +32,7 @@ import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.Route;
 import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.Router;
+import vip.justlive.oxygen.web.router.RoutingContext;
 import vip.justlive.oxygen.web.router.RoutingContextImpl;
 
 /**
@@ -56,12 +59,13 @@ public class DispatcherServlet extends HttpServlet {
       requestPath = requestPath.substring(0, requestPath.length() - 1);
     }
 
+    RoutingContext ctx = new RoutingContextImpl(Request.current(), Response.current(), requestPath);
     try {
       RouteHandler handler = Router.lookupStatic(requestPath);
       if (handler == null) {
         Route route = Router.lookup(httpMethod, requestPath);
         if (route == null) {
-          handlerNotFound(req, resp);
+          handlerNotFound(ctx);
           return;
         }
         Request.current().setRoute(route);
@@ -74,19 +78,17 @@ public class DispatcherServlet extends HttpServlet {
       }
 
       Bootstrap.invokeBeforePlugins();
-      handler.handle(new RoutingContextImpl(Request.current(), Response.current(), requestPath));
+      handler.handle(ctx);
       copyResponse(Response.current(), resp);
       Bootstrap.invokeAfterPlugins();
     } catch (Exception e) {
-      handlerError(req, resp, e);
+      handlerError(ctx, e);
     } finally {
       Bootstrap.invokeFinalPlugins();
       Request.clear();
       Response.clear();
     }
-
   }
-
 
   private void copyResponse(Response response, HttpServletResponse resp) throws Exception {
     if (response.getContentType() != null) {
@@ -108,36 +110,25 @@ public class DispatcherServlet extends HttpServlet {
       }
       resp.addCookie(jCookie);
     }
-    resp.getOutputStream().write(response.getOut().toByteArray());
-
-  }
-
-  private void handlerNoViewResolver(HttpServletResponse resp) {
-    String msg = String
-        .format("No ViewResolver found in container for [%s]", Request.current().getPath());
-    log.error(msg);
-    try {
-      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
+    if (response.getOut().size() > 0) {
+      resp.getOutputStream().write(response.getOut().toByteArray());
     }
   }
 
-  private void handlerNotFound(HttpServletRequest req, HttpServletResponse resp) {
+  private void handlerNotFound(RoutingContext ctx) {
     if (log.isDebugEnabled()) {
-      log.debug("DispatcherServlet not found path [{}] on method [{}]", req.getServletPath(),
-          req.getMethod());
+      log.debug("DispatcherServlet not found path [{}] on method [{}]", ctx.requestPath(),
+          ctx.request().getMethod());
     }
-    WebPlugin.ERROR_HANDLERS.get(Constants.NOT_FOUND).handle(req, resp);
+    IocPlugin.beanStore().getBean(ExceptionHandler.class)
+        .handle(ctx, Exceptions.fail("No handler found"), 404);
   }
 
-  private void handlerError(HttpServletRequest req, HttpServletResponse resp, Exception e) {
-    log.error("DispatcherServlet occurs an error for path [{}]", req.getServletPath(), e);
+  private void handlerError(RoutingContext ctx, Exception e) {
+    log.error("DispatcherServlet occurs an error for path [{}]", ctx.requestPath(), e);
     Bootstrap.invokeOnExceptionPlugins();
-    Request.current().setException(e);
-    WebPlugin.ERROR_HANDLERS.get(Constants.SERVER_ERROR).handle(req, resp);
+    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
   }
-
 
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp)

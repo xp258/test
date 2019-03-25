@@ -15,16 +15,12 @@ package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.ClassUtils;
@@ -33,13 +29,12 @@ import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
-import vip.justlive.oxygen.web.handler.DefaultErrorHandler;
-import vip.justlive.oxygen.web.handler.ErrorHandler;
+import vip.justlive.oxygen.web.exception.ExceptionHandler;
+import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
 import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
 import vip.justlive.oxygen.web.router.Route;
-import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
  * web插件
@@ -50,36 +45,6 @@ import vip.justlive.oxygen.web.view.ViewResolver;
 public class WebPlugin implements Plugin {
 
   static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
-  static final Map<Integer, ErrorHandler> ERROR_HANDLERS = new HashMap<>(2, 1f);
-
-  private static final Set<ViewResolver> VIEW_RESOLVERS = new HashSet<>(4);
-
-  /**
-   * 添加视图解析器
-   *
-   * @param viewResolver 视图解析器
-   */
-  public static void addViewResolver(ViewResolver viewResolver) {
-    VIEW_RESOLVERS.add(viewResolver);
-    if (log.isDebugEnabled()) {
-      log.debug("add a view resolver [{}]", viewResolver.getClass());
-    }
-  }
-
-  /**
-   * 获取视图解析
-   *
-   * @param data Action执行返回
-   * @return ViewResolver
-   */
-  public static ViewResolver findViewResolver(Object data) {
-    for (ViewResolver viewResolver : VIEW_RESOLVERS) {
-      if (viewResolver.supported(data)) {
-        return viewResolver;
-      }
-    }
-    return null;
-  }
 
   @Override
   public int order() {
@@ -88,10 +53,9 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void start() {
-    loadStaticMapping();
+    loadStaticRoute();
     loadAnnotationRouter();
     loadRequestParse();
-    loadViewResolver();
     loadErrorHandler();
     vip.justlive.oxygen.web.router.Router.build();
   }
@@ -99,7 +63,6 @@ public class WebPlugin implements Plugin {
   @Override
   public void stop() {
     REQUEST_PARSES.clear();
-    ERROR_HANDLERS.clear();
   }
 
   private void loadRequestParse() {
@@ -111,13 +74,7 @@ public class WebPlugin implements Plugin {
     }
   }
 
-  private void loadViewResolver() {
-    for (ViewResolver viewResolver : ServiceLoaderUtils.loadServices(ViewResolver.class)) {
-      addViewResolver(viewResolver);
-    }
-  }
-
-  private void loadStaticMapping() {
+  private void loadStaticRoute() {
     WebConf conf = ConfigFactory.load(WebConf.class);
     String[] paths = conf.getDefaultStaticPaths();
     if (paths == null) {
@@ -125,31 +82,6 @@ public class WebPlugin implements Plugin {
     }
     vip.justlive.oxygen.web.router.Router.staticRoute().prefix(conf.getDefaultStaticPrefix())
         .locations(Arrays.asList(paths));
-  }
-
-  private void loadErrorHandler() {
-    WebConf webConf = ConfigFactory.load(WebConf.class);
-    try {
-      ErrorHandler errorHandler;
-      if (webConf.getError404Handler() != null && webConf.getError404Handler().length() > 0) {
-        errorHandler = (ErrorHandler) ClassUtils
-            .forName(webConf.getError404Handler(), ClassUtils.getDefaultClassLoader())
-            .newInstance();
-      } else {
-        errorHandler = new DefaultErrorHandler(webConf.getError404Page(), Constants.NOT_FOUND);
-      }
-      ERROR_HANDLERS.put(Constants.NOT_FOUND, errorHandler);
-      if (webConf.getError500Handler() != null && webConf.getError500Handler().length() > 0) {
-        errorHandler = (ErrorHandler) ClassUtils
-            .forName(webConf.getError500Handler(), ClassUtils.getDefaultClassLoader())
-            .newInstance();
-      } else {
-        errorHandler = new DefaultErrorHandler(webConf.getError500Page(), Constants.SERVER_ERROR);
-      }
-      ERROR_HANDLERS.put(Constants.SERVER_ERROR, errorHandler);
-    } catch (Exception e) {
-      throw Exceptions.wrap(e);
-    }
   }
 
   private void loadAnnotationRouter() {
@@ -189,6 +121,21 @@ public class WebPlugin implements Plugin {
       }
     } catch (NoSuchMethodException e) {
       throw Exceptions.wrap(e);
+    }
+  }
+
+  private void loadErrorHandler() {
+    ExceptionHandler handler = IocPlugin.beanStore().getBean(ExceptionHandler.class);
+    if (handler != null) {
+      if (log.isDebugEnabled()) {
+        log.debug("loaded error handler of user {}", handler);
+      }
+    } else {
+      handler = new ExceptionHandlerImpl();
+      IocPlugin.beanStore().addBean(handler);
+      if (log.isDebugEnabled()) {
+        log.debug("loaded default error handler {}", handler);
+      }
     }
   }
 }

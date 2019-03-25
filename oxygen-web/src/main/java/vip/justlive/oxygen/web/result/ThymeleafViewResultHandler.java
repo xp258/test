@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2018 justlive1
+ *  Copyright (C) 2019 justlive1
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License
+ *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ *  or implied. See the License for the specific language governing permissions and limitations under
+ *  the License.
  */
-package vip.justlive.oxygen.web.view;
+package vip.justlive.oxygen.web.result;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,27 +32,33 @@ import org.thymeleaf.templateresource.ITemplateResource;
 import org.thymeleaf.templateresource.StringTemplateResource;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
- * thymeleaf handler
+ * thymeleaf 视图处理
  *
  * @author wubo
  */
 @Slf4j
-public class ThymeleafHandler {
+public class ThymeleafViewResultHandler implements ResultHandler {
 
+  private static final boolean THYMELEAF_SUPPORTED = ClassUtils
+      .isPresent("org.thymeleaf.Thymeleaf");
   private static final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
-  private final TemplateEngine templateEngine;
 
-  ThymeleafHandler() {
-    templateEngine = new TemplateEngine();
+  private static final String SUFFIX = ".html";
+  private final TemplateEngine templateEngine = new TemplateEngine();
+
+  public ThymeleafViewResultHandler() {
     String tempDir = ConfigFactory.load(CoreConf.class).getBaseTempDir() + "/thymeleaf";
     File dir = new File(tempDir);
     if (!dir.exists() && !dir.mkdirs()) {
@@ -67,11 +73,30 @@ public class ThymeleafHandler {
     templateEngine.setTemplateResolver(resolver);
   }
 
-  public void handler(String path, Map<String, Object> data, Writer writer) {
-    Request request = Request.current();
-    templateEngine.process(path,
-        new WebContext(request.getOriginalRequest(), Response.current().getOriginalResponse(),
-            request.getOriginalRequest().getServletContext(), Locale.getDefault(), data), writer);
+  @Override
+  public boolean support(Class<?> type, Object data) {
+    if (THYMELEAF_SUPPORTED && Result.class.isAssignableFrom(type) && data != null
+        && ViewResult.class.isAssignableFrom(data.getClass())) {
+      ViewResult result = (ViewResult) data;
+      return result.getPath() != null && result.getPath().endsWith(SUFFIX);
+    }
+    return false;
+  }
+
+  @Override
+  public void apply(RoutingContext ctx, Object data) {
+    ViewResult result = (ViewResult) data;
+    Request request = ctx.request();
+    Response response = ctx.response();
+    response.setContentType(Constants.TEXT_HTML);
+    try {
+      response.getOut().write(templateEngine.process(result.getPath(),
+          new WebContext(request.getOriginalRequest(), response.getOriginalResponse(),
+              request.getOriginalRequest().getServletContext(), Locale.getDefault(),
+              result.getData())).getBytes(Charset.forName(response.getEncoding())));
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
   }
 
   /**
@@ -126,5 +151,4 @@ public class ThymeleafHandler {
       return new StringTemplateResource(source);
     }
   }
-
 }

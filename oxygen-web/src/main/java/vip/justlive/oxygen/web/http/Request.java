@@ -85,6 +85,10 @@ public class Request implements Serializable {
    * multipart
    */
   Multipart multipart;
+  /**
+   * 是否https
+   */
+  boolean secure;
 
   transient Route route;
   /**

@@ -20,8 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
-import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.bind.DataBinder;
+import vip.justlive.oxygen.web.bind.ParamBinder;
+import vip.justlive.oxygen.web.result.ResultHandler;
 
 /**
  * 注解路由处理
@@ -31,10 +32,13 @@ import vip.justlive.oxygen.web.bind.DataBinder;
 public class AnnotationRouteHandler implements RouteHandler {
 
   private static final List<ParamBinder> BINDERS;
+  private static final List<ResultHandler> RESULT_HANDLERS;
 
   static {
     BINDERS = ServiceLoaderUtils.loadServices(ParamBinder.class);
     Collections.sort(BINDERS);
+    RESULT_HANDLERS = ServiceLoaderUtils.loadServices(ResultHandler.class);
+    Collections.sort(RESULT_HANDLERS);
   }
 
   private final Object router;
@@ -68,10 +72,17 @@ public class AnnotationRouteHandler implements RouteHandler {
     for (int i = 0; i < dataBinders.length; i++) {
       args[i] = dataBinders[i].getFunc().apply(ctx);
     }
+    Object result;
     try {
-      proxyMethod.invoke(router, args);
+      result = proxyMethod.invoke(router, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw Exceptions.wrap(e);
+    }
+    for (ResultHandler handler : RESULT_HANDLERS) {
+      if (handler.support(method.getReturnType(), result)) {
+        handler.apply(ctx, result);
+        break;
+      }
     }
   }
 

@@ -46,7 +46,7 @@ public class PathParamBinder implements ParamBinder {
             .firstOrNull(ctx.request().getPathVariables().get(dataBinder.getName()),
                 dataBinder.getDefaultValue()), dataBinder.getType());
       }
-      return ctx.bindPathvar(dataBinder.getType());
+      return ctx.bindPathVariables(dataBinder.getType());
     });
     return dataBinder;
   }
