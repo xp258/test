@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.web.http.HttpMethod;
 
@@ -28,6 +29,7 @@ import vip.justlive.oxygen.web.http.HttpMethod;
  *
  * @author wubo
  */
+@UtilityClass
 public class Router {
 
   static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");

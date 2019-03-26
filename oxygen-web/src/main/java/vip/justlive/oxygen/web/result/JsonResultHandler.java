@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -26,6 +27,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
+@Bean
 public class JsonResultHandler implements ResultHandler {
 
   @Override

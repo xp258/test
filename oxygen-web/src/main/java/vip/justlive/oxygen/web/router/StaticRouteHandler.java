@@ -34,7 +34,6 @@ import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
-import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 
@@ -105,8 +104,9 @@ public class StaticRouteHandler implements RouteHandler {
     }
     String lastDate = format.format(new Date(last));
     resp.setHeader(Constants.LAST_MODIFIED, lastDate);
-    resp.setHeader(Constants.CACHE_CONTROL,
-        Constants.MAX_AGE + Constants.EQUAL + ConfigFactory.load(WebConf.class).getStaticCache());
+    if (route.maxAge() > 0) {
+      resp.setHeader(Constants.CACHE_CONTROL, Constants.MAX_AGE + Constants.EQUAL + route.maxAge());
+    }
     try {
       Files.copy(source.getPath(), resp.getOut());
     } catch (IOException e) {

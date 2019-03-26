@@ -35,12 +35,15 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
   @Override
   public void handle(RoutingContext ctx, Exception e, int status) {
     Response response = ctx.response();
-    Resp resp;
+    Resp resp = null;
     if (e instanceof CodedException) {
       ErrorCode errorCode = ((CodedException) e).getErrorCode();
-      resp = Resp.error(errorCode.getCode(), errorCode.getMessage());
-    } else {
-      resp = Resp.error(e.getMessage());
+      if (errorCode != null) {
+        resp = Resp.error(errorCode.getCode(), errorCode.getMessage());
+      }
+    }
+    if (resp == null) {
+      resp = Resp.error(e.toString());
     }
     response.setContentType(Constants.APPLICATION_JSON);
     response.setStatus(status);

@@ -13,32 +13,13 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.thymeleaf.IEngineConfiguration;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.WebContext;
-import org.thymeleaf.templateresolver.StringTemplateResolver;
-import org.thymeleaf.templateresource.ITemplateResource;
-import org.thymeleaf.templateresource.StringTemplateResource;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.io.SimpleResourceLoader;
-import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -49,29 +30,14 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * @author wubo
  */
 @Slf4j
+@Bean
 public class ThymeleafViewResultHandler implements ResultHandler {
 
   private static final boolean THYMELEAF_SUPPORTED = ClassUtils
       .isPresent("org.thymeleaf.Thymeleaf");
-  private static final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
-
   private static final String SUFFIX = ".html";
-  private final TemplateEngine templateEngine = new TemplateEngine();
 
-  public ThymeleafViewResultHandler() {
-    String tempDir = ConfigFactory.load(CoreConf.class).getBaseTempDir() + "/thymeleaf";
-    File dir = new File(tempDir);
-    if (!dir.exists() && !dir.mkdirs()) {
-      log.error("create temp thymeleaf dir [{}] error", dir.getAbsolutePath());
-    } else {
-      log.info("temp thymeleaf dir is [{}]", dir.getAbsolutePath());
-    }
-    WebConf webConf = ConfigFactory.load(WebConf.class);
-    ResourceTemplateResolver resolver = new ResourceTemplateResolver(webConf.getThymeleafPrefix(),
-        tempDir);
-    resolver.setCacheable(webConf.isViewCacheEnabled());
-    templateEngine.setTemplateResolver(resolver);
-  }
+  private ThymeleafResolver resolver;
 
   @Override
   public boolean support(Class<?> type, Object data) {
@@ -89,66 +55,19 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     Request request = ctx.request();
     Response response = ctx.response();
     response.setContentType(Constants.TEXT_HTML);
+    check();
     try {
-      response.getOut().write(templateEngine.process(result.getPath(),
-          new WebContext(request.getOriginalRequest(), response.getOriginalResponse(),
-              request.getOriginalRequest().getServletContext(), Locale.getDefault(),
-              result.getData())).getBytes(Charset.forName(response.getEncoding())));
+      response.getOut().write(
+          resolver.handler(request, response, result.getPath(), result.getData())
+              .getBytes(Charset.forName(response.getEncoding())));
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }
   }
 
-  /**
-   * 资源模板解析
-   */
-  public static class ResourceTemplateResolver extends StringTemplateResolver {
-
-    private final String prefix;
-    private final String tempDir;
-
-    ResourceTemplateResolver(String prefix, String tempDir) {
-      super();
-      setName("Oxygen-Thymeleaf3");
-      this.prefix = prefix;
-      this.tempDir = tempDir;
-    }
-
-    @Override
-    protected ITemplateResource computeTemplateResource(IEngineConfiguration configuration,
-        String ownerTemplate, String template, Map<String, Object> templateResolutionAttributes) {
-      Path path = CACHE.get(template);
-      String source;
-      InputStream is = null;
-      try {
-        if (path == null) {
-          SourceResource sourceResource = new SimpleResourceLoader(prefix + template);
-          is = sourceResource.getInputStream();
-          File savedFile = new File(tempDir, String.valueOf(SnowflakeIdWorker.defaultNextId()));
-          path = savedFile.toPath();
-          Files.copy(is, path);
-          savedFile.deleteOnExit();
-        }
-        source = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-      } catch (IOException e) {
-        throw Exceptions.wrap(e);
-      } finally {
-        try {
-          if (path != null) {
-            if (isCacheable()) {
-              CACHE.putIfAbsent(template, path);
-            } else {
-              Files.deleteIfExists(path);
-            }
-          }
-          if (is != null) {
-            is.close();
-          }
-        } catch (IOException e) {
-          // nothing
-        }
-      }
-      return new StringTemplateResource(source);
+  private synchronized void check() {
+    if (resolver == null) {
+      resolver = new ThymeleafResolver();
     }
   }
 }

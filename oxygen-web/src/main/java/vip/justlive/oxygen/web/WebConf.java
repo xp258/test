@@ -78,28 +78,4 @@ public class WebConf {
   @Value("${web.view.cache.enabled:true}")
   private boolean viewCacheEnabled;
 
-  /**
-   * 404错误页面
-   */
-  @Value("${web.error.404.page:}")
-  private String error404Page;
-
-  /**
-   * 404错误处理类
-   */
-  @Value("${web.error.404.handler:}")
-  private String error404Handler;
-
-  /**
-   * 500错误页面
-   */
-  @Value("${web.error.500.page:}")
-  private String error500Page;
-
-  /**
-   * 500错误处理类
-   */
-  @Value("${web.error.500.handler:}")
-  private String error500Handler;
-
 }

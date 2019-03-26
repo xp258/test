@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web.result;
 
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -23,6 +24,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
+@Bean
 public class RedirectResultHandler implements ResultHandler {
 
   private static final String PROTOCOLS_REGEX = "^\\w+://.*";

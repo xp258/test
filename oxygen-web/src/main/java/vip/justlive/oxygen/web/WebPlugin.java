@@ -15,8 +15,6 @@ package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
@@ -25,16 +23,15 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.ResourceUtils;
-import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
 import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
 import vip.justlive.oxygen.web.http.HttpMethod;
-import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
 import vip.justlive.oxygen.web.router.Route;
+import vip.justlive.oxygen.web.servlet.DispatcherServlet;
 
 /**
  * web插件
@@ -44,8 +41,6 @@ import vip.justlive.oxygen.web.router.Route;
 @Slf4j
 public class WebPlugin implements Plugin {
 
-  static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
-
   @Override
   public int order() {
     return Integer.MIN_VALUE + 60;
@@ -53,25 +48,19 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void start() {
+    AnnotationRouteHandler.init();
     loadStaticRoute();
     loadAnnotationRouter();
-    loadRequestParse();
     loadErrorHandler();
+    DispatcherServlet.load();
     vip.justlive.oxygen.web.router.Router.build();
   }
 
   @Override
   public void stop() {
-    REQUEST_PARSES.clear();
-  }
-
-  private void loadRequestParse() {
-    for (RequestParse requestParse : ServiceLoaderUtils.loadServices(RequestParse.class)) {
-      REQUEST_PARSES.add(requestParse);
-      if (log.isDebugEnabled()) {
-        log.debug("loaded a request parser [{}]", requestParse.getClass());
-      }
-    }
+    AnnotationRouteHandler.clear();
+    DispatcherServlet.clear();
+    vip.justlive.oxygen.web.router.Router.clear();
   }
 
   private void loadStaticRoute() {
@@ -81,7 +70,8 @@ public class WebPlugin implements Plugin {
       return;
     }
     vip.justlive.oxygen.web.router.Router.staticRoute().prefix(conf.getDefaultStaticPrefix())
-        .locations(Arrays.asList(paths));
+        .locations(Arrays.asList(paths)).cachingEnabled(conf.isViewCacheEnabled())
+        .maxAge(conf.getStaticCache());
   }
 
   private void loadAnnotationRouter() {

@@ -1,19 +1,22 @@
 /*
- * Copyright (C) 2018 justlive1
+ *  Copyright (C) 2019 justlive1
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License
+ *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ *  or implied. See the License for the specific language governing permissions and limitations under
+ *  the License.
  */
-package vip.justlive.oxygen.web;
+package vip.justlive.oxygen.web.servlet;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +27,7 @@ import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
+import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
@@ -44,6 +48,19 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
 public class DispatcherServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
+  private static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
+  private static final List<WebHook> WEB_HOOKS = new LinkedList<>();
+
+  public static void load() {
+    REQUEST_PARSES.addAll(IocPlugin.beanStore().getCastBeanMap(RequestParse.class).values());
+    Collections.sort(REQUEST_PARSES);
+    WEB_HOOKS.addAll(IocPlugin.beanStore().getCastBeanMap(WebHook.class).values());
+    Collections.sort(WEB_HOOKS);
+  }
+
+  public static void clear() {
+    REQUEST_PARSES.clear();
+  }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp, HttpMethod httpMethod) {
     String requestPath = req.getServletPath();
@@ -69,7 +86,7 @@ public class DispatcherServlet extends HttpServlet {
           return;
         }
         Request.current().setRoute(route);
-        for (RequestParse requestParse : WebPlugin.REQUEST_PARSES) {
+        for (RequestParse requestParse : REQUEST_PARSES) {
           if (requestParse.supported(req)) {
             requestParse.handle(req);
           }
@@ -77,20 +94,43 @@ public class DispatcherServlet extends HttpServlet {
         handler = route.handler();
       }
 
-      Bootstrap.invokeBeforePlugins();
+      if (!invokeBefore(ctx)) {
+        return;
+      }
       handler.handle(ctx);
-      copyResponse(Response.current(), resp);
-      Bootstrap.invokeAfterPlugins();
+      invokeAfter(ctx);
     } catch (Exception e) {
       handlerError(ctx, e);
     } finally {
-      Bootstrap.invokeFinalPlugins();
+      invokeFinished(ctx);
+      copyResponse(Response.current(), resp);
       Request.clear();
       Response.clear();
     }
   }
 
-  private void copyResponse(Response response, HttpServletResponse resp) throws Exception {
+  private void invokeFinished(RoutingContext ctx) {
+    for (int i = WEB_HOOKS.size() - 1; i >= 0; i--) {
+      WEB_HOOKS.get(i).finished(ctx);
+    }
+  }
+
+  private void invokeAfter(RoutingContext ctx) {
+    for (int i = WEB_HOOKS.size() - 1; i >= 0; i--) {
+      WEB_HOOKS.get(i).after(ctx);
+    }
+  }
+
+  private boolean invokeBefore(RoutingContext ctx) {
+    for (WebHook webHook : WEB_HOOKS) {
+      if (!webHook.before(ctx)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private void copyResponse(Response response, HttpServletResponse resp) {
     if (response.getContentType() != null) {
       resp.setContentType(response.getContentType());
     }
@@ -111,7 +151,11 @@ public class DispatcherServlet extends HttpServlet {
       resp.addCookie(jCookie);
     }
     if (response.getOut().size() > 0) {
-      resp.getOutputStream().write(response.getOut().toByteArray());
+      try {
+        resp.getOutputStream().write(response.getOut().toByteArray());
+      } catch (IOException e) {
+        log.error("write outputStream error", e);
+      }
     }
   }
 
@@ -170,11 +214,9 @@ public class DispatcherServlet extends HttpServlet {
     doService(req, resp, HttpMethod.OPTIONS);
   }
 
-
   @Override
   protected void doTrace(HttpServletRequest req, HttpServletResponse resp) {
     doService(req, resp, HttpMethod.TRACE);
   }
-
 
 }

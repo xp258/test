@@ -16,6 +16,7 @@ package vip.justlive.oxygen.web.bind;
 import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.annotation.CookieParam;
 
 /**
@@ -23,6 +24,7 @@ import vip.justlive.oxygen.web.annotation.CookieParam;
  *
  * @author wubo
  */
+@Bean
 public class CookieParamBinder implements ParamBinder {
 
   @Override

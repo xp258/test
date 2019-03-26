@@ -11,42 +11,37 @@
  *  or implied. See the License for the specific language governing permissions and limitations under
  *  the License.
  */
-package vip.justlive.oxygen.web.i18n;
+package vip.justlive.oxygen.web.hook;
 
 import java.util.Locale;
 import javax.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.aop.annotation.Aspect;
-import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.i18n.Lang;
 import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.http.Request;
+import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
- * i18n 切面
+ * i18n
  *
  * @author wubo
  */
 @Slf4j
 @Bean
-public class I18nAop {
+public class I18nWebHook implements WebHook {
 
-  @Aspect(annotation = Mapping.class, type = TYPE.BEFORE)
-  public void before() {
-    Request request = Request.current();
-    if (request == null) {
-      return;
-    }
+  @Override
+  public boolean before(RoutingContext ctx) {
+    Request request = ctx.request();
     CoreConf conf = ConfigFactory.load(CoreConf.class);
     String localeStr = request.getParam(conf.getI18nParamKey());
     if (localeStr == null || localeStr.length() == 0) {
       HttpSession session = request.getOriginalRequest().getSession(false);
       if (session == null) {
-        return;
+        return true;
       }
       Locale locale = (Locale) session.getAttribute(conf.getI18nSessionKey());
       if (locale != null) {
@@ -65,11 +60,11 @@ public class I18nAop {
         Lang.setThreadLocale(locale);
       }
     }
+    return true;
   }
 
-  @Aspect(annotation = Mapping.class, type = {TYPE.AFTER, TYPE.CATCHING})
-  public void after() {
+  @Override
+  public void finished(RoutingContext ctx) {
     Lang.clearThreadLocale();
   }
-
 }
