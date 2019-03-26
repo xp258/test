@@ -53,13 +53,14 @@
 ## 特性
 
 * 轻量级，使用简单
-* 使用ServiceLoader加载插件，易于扩展
-* 支持函数式编程
+* 支持插件扩展
+* 函数式编程
+* 流式风格
 
 
 ## 快速开始
 
-创建`Maven`或`Gradle`项目
+创建`Maven`项目
 
 ```
 <!-- 使用内嵌tomcat启动 -->
@@ -70,10 +71,24 @@
 </dependency>
 ```
 
+或`Gradle`
+
 ```
-compile 'vip.justlive:oxygen-web-tomcat:${oxygen.version}'
+compile 'vip.justlive:oxygen-web-tomcat:$oxygenVersion'
 ```
 
+> 不需要`webapp`项目框架，支持Servlet3.0
+
+编写 `main` 函数写一个 `Hello World`
+
+```
+public static void main(String[] args) {
+  Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
+  Server.server().listen(8080);
+}
+```
+
+用浏览器打开 http://localhost:8080 这样就可以看到 `hello world` 了！
 
 
 ## 联系信息

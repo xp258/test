@@ -13,11 +13,8 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
@@ -54,13 +51,7 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     Response response = ctx.response();
     response.setContentType(Constants.TEXT_HTML);
     check();
-    try {
-      response.getOut().write(
-          resolver.handler(request, response, result.getPath(), result.getData())
-              .getBytes(Charset.forName(response.getEncoding())));
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
+    response.write(resolver.handler(request, response, result.getPath(), result.getData()));
   }
 
   private synchronized void check() {

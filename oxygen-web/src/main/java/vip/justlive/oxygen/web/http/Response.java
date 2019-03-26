@@ -14,13 +14,16 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * Response
@@ -35,7 +38,11 @@ public class Response implements Serializable {
 
   private final transient HttpServletResponse originalResponse;
 
+  /**
+   * 返回码
+   */
   private int status = 200;
+
   /**
    * 编码
    */
@@ -49,7 +56,7 @@ public class Response implements Serializable {
   /**
    * out
    */
-  private ByteArrayOutputStream out = new ByteArrayOutputStream();
+  private transient ByteArrayOutputStream out = new ByteArrayOutputStream();
 
   /**
    * cookies
@@ -182,5 +189,18 @@ public class Response implements Serializable {
    */
   public void removeHeader(String name) {
     headers.remove(name);
+  }
+
+  /**
+   * 写数据
+   *
+   * @param data 数据
+   */
+  public void write(String data) {
+    try {
+      out.write(data.getBytes(Charset.forName(encoding)));
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
   }
 }
