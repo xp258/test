@@ -48,7 +48,6 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void start() {
-    AnnotationRouteHandler.init();
     loadStaticRoute();
     loadAnnotationRouter();
     loadErrorHandler();
@@ -58,7 +57,6 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void stop() {
-    AnnotationRouteHandler.clear();
     DispatcherServlet.clear();
     vip.justlive.oxygen.web.router.Router.clear();
   }

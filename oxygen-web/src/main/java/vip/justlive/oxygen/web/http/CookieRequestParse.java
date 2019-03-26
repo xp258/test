@@ -14,14 +14,12 @@
 package vip.justlive.oxygen.web.http;
 
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * Cookie解析器
  *
  * @author wubo
  */
-@Bean
 public class CookieRequestParse implements RequestParse {
 
   @Override

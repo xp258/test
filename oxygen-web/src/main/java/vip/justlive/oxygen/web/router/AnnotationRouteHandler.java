@@ -17,10 +17,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.ioc.IocPlugin;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.web.bind.DataBinder;
 import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.result.ResultHandler;
@@ -32,13 +31,20 @@ import vip.justlive.oxygen.web.result.ResultHandler;
  */
 public class AnnotationRouteHandler implements RouteHandler {
 
-  private static final List<ParamBinder> BINDERS = new LinkedList<>();
-  private static final List<ResultHandler> RESULT_HANDLERS = new LinkedList<>();
+  private static final List<ParamBinder> BINDERS;
+  private static final List<ResultHandler> RESULT_HANDLERS;
 
   private final Object router;
   private final Method proxyMethod;
   private final Method method;
   private final DataBinder[] dataBinders;
+
+  static {
+    BINDERS = ServiceLoaderUtils.loadServices(ParamBinder.class);
+    Collections.sort(BINDERS);
+    RESULT_HANDLERS = ServiceLoaderUtils.loadServices(ResultHandler.class);
+    Collections.sort(RESULT_HANDLERS);
+  }
 
   public AnnotationRouteHandler(Object router, Method proxyMethod, Method method) {
     this.router = router;
@@ -46,24 +52,6 @@ public class AnnotationRouteHandler implements RouteHandler {
     this.method = method;
     this.dataBinders = new DataBinder[method.getParameterCount()];
     parse();
-  }
-
-  /**
-   * 初始化
-   */
-  public static void init() {
-    BINDERS.addAll(IocPlugin.beanStore().getCastBeanMap(ParamBinder.class).values());
-    Collections.sort(BINDERS);
-    RESULT_HANDLERS.addAll(IocPlugin.beanStore().getCastBeanMap(ResultHandler.class).values());
-    Collections.sort(RESULT_HANDLERS);
-  }
-
-  /**
-   * clear
-   */
-  public static void clear() {
-    BINDERS.clear();
-    RESULT_HANDLERS.clear();
   }
 
   private void parse() {

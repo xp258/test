@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.web.bind;
 
 import java.lang.reflect.Parameter;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
@@ -22,7 +21,6 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
-@Bean
 public class OthersParamBinder implements ParamBinder {
 
   @Override

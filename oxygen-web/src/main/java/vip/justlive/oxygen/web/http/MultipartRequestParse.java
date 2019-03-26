@@ -17,14 +17,12 @@ import java.io.IOException;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * multipart请求解析
  *
  * @author wubo
  */
-@Bean
 public class MultipartRequestParse implements RequestParse {
 
 

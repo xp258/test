@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,8 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
+import vip.justlive.oxygen.web.hook.I18nWebHook;
 import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.HttpMethod;
@@ -52,9 +55,13 @@ public class DispatcherServlet extends HttpServlet {
   private static final List<WebHook> WEB_HOOKS = new LinkedList<>();
 
   public static void load() {
-    REQUEST_PARSES.addAll(IocPlugin.beanStore().getCastBeanMap(RequestParse.class).values());
+    REQUEST_PARSES.addAll(ServiceLoaderUtils.loadServices(RequestParse.class));
     Collections.sort(REQUEST_PARSES);
-    WEB_HOOKS.addAll(IocPlugin.beanStore().getCastBeanMap(WebHook.class).values());
+    Map<String, WebHook> hooks = IocPlugin.beanStore().getCastBeanMap(WebHook.class);
+    if (hooks != null) {
+      WEB_HOOKS.addAll(hooks.values());
+    }
+    WEB_HOOKS.add(new I18nWebHook());
     Collections.sort(WEB_HOOKS);
   }
 

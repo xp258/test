@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -30,7 +29,6 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * @author wubo
  */
 @Slf4j
-@Bean
 public class ThymeleafViewResultHandler implements ResultHandler {
 
   private static final boolean THYMELEAF_SUPPORTED = ClassUtils

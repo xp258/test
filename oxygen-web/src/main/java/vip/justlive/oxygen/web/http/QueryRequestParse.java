@@ -15,7 +15,6 @@ package vip.justlive.oxygen.web.http;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * queryString解析器
@@ -24,7 +23,6 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
  *
  * @author wubo
  */
-@Bean
 public class QueryRequestParse implements RequestParse {
 
   @Override

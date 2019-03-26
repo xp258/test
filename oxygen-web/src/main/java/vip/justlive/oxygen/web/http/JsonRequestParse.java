@@ -18,14 +18,12 @@ import com.alibaba.fastjson.JSONObject;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * json请求解析
  *
  * @author wubo
  */
-@Bean
 public class JsonRequestParse implements RequestParse {
 
   @Override

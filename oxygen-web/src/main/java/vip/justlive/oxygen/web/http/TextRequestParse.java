@@ -15,7 +15,6 @@ package vip.justlive.oxygen.web.http;
 
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * text请求解析
@@ -24,7 +23,6 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
  *
  * @author wubo
  */
-@Bean
 public class TextRequestParse implements RequestParse {
 
   @Override

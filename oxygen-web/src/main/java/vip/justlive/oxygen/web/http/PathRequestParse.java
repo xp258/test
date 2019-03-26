@@ -18,14 +18,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * path请求解析
  *
  * @author wubo
  */
-@Bean
 public class PathRequestParse implements RequestParse {
 
   @Override

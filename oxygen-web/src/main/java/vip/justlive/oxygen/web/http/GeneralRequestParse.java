@@ -15,14 +15,12 @@ package vip.justlive.oxygen.web.http;
 
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * 请求基础解析
  *
  * @author wubo
  */
-@Bean
 public class GeneralRequestParse implements RequestParse {
 
   @Override

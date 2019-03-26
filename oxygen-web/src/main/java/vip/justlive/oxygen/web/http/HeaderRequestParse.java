@@ -19,14 +19,12 @@ import java.util.List;
 import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * header解析器
  *
  * @author wubo
  */
-@Bean
 public class HeaderRequestParse implements RequestParse {
 
   @Override
