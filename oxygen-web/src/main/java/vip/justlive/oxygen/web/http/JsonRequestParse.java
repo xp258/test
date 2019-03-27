@@ -33,10 +33,12 @@ public class JsonRequestParse implements RequestParse {
 
   @Override
   public void handle(HttpServletRequest req) {
-    JSONObject jsonObject = JSON.parseObject(readBody(req));
+    String body = readBody(req);
+    JSONObject jsonObject = JSON.parseObject(body);
     Map<String, String[]> map = Request.current().getParams();
     for (String key : jsonObject.keySet()) {
       margeParam(map, key, jsonObject.getString(key));
     }
+    margeParam(Request.current().getParams(), Constants.BODY_STORE_KEY, body);
   }
 }

@@ -172,13 +172,13 @@ public class DispatcherServlet extends HttpServlet {
           ctx.request().getMethod());
     }
     IocPlugin.beanStore().getBean(ExceptionHandler.class)
-        .handle(ctx, Exceptions.fail("No handler found"), 404);
+        .handle(ctx, Exceptions.fail("No handler found"), Constants.NOT_FOUND);
   }
 
   private void handlerError(RoutingContext ctx, Exception e) {
     log.error("DispatcherServlet occurs an error for path [{}]", ctx.requestPath(), e);
     Bootstrap.invokeOnExceptionPlugins();
-    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
+    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, Constants.SERVER_ERROR);
   }
 
   @Override

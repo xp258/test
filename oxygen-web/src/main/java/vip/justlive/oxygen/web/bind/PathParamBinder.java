@@ -43,7 +43,7 @@ public class PathParamBinder implements ParamBinder {
       DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
       if (converterService.canConverter(String.class, dataBinder.getType())) {
         return converterService.convert(MoreObjects
-            .firstOrNull(ctx.request().getPathVariables().get(dataBinder.getName()),
+            .firstOrNull(ctx.request().getPathVariable(dataBinder.getName()),
                 dataBinder.getDefaultValue()), dataBinder.getType());
       }
       return ctx.bindPathVariables(dataBinder.getType());

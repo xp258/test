@@ -186,6 +186,16 @@ public class Request implements Serializable {
   }
 
   /**
+   * 根据key获取path参数
+   *
+   * @param key 键
+   * @return value
+   */
+  public String getPathVariable(String key) {
+    return pathVariables.get(key);
+  }
+
+  /**
    * 根据key获取header值 最多返回第一个值
    *
    * @param key 键

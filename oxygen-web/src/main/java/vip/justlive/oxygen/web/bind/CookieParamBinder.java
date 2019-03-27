@@ -43,7 +43,7 @@ public class CookieParamBinder implements ParamBinder {
       DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
       if (converterService.canConverter(String.class, dataBinder.getType())) {
         return converterService.convert(MoreObjects
-            .firstOrNull(ctx.request().getHeader(dataBinder.getName()),
+            .firstOrNull(ctx.request().getCookieValue(dataBinder.getName()),
                 dataBinder.getDefaultValue()), dataBinder.getType());
       }
       return ctx.bindCookie(dataBinder.getType());

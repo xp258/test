@@ -19,7 +19,7 @@ import vip.justlive.oxygen.core.constant.Constants;
 /**
  * text请求解析
  * <br>
- * 解析如下请求类型 application/xml,multipart/form-data,text/plain,text/xml,text/html
+ * 解析如下请求类型 application/xml,text/plain,text/xml,text/html
  *
  * @author wubo
  */
@@ -28,7 +28,6 @@ public class TextRequestParse implements RequestParse {
   @Override
   public boolean supported(HttpServletRequest req) {
     String contentType = Request.current().getContentType();
-
     return Constants.APPLICATION_XML.equalsIgnoreCase(contentType) || Constants.TEXT_HTML
         .equalsIgnoreCase(contentType) || Constants.TEXT_PLAIN.equalsIgnoreCase(contentType)
         || Constants.TEXT_XML.equalsIgnoreCase(contentType);

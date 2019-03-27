@@ -25,7 +25,6 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 public class MultipartRequestParse implements RequestParse {
 
-
   @Override
   public boolean supported(HttpServletRequest req) {
     return Request.current().isMultipart();

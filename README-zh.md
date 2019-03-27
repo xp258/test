@@ -62,7 +62,7 @@
 
 创建`Maven`项目
 
-```
+```xml
 <!-- 使用内嵌tomcat启动 -->
 <dependency>
     <groupId>vip.justlive</groupId>
@@ -81,7 +81,7 @@ compile 'vip.justlive:oxygen-web-tomcat:$oxygenVersion'
 
 编写 `main` 函数写一个 `Hello World`
 
-```
+```java
 public static void main(String[] args) {
   Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
   Server.server().listen(8080);
@@ -89,6 +89,149 @@ public static void main(String[] args) {
 ```
 
 用浏览器打开 http://localhost:8080 这样就可以看到 `hello world` 了！
+
+## 内容详解
+- [**`注册路由`**](#注册路由)
+  - [**`硬编码方式`**](#硬编码方式)
+  - [**`注解方式`**](#注解方式)
+- [**`获取请求参数`**](#获取请求参数)
+  - [**`表单参数或json请求参数`**](#表单参数或json请求参数)
+  - [**`restful参数`**](#restful参数)
+  - [**`header参数`**](#header参数)
+  - [**`cookie参数`**](#cookie参数)
+  - [**`参数转对象`**](#参数转对象)
+    
+### 注册路由
+#### 硬编码方式
+```java
+Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
+Router.router().path("/get").method(HttpMethod.GET).handler(get);
+Router.router().path("/post").method(HttpMethod.POST).handler(post);
+```
+
+#### 注解方式
+```java
+@Router("/book")
+public class BookRouter {
+  
+  // 视图
+  @Mapping("/")
+  public ViewResult index() {
+    return Result.view("/book.html");
+  }
+  
+  // json
+  @Mapping(value = "/ajax", method = {HttpMethod.POST})
+  public Book find(RoutingContext ctx) {
+    // ...
+    return new Book();
+  }
+}
+```
+
+### 获取请求参数
+#### 表单参数或json请求参数
+
+项目将json请求参数与表单参数合并，使用相同的方法或注解获取
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getParam("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/ajax", method = {HttpMethod.POST})
+public Book find(@Param Long id, @Param("tp") String type) {
+  // ...
+  return new Book();
+}
+```
+
+#### restful参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/{id}").handler(ctx -> {
+  String id = ctx.request().getPathVariable("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/{id}", method = {HttpMethod.POST})
+public void ajax(@PathParam("id") Long id) {
+  // ...
+}
+```
+
+#### header参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getHeader("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@HeaderParam("id") Long id) {
+  // ...
+}
+```
+
+#### cookie参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getCookie("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@CookieParam("id") Long id) {
+  // ...
+}
+```
+
+#### 参数转对象
+
+**实体类**
+```java
+@Data
+public class Book {
+  private String name;
+  private String author;
+}
+```
+
+**使用RoutingContext转换**
+```java
+Router.router().path("/").handler(ctx -> {
+  // 表单或json请求参数绑定
+  Book book = ctx.bindParam(Book.class);
+  // cookie参数绑定
+  book = ctx.bindCookie(Book.class);
+  // header参数绑定
+  book = ctx.bindHeader(Book.class);
+  // restful参数绑定
+  book = ctx.bindPathVariables(Book.class);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@Param Book b1, @CookieParam Book b2, @HeaderParam Book b3, @PathParam Book b4) {
+  // ...
+}
+```
 
 
 ## 联系信息
