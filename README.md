@@ -250,7 +250,7 @@ public void ajax(@Param Book b1, @CookieParam Book b2, @HeaderParam Book b3, @Pa
 
 ### 静态资源
 
-内置默认将`classpath`下`/public,/static`作为静态资源目录，支持`webjars`，映射到`/public`请求
+内置默认将`classpath`下`/public,/static`作为静态资源目录，支持`webjars`，映射到`/public`
 
 自定义静态资源可使用下面代码
 ```java
@@ -275,8 +275,8 @@ Router.router().path("/").handler(ctx -> {
 ```java
 @Mapping("/")
 public void upload(MultipartItem image, @MultipartParam("file1") MultipartItem file) {
-  // 不使用注解则使用参数名作为参数名称
-  // 使用注解指定参数名称
+  // 不使用注解则使用方法参数名作为请求参数名称
+  // 使用注解指定请求参数名称
 }
 ```
 
@@ -309,7 +309,7 @@ Router.router().path("/").handler(ctx -> {
 ```java
 // 使用RoutingContext返回
 Router.router().path("/").handler(ctx -> {
-  ctx.response().html("<html><body><span>hello world</span><body></html>");
+  ctx.response().html("<html><body><span>hello world</span></body></html>");
 });
 ```
 
@@ -444,10 +444,59 @@ server.port=8081
 #### 运行项目
 
 **使用内嵌容器启动**
+
+启动类
 ```java
-public static void main(String[] args) {
-  Server.server().listen();
+public class Application {
+  public static void main(String[] args) {
+    Server.server().listen();
+  }
 }
+```
+打包`${mainClass}`为上面的启动类
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <source>${maven.compiler.source}</source>
+        <target>${maven.compiler.target}</target>
+        <encoding>UTF-8</encoding>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <configuration>
+        <archive>
+          <manifest>
+            <addClasspath>true</addClasspath>
+            <classpathPrefix>lib/</classpathPrefix>
+            <mainClass>${mainClass}</mainClass>
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>copy</id>
+          <phase>package</phase>
+          <goals>
+            <goal>copy-dependencies</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 ```
 
 **使用外部容器（jetty、tomcat等）**
