@@ -30,21 +30,20 @@ public class RedirectResultHandler implements ResultHandler {
   private static final int DEFAULT_HTTPS_PORT = 443;
 
   @Override
-  public boolean support(Class<?> type, Object data) {
-    return Result.class.isAssignableFrom(type) && data != null && RedirectResult.class
-        .isAssignableFrom(data.getClass());
+  public boolean support(Result result) {
+    return result != null && RedirectResult.class.isAssignableFrom(result.getClass());
   }
 
   @Override
-  public void apply(RoutingContext ctx, Object data) {
-    RedirectResult result = (RedirectResult) data;
+  public void apply(RoutingContext ctx, Result result) {
+    RedirectResult data = (RedirectResult) result;
     Request request = ctx.request();
     Response response = ctx.response();
-    response.setStatus(result.getStatus());
+    response.setStatus(data.getStatus());
 
     StringBuilder sb = new StringBuilder();
-    if (result.getUrl().matches(PROTOCOLS_REGEX)) {
-      sb.append(result.getUrl());
+    if (data.getUrl().matches(PROTOCOLS_REGEX)) {
+      sb.append(data.getUrl());
     } else {
       if (request.isSecure()) {
         sb.append(Constants.HTTPS_PREFIX);
@@ -55,10 +54,10 @@ public class RedirectResultHandler implements ResultHandler {
       if (request.getPort() != DEFAULT_HTTP_PORT && request.getPort() != DEFAULT_HTTPS_PORT) {
         sb.append(Constants.COLON).append(request.getPort());
       }
-      if (!result.getUrl().startsWith(Constants.SLASH)) {
+      if (!data.getUrl().startsWith(Constants.SLASH)) {
         sb.append(ctx.requestPath()).append(Constants.SLASH);
       }
-      sb.append(result.getUrl());
+      sb.append(data.getUrl());
     }
     response.setHeader("Location", sb.toString());
   }

@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.web.result.Result;
 
 /**
  * Response
@@ -69,13 +70,20 @@ public class Response implements Serializable {
   private Map<String, String> headers = new HashMap<>(4);
 
   /**
+   * result
+   */
+  private Result result;
+
+  /**
    * 设置线程值response
    *
    * @param originalResponse 原始response
+   * @return response
    */
-  public static void set(HttpServletResponse originalResponse) {
+  public static Response set(HttpServletResponse originalResponse) {
     Response response = new Response(originalResponse);
     LOCAL.set(response);
+    return response;
   }
 
   /**
@@ -197,10 +205,70 @@ public class Response implements Serializable {
    * @param data 数据
    */
   public void write(String data) {
+    if (data == null) {
+      return;
+    }
     try {
       out.write(data.getBytes(Charset.forName(encoding)));
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }
+  }
+
+  /**
+   * 写入文本
+   *
+   * @param data 数据
+   */
+  public void text(String data) {
+    setContentType(Constants.TEXT_PLAIN);
+    write(data);
+  }
+
+  /**
+   * 写入html
+   *
+   * @param data 数据
+   */
+  public void html(String data) {
+    setContentType(Constants.TEXT_HTML);
+    write(data);
+  }
+
+  /**
+   * 写入json
+   *
+   * @param data 数据
+   */
+  public void json(Object data) {
+    setResult(Result.json(data));
+  }
+
+  /**
+   * 模板渲染
+   *
+   * @param path 模板路径
+   */
+  public void template(String path) {
+    setResult(Result.view(path));
+  }
+
+  /**
+   * 模板渲染
+   *
+   * @param path 模板路径
+   * @param attrs 渲染参数
+   */
+  public void template(String path, Map<String, Object> attrs) {
+    setResult(Result.view(path).addAttributes(attrs));
+  }
+
+  /**
+   * 重定向
+   *
+   * @param url 地址
+   */
+  public void redirect(String url) {
+    setResult(Result.redirect(url));
   }
 }

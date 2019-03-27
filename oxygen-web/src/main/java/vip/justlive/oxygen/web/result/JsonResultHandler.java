@@ -26,14 +26,15 @@ import vip.justlive.oxygen.web.router.RoutingContext;
 public class JsonResultHandler implements ResultHandler {
 
   @Override
-  public boolean support(Class<?> type, Object data) {
-    return !Result.class.isAssignableFrom(type) && type != Void.TYPE;
+  public boolean support(Result result) {
+    return result != null && JsonResult.class.isAssignableFrom(result.getClass());
   }
 
   @Override
-  public void apply(RoutingContext ctx, Object data) {
+  public void apply(RoutingContext ctx, Result result) {
+    JsonResult data = (JsonResult) result;
     Response response = ctx.response();
     response.setContentType(Constants.APPLICATION_JSON);
-    response.write(JSON.toJSONString(data));
+    response.write(JSON.toJSONString(data.getData()));
   }
 }

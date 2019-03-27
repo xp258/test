@@ -26,17 +26,16 @@ public interface ResultHandler extends Order {
   /**
    * 是否支持
    *
-   * @param type result type
-   * @param data 数据
+   * @param result 结果
    * @return true为支持
    */
-  boolean support(Class<?> type, Object data);
+  boolean support(Result result);
 
   /**
    * 处理
    *
    * @param ctx 上下文
-   * @param data 数据
+   * @param result 结果
    */
-  void apply(RoutingContext ctx, Object data);
+  void apply(RoutingContext ctx, Result result);
 }

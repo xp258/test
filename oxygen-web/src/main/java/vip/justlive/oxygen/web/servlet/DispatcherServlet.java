@@ -36,6 +36,8 @@ import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.result.Result;
+import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.Route;
 import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.Router;
@@ -53,6 +55,7 @@ public class DispatcherServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
   private static final List<WebHook> WEB_HOOKS = new LinkedList<>();
+  private static final List<ResultHandler> RESULT_HANDLERS = new LinkedList<>();
 
   public static void load() {
     REQUEST_PARSES.addAll(ServiceLoaderUtils.loadServices(RequestParse.class));
@@ -63,6 +66,8 @@ public class DispatcherServlet extends HttpServlet {
     }
     WEB_HOOKS.add(new I18nWebHook());
     Collections.sort(WEB_HOOKS);
+    RESULT_HANDLERS.addAll(ServiceLoaderUtils.loadServices(ResultHandler.class));
+    Collections.sort(RESULT_HANDLERS);
   }
 
   public static void clear() {
@@ -75,15 +80,13 @@ public class DispatcherServlet extends HttpServlet {
       log.debug("DispatcherServlet accept request for [{}] on method [{}]", requestPath,
           httpMethod);
     }
-
-    Request.set(req);
-    Response.set(resp);
-
     if (requestPath.length() > 1 && requestPath.endsWith(Constants.ROOT_PATH)) {
       requestPath = requestPath.substring(0, requestPath.length() - 1);
     }
 
-    RoutingContext ctx = new RoutingContextImpl(Request.current(), Response.current(), requestPath);
+    final Request request = Request.set(req);
+    final Response response = Response.set(resp);
+    final RoutingContext ctx = new RoutingContextImpl(request, response, requestPath);
     try {
       RouteHandler handler = Router.lookupStatic(requestPath);
       if (handler == null) {
@@ -92,7 +95,7 @@ public class DispatcherServlet extends HttpServlet {
           handlerNotFound(ctx);
           return;
         }
-        Request.current().setRoute(route);
+        request.setRoute(route);
         for (RequestParse requestParse : REQUEST_PARSES) {
           if (requestParse.supported(req)) {
             requestParse.handle(req);
@@ -105,14 +108,24 @@ public class DispatcherServlet extends HttpServlet {
         return;
       }
       handler.handle(ctx);
+      handleResult(ctx, response.getResult());
       invokeAfter(ctx);
     } catch (Exception e) {
       handlerError(ctx, e);
     } finally {
       invokeFinished(ctx);
-      copyResponse(Response.current(), resp);
+      copyResponse(response, resp);
       Request.clear();
       Response.clear();
+    }
+  }
+
+  private void handleResult(RoutingContext ctx, Result result) {
+    for (ResultHandler handler : RESULT_HANDLERS) {
+      if (handler.support(result)) {
+        handler.apply(ctx, result);
+        break;
+      }
     }
   }
 

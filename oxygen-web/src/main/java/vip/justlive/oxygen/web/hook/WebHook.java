@@ -25,6 +25,9 @@ public interface WebHook extends Order {
 
   /**
    * 执行前
+   *
+   * @param ctx 上下文
+   * @return true继续执行
    */
   default boolean before(RoutingContext ctx) {
     return true;
@@ -32,12 +35,16 @@ public interface WebHook extends Order {
 
   /**
    * 执行后
+   *
+   * @param ctx 上下文
    */
   default void after(RoutingContext ctx) {
   }
 
   /**
    * 结束
+   *
+   * @param ctx 上下文
    */
   default void finished(RoutingContext ctx) {
   }

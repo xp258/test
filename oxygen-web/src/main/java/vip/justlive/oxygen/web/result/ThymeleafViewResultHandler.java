@@ -35,23 +35,23 @@ public class ThymeleafViewResultHandler implements ResultHandler {
   private ThymeleafResolver resolver;
 
   @Override
-  public boolean support(Class<?> type, Object data) {
-    if (THYMELEAF_SUPPORTED && Result.class.isAssignableFrom(type) && data != null
-        && ViewResult.class.isAssignableFrom(data.getClass())) {
-      ViewResult result = (ViewResult) data;
-      return result.getPath() != null && result.getPath().endsWith(SUFFIX);
+  public boolean support(Result result) {
+    if (THYMELEAF_SUPPORTED && result != null && ViewResult.class
+        .isAssignableFrom(result.getClass())) {
+      ViewResult data = (ViewResult) result;
+      return data.getPath() != null && data.getPath().endsWith(SUFFIX);
     }
     return false;
   }
 
   @Override
-  public void apply(RoutingContext ctx, Object data) {
-    ViewResult result = (ViewResult) data;
+  public void apply(RoutingContext ctx, Result result) {
+    ViewResult data = (ViewResult) result;
     Request request = ctx.request();
     Response response = ctx.response();
     response.setContentType(Constants.TEXT_HTML);
     check();
-    response.write(resolver.handler(request, response, result.getPath(), result.getData()));
+    response.write(resolver.handler(request, response, data.getPath(), data.getData()));
   }
 
   private synchronized void check() {

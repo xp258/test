@@ -120,14 +120,16 @@ public class Request implements Serializable {
    * 设置线程值Request
    *
    * @param originalRequest 原始request
+   * @return request
    */
-  public static void set(HttpServletRequest originalRequest) {
+  public static Request set(HttpServletRequest originalRequest) {
     Request request = new Request(originalRequest);
     request.params = new HashMap<>(8);
     request.pathVariables = new HashMap<>(2);
     request.cookies = new HashMap<>(4);
     request.headers = new HashMap<>(4);
     LOCAL.set(request);
+    return request;
   }
 
   /**
@@ -249,6 +251,19 @@ public class Request implements Serializable {
     Cookie cookie = getCookie(key);
     if (cookie != null) {
       return cookie.getValue();
+    }
+    return null;
+  }
+
+  /**
+   * 获取上传文件对象
+   *
+   * @param key 键
+   * @return item
+   */
+  public MultipartItem getMultipartItem(String key) {
+    if (isMultipart()) {
+      return multipart.getData().get(key);
     }
     return null;
   }

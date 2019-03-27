@@ -100,7 +100,22 @@ public static void main(String[] args) {
   - [**`header参数`**](#header参数)
   - [**`cookie参数`**](#cookie参数)
   - [**`参数转对象`**](#参数转对象)
-    
+- [**`静态资源`**](#静态资源)
+- [**`上传文件`**](#上传文件)
+- [**`结果渲染`**](#结果渲染)
+  - [**`渲染json`**](#渲染json)
+  - [**`渲染文本`**](#渲染文本)
+  - [**`渲染html`**](#渲染html)
+  - [**`渲染模板`**](#渲染模板)
+  - [**`重定向`**](#重定向)
+  - [**`写入cookie`**](#写入cookie)
+  - [**`添加header`**](#添加header)
+- [**`拦截器`**](#拦截器)
+- [**`异常处理`**](#异常处理)
+- [**`部署项目`**](#部署项目)
+  - [**`修改端口`**](#修改端口)
+  - [**`运行项目`**](#运行项目)
+      
 ### 注册路由
 #### 硬编码方式
 ```java
@@ -232,6 +247,213 @@ public void ajax(@Param Book b1, @CookieParam Book b2, @HeaderParam Book b3, @Pa
   // ...
 }
 ```
+
+### 静态资源
+
+内置默认将`classpath`下`/public,/static`作为静态资源目录，支持`webjars`，映射到`/public`请求
+
+自定义静态资源可使用下面代码
+```java
+Router.staticRoute().prefix("/lib").location("classpath:lib");
+```
+也可以通过配置文件指定
+```properties
+web.static.default.prefix=/public
+web.static.default.path=/public,/static,classpath:/META-INF/resources/webjars
+```
+
+### 上传文件
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  MultipartItem file = ctx.request().getMultipartItem("file");
+  // ...
+});
+```
+**使用注解获取**
+```java
+@Mapping("/")
+public void upload(MultipartItem image, @MultipartParam("file1") MultipartItem file) {
+  // 不使用注解则使用参数名作为参数名称
+  // 使用注解指定参数名称
+}
+```
+
+### 结果渲染
+
+#### 渲染json
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().json(new Book("Java", "xxx"));
+});
+
+// 注解式
+@Mapping("/")
+public Book find() {
+  // 直接返回对象，框架默认处理成json
+  return new Book("Java", "xxx");
+}
+```
+
+#### 渲染文本
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().text("hello world");
+});
+```
+
+#### 渲染html
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().html("<html><body><span>hello world</span><body></html>");
+});
+```
+
+#### 渲染模板
+内置支持了`jsp`和`thymeleaf`模板，默认对应`resources`下的`WEB-INF`和`templates`目录
+```properties
+# 可通过下面配置进行更改模板目录
+web.view.jsp.prefix=/WEB-INF/
+web.view.thymeleaf.prefix=/templates
+```
+模板使用
+```java
+// 使用RoutingContext
+Router.router().path("/").handler(ctx -> {
+  ctx.response().template("index.html");
+});
+
+Router.router().path("/").handler(ctx -> {
+  Map<String, Object> attrs = new HashMap<>();
+  // ...
+  ctx.response().template("index.html", attrs);
+});
+
+// 注解式
+@Mapping("/")
+public Result index() {
+  return Result.view("index.html");
+}
+
+@Mapping("/")
+public Result index() {
+  Map<String, Object> attrs = new HashMap<>();
+  // ...
+  return Result.view("index.html").addAttributes(attrs);
+}
+```
+
+#### 重定向
+
+```java
+Router.router().path("/").handler(ctx -> {
+  ctx.response().redirect("https://github.com/justlive1");
+});
+
+@Mapping("/a")
+public Result index() {
+  // 内部地址 相对于根目录: /b
+  // return Result.redirect("/b"); 
+  // 内部地址 相对于当前路径: /a/b
+  // return Result.redirect("b");
+  // 协议地址
+  return Result.redirect("https://github.com/justlive1");
+}
+```
+
+#### 写入cookie
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.response().setCookie("hello", "world");
+  ctx.response().setCookie("java", "script", 100);
+  ctx.response().setCookie("uid", "xxx", ".justlive.vip", "/", 3600, true);
+}
+```
+
+#### 添加header
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.response().setHeader("hello", "world");
+}
+```
+
+### 拦截器
+
+`WebHook`是拦截器接口，可以实现执行前、执行后和结束拦截处理
+
+```java
+@Slf4j
+@Bean
+public class LogWebHook implements WebHook {
+  @Override
+  public boolean before(RoutingContext ctx) {
+    log.info("before");
+    return true;
+  }
+  @Override
+  public void after(RoutingContext ctx) {
+    log.info("after");
+  }
+  @Override
+  public void finished(RoutingContext ctx) {
+    log.info("finished");
+  }
+}
+```
+
+### 异常处理
+
+框架默认提供了一个异常处理器，如需自定义处理异常，可以像下面这样使用
+
+```java
+@Bean
+public class CustomExceptionHandler extends ExceptionHandlerImpl {
+
+  @Override
+  public void handle(RoutingContext ctx, Exception e, int status) {
+    if (e instanceof CustomException) {
+      // do something
+    } else {
+      super.handle(ctx, e, status);
+    }
+  }
+}
+```
+
+### 部署项目
+
+#### 修改端口
+
+**编码指定**
+```java
+Server.server().listen(8080);
+```
+**配置文件**
+```properties
+server.port=8081
+```
+
+#### 运行项目
+
+**使用内嵌容器启动**
+```java
+public static void main(String[] args) {
+  Server.server().listen();
+}
+```
+
+**使用外部容器（jetty、tomcat等）**
+
+无需web.xml配置，打包成`war`放入容器即可，实现机制可查看`WebContainerInitializer`
+
 
 
 ## 联系信息

@@ -36,22 +36,21 @@ public class JspViewResultHandler implements ResultHandler {
   }
 
   @Override
-  public boolean support(Class<?> type, Object data) {
-    if (Result.class.isAssignableFrom(type) && data != null && ViewResult.class
-        .isAssignableFrom(data.getClass())) {
-      ViewResult result = (ViewResult) data;
-      return result.getPath() != null && result.getPath().endsWith(SUFFIX);
+  public boolean support(Result result) {
+    if (result != null && ViewResult.class.isAssignableFrom(result.getClass())) {
+      ViewResult data = (ViewResult) result;
+      return data.getPath() != null && data.getPath().endsWith(SUFFIX);
     }
     return false;
   }
 
   @Override
-  public void apply(RoutingContext ctx, Object data) {
-    ViewResult result = (ViewResult) data;
+  public void apply(RoutingContext ctx, Result result) {
+    ViewResult data = (ViewResult) result;
     Request request = ctx.request();
     Response response = ctx.response();
-    result.getData().forEach(request.getOriginalRequest()::setAttribute);
-    String path = ResourceUtils.concat(jspPrefix, result.getPath());
+    data.getData().forEach(request.getOriginalRequest()::setAttribute);
+    String path = ResourceUtils.concat(jspPrefix, data.getPath());
     try {
       request.getOriginalRequest().getRequestDispatcher(path)
           .forward(request.getOriginalRequest(), response.getOriginalResponse());

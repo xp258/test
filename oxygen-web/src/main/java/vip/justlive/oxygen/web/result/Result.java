@@ -41,4 +41,14 @@ public interface Result {
     result.setPath(path);
     return result;
   }
+
+  /**
+   * json result
+   *
+   * @param data 数据
+   * @return Result
+   */
+  static JsonResult json(Object data) {
+    return new JsonResult(data);
+  }
 }
