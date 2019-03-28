@@ -40,6 +40,7 @@ public class CronExpression implements Serializable {
   private static final String MONTH_VALUES = "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC,FOO";
   private static final String WEEK_VALUES = "SUN,MON,TUE,WED,THU,FRI,SAT";
   private static final int MAX_DEEP = 4;
+  private static final int CRON_FIELDS = 6;
 
   static {
     int i = 1;
@@ -197,7 +198,7 @@ public class CronExpression implements Serializable {
 
   private void parse() {
     String[] fields = this.expression.split("\\s+");
-    if (fields.length != 6) {
+    if (fields.length != CRON_FIELDS) {
       throw Exceptions.fail("expression should have 6 fields");
     }
     setNumberBit(seconds, fields[0], 60);

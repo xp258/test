@@ -258,8 +258,8 @@ Router.staticRoute().prefix("/lib").location("classpath:lib");
 ```
 也可以通过配置文件指定
 ```properties
-web.static.default.prefix=/public
-web.static.default.path=/public,/static,classpath:/META-INF/resources/webjars
+web.static.prefix=/public
+web.static.path=/public,/static,classpath:/META-INF/resources/webjars
 ```
 
 ### 上传文件
@@ -317,7 +317,7 @@ Router.router().path("/").handler(ctx -> {
 内置支持了`jsp`和`thymeleaf`模板，默认对应`resources`下的`WEB-INF`和`templates`目录
 ```properties
 # 可通过下面配置进行更改模板目录
-web.view.jsp.prefix=/WEB-INF/
+web.view.jsp.prefix=WEB-INF
 web.view.thymeleaf.prefix=/templates
 ```
 模板使用
@@ -453,7 +453,9 @@ public class Application {
   }
 }
 ```
-打包`${mainClass}`为上面的启动类
+通用打包方式
+- `${mainClass}`为上面的启动类
+- 会生成`lib`目录存放依赖`jar`
 ```xml
 <build>
   <plugins>
@@ -499,11 +501,92 @@ public class Application {
 </build>
 ```
 
+打成`fat-jar`:
+- 使用springboot打包插件
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>1.3.8.RELEASE</version>
+      <executions>
+        <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>repackage</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+```
+
 **使用外部容器（jetty、tomcat等）**
 
 无需web.xml配置，打包成`war`放入容器即可，实现机制可查看`WebContainerInitializer`
 
+```xml
+<!-- 解决默认打war包报错 webxml attribute is required -->
+<properties>
+  <failOnMissingWebXml>false</failOnMissingWebXml>
+</properties>
+```
 
+### 外部化配置
+
+框架可以通过使用配置文件进行修改默认属性
+```properties
+##### 基础配置
+# 配置覆盖地址，用户外部配置覆盖项目配置 例 file:/config/*.properties,classpath*:/config/*.properties,xx.properties
+config.override.path=
+# 类扫描路径属性
+main.class.scan=vip.justlive
+# 临时文件根目录
+main.temp.dir=.oxygen
+# 缓存实现类，自定义缓存时使用
+cache.impl.class=
+
+
+##### web 
+# embedded 启动端口
+server.port=8080
+# context path
+server.contextPath=
+# 默认静态资源请求前缀
+web.static.prefix=/public
+# 默认静态资源目录
+web.static.path=/public,/static,classpath:/META-INF/resources/webjars
+# 静态资源缓存时间
+web.static.cache=3600
+# jsp路径前缀
+web.view.jsp.prefix=WEB-INF
+# thymeleaf 路径前缀
+web.view.thymeleaf.prefix=/templates
+# 是否开启模板缓存
+web.view.cache.enabled=true
+
+
+##### 定时任务job
+# job线程名称格式
+job.thread.name.format=jobs-%d
+# job核心线程池大小
+job.core.pool.size=10
+
+
+##### i18n国际化
+# i18n配置文件地址
+i18n.path=classpath:message/*.properties
+# i18n默认语言
+i18n.default.language=zh
+# i18n默认国家
+i18n.default.country=CN
+# i18n参数key
+i18n.param.key=locale
+# i18n Session key
+i18n.session.key=I18N_SESSION_LOCALE
+```
 
 ## 联系信息
 

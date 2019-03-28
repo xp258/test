@@ -63,11 +63,11 @@ public class WebPlugin implements Plugin {
 
   private void loadStaticRoute() {
     WebConf conf = ConfigFactory.load(WebConf.class);
-    String[] paths = conf.getDefaultStaticPaths();
+    String[] paths = conf.getStaticPaths();
     if (paths == null) {
       return;
     }
-    vip.justlive.oxygen.web.router.Router.staticRoute().prefix(conf.getDefaultStaticPrefix())
+    vip.justlive.oxygen.web.router.Router.staticRoute().prefix(conf.getStaticPrefix())
         .locations(Arrays.asList(paths)).cachingEnabled(conf.isViewCacheEnabled())
         .maxAge(conf.getStaticCache());
   }

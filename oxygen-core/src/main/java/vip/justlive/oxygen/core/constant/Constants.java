@@ -243,10 +243,6 @@ public class Constants {
    */
   public static final String WEB_INF_PATH = "/WEB-INF";
   /**
-   * WEB-INF/web.xml
-   */
-  public static final String WEB_INF_WEB_XML = "WEB-INF/web.xml";
-  /**
    * /WEB-INF/lib/
    */
   public static final String WEB_INF_LIB = "/WEB-INF/lib/";
