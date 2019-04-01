@@ -88,6 +88,7 @@ public class DispatcherServlet extends HttpServlet {
     final Request request = Request.set(req);
     final Response response = Response.set(resp);
     final RoutingContext ctx = new RoutingContextImpl(request, response, requestPath);
+    boolean isStatic = true;
     try {
       RouteHandler handler = Router.lookupStatic(requestPath);
       if (handler == null) {
@@ -103,19 +104,24 @@ public class DispatcherServlet extends HttpServlet {
           }
         }
         handler = route.handler();
+        isStatic = false;
       }
 
-      if (!invokeBefore(ctx)) {
+      if (!isStatic && !invokeBefore(ctx)) {
         return;
       }
       handler.handle(ctx);
-      copyResponse(request, response, resp);
+      copyResponse(request, response, resp, isStatic);
       handleResult(ctx, response.getResult());
-      invokeAfter(ctx);
+      if (!isStatic) {
+        invokeAfter(ctx);
+      }
     } catch (Exception e) {
       handlerError(ctx, e);
     } finally {
-      invokeFinished(ctx);
+      if (!isStatic) {
+        invokeFinished(ctx);
+      }
       copyStream(response, resp);
       Request.clear();
       Response.clear();
@@ -152,7 +158,8 @@ public class DispatcherServlet extends HttpServlet {
     return true;
   }
 
-  private void copyResponse(Request request, Response response, HttpServletResponse resp) {
+  private void copyResponse(Request request, Response response, HttpServletResponse resp,
+      boolean isStatic) {
     if (response.getContentType() != null) {
       resp.setContentType(response.getContentType());
     }
@@ -160,6 +167,9 @@ public class DispatcherServlet extends HttpServlet {
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
 
+    if (isStatic) {
+      return;
+    }
     if (!request.getSession().getId()
         .equals(request.getCookieValue(Constants.SESSION_COOKIE_KEY))) {
       response.setCookie(Constants.SESSION_COOKIE_KEY, request.getSession().getId());
