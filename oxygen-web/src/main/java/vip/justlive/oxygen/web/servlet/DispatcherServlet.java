@@ -219,6 +219,7 @@ public class DispatcherServlet extends HttpServlet {
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
+    resp.setHeader("Server", "oxygen");
     if (HttpMethod.PATCH.name().equals(req.getMethod())) {
       doService(req, resp, HttpMethod.PATCH);
     } else {
