@@ -88,7 +88,6 @@ public class DispatcherServlet extends HttpServlet {
     final Request request = Request.set(req);
     final Response response = Response.set(resp);
     final RoutingContext ctx = new RoutingContextImpl(request, response, requestPath);
-    boolean isStatic = true;
     try {
       RouteHandler handler = Router.lookupStatic(requestPath);
       if (handler == null) {
@@ -98,30 +97,26 @@ public class DispatcherServlet extends HttpServlet {
           return;
         }
         request.setRoute(route);
-        for (RequestParse requestParse : REQUEST_PARSES) {
-          if (requestParse.supported(req)) {
-            requestParse.handle(req);
-          }
-        }
         handler = route.handler();
-        isStatic = false;
       }
 
-      if (!isStatic && !invokeBefore(ctx)) {
+      for (RequestParse requestParse : REQUEST_PARSES) {
+        if (requestParse.supported(req)) {
+          requestParse.handle(req);
+        }
+      }
+
+      if (!invokeBefore(ctx)) {
         return;
       }
       handler.handle(ctx);
-      copyResponse(request, response, resp, isStatic);
+      copyResponse(request, response, resp);
       handleResult(ctx, response.getResult());
-      if (!isStatic) {
-        invokeAfter(ctx);
-      }
+      invokeAfter(ctx);
     } catch (Exception e) {
       handlerError(ctx, e);
     } finally {
-      if (!isStatic) {
-        invokeFinished(ctx);
-      }
+      invokeFinished(ctx);
       copyStream(response, resp);
       Request.clear();
       Response.clear();
@@ -158,8 +153,7 @@ public class DispatcherServlet extends HttpServlet {
     return true;
   }
 
-  private void copyResponse(Request request, Response response, HttpServletResponse resp,
-      boolean isStatic) {
+  private void copyResponse(Request request, Response response, HttpServletResponse resp) {
     if (response.getContentType() != null) {
       resp.setContentType(response.getContentType());
     }
@@ -167,9 +161,6 @@ public class DispatcherServlet extends HttpServlet {
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
 
-    if (isStatic) {
-      return;
-    }
     if (!request.getSession().getId()
         .equals(request.getCookieValue(Constants.SESSION_COOKIE_KEY))) {
       response.setCookie(Constants.SESSION_COOKIE_KEY, request.getSession().getId());
