@@ -32,7 +32,7 @@ public class ThymeleafViewResultHandlerTest {
   public void test() {
 
     TemplateEngine templateEngine = new TemplateEngine();
-    templateEngine.setTemplateResolver(new ResourceTemplateResolver("/", "/tmp"));
+    templateEngine.setTemplateResolver(new ResourceTemplateResolver());
     Map<String, Object> map = new HashMap<>();
     map.put("test", "xxx");
     String rsp = templateEngine.process("template/index.html", new IContext() {

@@ -205,8 +205,7 @@ public class ReflectUtils {
     try {
       return clazz.newInstance();
     } catch (Exception e) {
-      throw Exceptions
-          .wrap(e, String.format("can not instance new object for class [%s]", clazz));
+      throw Exceptions.wrap(e, String.format("can not instance new object for class [%s]", clazz));
     }
   }
 
