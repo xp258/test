@@ -33,12 +33,14 @@ public class SimpleViewResultHandler implements ResultHandler {
   private final String suffix;
   private final String prefix;
   private final TemplateEngine templateEngine;
+  private final boolean viewCacheEnabled;
 
   public SimpleViewResultHandler() {
     WebConf webConf = ConfigFactory.load(WebConf.class);
     this.suffix = webConf.getSimpleViewSuffix();
     this.prefix = webConf.getSimpleViewPrefix();
     this.templateEngine = new SimpleTemplateEngine();
+    this.viewCacheEnabled = webConf.isViewCacheEnabled();
   }
 
   @Override
@@ -55,7 +57,12 @@ public class SimpleViewResultHandler implements ResultHandler {
     ViewResult data = (ViewResult) result;
     Response response = ctx.response();
     response.setContentType(Constants.TEXT_HTML);
-    response
-        .write(templateEngine.render(Templates.template(prefix + data.getPath()), data.getData()));
+    String template;
+    if (viewCacheEnabled) {
+      template = Templates.cachedTemplate(prefix + data.getPath());
+    } else {
+      template = Templates.template(prefix + data.getPath());
+    }
+    response.write(templateEngine.render(template, data.getData()));
   }
 }
