@@ -580,6 +580,12 @@ web.static.cache=3600
 web.view.jsp.prefix=WEB-INF
 # thymeleaf 路径前缀
 web.view.thymeleaf.prefix=/templates
+# thymeleaf 视图后缀
+web.view.thymeleaf.suffix=.html
+# 内置简单视图处理 路径前缀
+web.view.simple.prefix=/templates
+# 内置简单视图处理 视图后缀
+web.view.simple.suffix=.htm
 # 是否开启模板缓存
 web.view.cache.enabled=true
 
