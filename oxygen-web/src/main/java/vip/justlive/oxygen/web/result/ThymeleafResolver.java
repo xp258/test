@@ -35,19 +35,18 @@ import vip.justlive.oxygen.web.http.Response;
 public class ThymeleafResolver {
 
   private final TemplateEngine templateEngine;
-  private final String prefix;
 
   ThymeleafResolver() {
     WebConf webConf = ConfigFactory.load(WebConf.class);
     this.templateEngine = new TemplateEngine();
-    this.prefix = webConf.getThymeleafViewPrefix();
-    ResourceTemplateResolver resolver = new ResourceTemplateResolver();
+    ResourceTemplateResolver resolver = new ResourceTemplateResolver(
+        webConf.getThymeleafViewPrefix());
     resolver.setCacheable(webConf.isViewCacheEnabled());
     this.templateEngine.setTemplateResolver(resolver);
   }
 
   public String handler(Request request, Response response, String path, Map<String, Object> data) {
-    return templateEngine.process(prefix + path,
+    return templateEngine.process(path,
         new WebContext(request.getOriginalRequest(), response.getOriginalResponse(),
             request.getOriginalRequest().getServletContext(), Locale.getDefault(), data));
   }
@@ -57,8 +56,11 @@ public class ThymeleafResolver {
    */
   static class ResourceTemplateResolver extends StringTemplateResolver {
 
-    ResourceTemplateResolver() {
+    private final String prefix;
+
+    ResourceTemplateResolver(String prefix) {
       super();
+      this.prefix = prefix;
       setName("Oxygen-Thymeleaf3");
     }
 
@@ -66,9 +68,9 @@ public class ThymeleafResolver {
     protected ITemplateResource computeTemplateResource(IEngineConfiguration configuration,
         String ownerTemplate, String template, Map<String, Object> templateResolutionAttributes) {
       if (isCacheable()) {
-        return new StringTemplateResource(Templates.cachedTemplate(template));
+        return new StringTemplateResource(Templates.cachedTemplate(prefix + template));
       }
-      return new StringTemplateResource(Templates.template(template));
+      return new StringTemplateResource(Templates.template(prefix + template));
     }
   }
 }
