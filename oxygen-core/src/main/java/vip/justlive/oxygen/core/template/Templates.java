@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
@@ -35,6 +36,7 @@ import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
  * @author wubo
  */
 @Slf4j
+@UtilityClass
 public class Templates {
 
   private static final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
