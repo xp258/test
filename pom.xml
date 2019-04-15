@@ -16,6 +16,8 @@
     <module>oxygen-job</module>
     <module>oxygen-web</module>
     <module>oxygen-web-tomcat</module>
+    <module>oxygen-web-jetty</module>
+    <module>oxygen-web-undertow</module>
   </modules>
   <packaging>pom</packaging>
 
