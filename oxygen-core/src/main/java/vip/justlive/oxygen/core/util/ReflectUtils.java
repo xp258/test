@@ -203,7 +203,7 @@ public class ReflectUtils {
       return (T) new HashMap<>(16);
     }
     try {
-      return clazz.newInstance();
+      return clazz.getConstructor().newInstance();
     } catch (Exception e) {
       throw Exceptions.wrap(e, String.format("can not instance new object for class [%s]", clazz));
     }

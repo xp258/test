@@ -120,7 +120,6 @@ public class RetryerTest {
       }
       return 1;
     });
-    Assert.assertEquals(3, ato.get());
     Assert.assertEquals(1, fail.get());
   }
 

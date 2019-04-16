@@ -293,7 +293,11 @@ public class ClassUtils {
   public static Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
-    for (Method method : getCglibActualClass(clazz).getDeclaredMethods()) {
+    Class<?> actualClass = getCglibActualClass(clazz);
+    if (actualClass == null) {
+      return methods;
+    }
+    for (Method method : actualClass.getDeclaredMethods()) {
       if (method.isAnnotationPresent(annotation)) {
         methods.add(method);
       }
