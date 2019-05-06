@@ -32,28 +32,4 @@ public interface Plugin extends Order {
   default void stop() {
   }
 
-  /**
-   * 前置处理
-   */
-  default void beforeInvoke() {
-  }
-
-  /**
-   * 后置处理
-   */
-  default void afterInvoke() {
-  }
-
-  /**
-   * 异常处理
-   */
-  default void onExceptionInvoke() {
-  }
-
-  /**
-   * 最终处理
-   */
-  default void finalInvoke() {
-  }
-
 }
