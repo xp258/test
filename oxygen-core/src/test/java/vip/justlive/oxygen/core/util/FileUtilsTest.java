@@ -72,4 +72,9 @@ public class FileUtilsTest {
     assertTrue(file.isFile());
   }
 
+
+  @Test
+  public void extension() {
+    assertEquals("txt", FileUtils.extension("a.txt"));
+  }
 }

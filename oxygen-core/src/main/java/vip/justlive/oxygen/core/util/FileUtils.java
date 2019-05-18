@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -25,6 +27,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  *
  * @author wubo
  */
+@Slf4j
 @UtilityClass
 public class FileUtils {
 
@@ -35,8 +38,13 @@ public class FileUtils {
    */
   public static void mkdirs(File dir) {
     Checks.notNull(dir, "dir can not be null");
-    if (!dir.mkdirs()) {
-      throw Exceptions.fail("create dir fail");
+    if (dir.exists()) {
+      log.info("mkdirs [{}] exists", dir);
+    } else {
+      if (!dir.mkdirs()) {
+        throw Exceptions.fail("create dir fail");
+      }
+      log.info("mkdirs [{}] successfully", dir);
     }
   }
 
@@ -103,9 +111,12 @@ public class FileUtils {
         if (!file.createNewFile()) {
           throw Exceptions.fail("touch file fail");
         }
+        log.info("file [{}] created", file);
       } catch (IOException e) {
         throw Exceptions.wrap(e);
       }
+    } else {
+      log.info("file [{}] exists", file);
     }
   }
 
@@ -127,6 +138,20 @@ public class FileUtils {
   public static void touch(String filepath) {
     Checks.notNull(filepath, "filepath can not be null");
     touch(new File(filepath));
+  }
+
+  /**
+   * 获取文件扩展名
+   *
+   * @param filename 文件名
+   * @return extension
+   */
+  public static String extension(String filename) {
+    int index = Checks.notNull(filename, "filename can not be null").lastIndexOf(Constants.DOT);
+    if (index == -1) {
+      return Constants.EMPTY;
+    }
+    return filename.substring(index + 1);
   }
 
 }
