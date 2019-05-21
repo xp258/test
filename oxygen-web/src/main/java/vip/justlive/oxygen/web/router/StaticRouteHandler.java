@@ -65,8 +65,8 @@ public class StaticRouteHandler implements RouteHandler {
   public StaticRouteHandler(StaticRoute route) {
     this.route = route;
     if (this.route.cachingEnabled()) {
-      expiringMap = ExpiringMap.<String, StaticSource>builder().expiration(10, TimeUnit.MINUTES)
-          .asyncExpiredListeners(this::cleanExpiredFile).build();
+      expiringMap = ExpiringMap.<String, StaticSource>builder().name("SRH")
+          .expiration(10, TimeUnit.MINUTES).asyncExpiredListeners(this::cleanExpiredFile).build();
     }
   }
 
