@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * objects工具增强类
@@ -93,6 +94,7 @@ public class MoreObjects {
    * @return map
    */
   public static Map<String, Object> beanToMap(Object bean) {
+    Checks.notNull(bean, "bean can not be null");
     Map<String, Object> map = new HashMap<>(4);
     if (Map.class.isAssignableFrom(bean.getClass())) {
       Map<?, ?> beanMap = (Map<?, ?>) bean;
@@ -114,5 +116,21 @@ public class MoreObjects {
       }
     }
     return map;
+  }
+
+  /**
+   * bean转换成queryString
+   *
+   * @param bean 对象
+   * @return queryString
+   */
+  public static String beanToQueryString(Object bean) {
+    Map<String, Object> map = MoreObjects.beanToMap(bean);
+    StringBuilder sb = new StringBuilder();
+    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL).append(v));
+    if (sb.length() > 0) {
+      sb.deleteCharAt(0);
+    }
+    return sb.toString();
   }
 }

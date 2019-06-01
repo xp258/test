@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.net;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
@@ -34,7 +32,7 @@ import vip.justlive.oxygen.core.util.MoreObjects;
  */
 public class HttpRequest {
 
-  private final URL url;
+  private final String url;
   private int connectTimeout;
   private int readTimeout;
   private boolean followRedirects;
@@ -45,11 +43,7 @@ public class HttpRequest {
   private Function<Object, byte[]> func;
 
   private HttpRequest(String url) {
-    try {
-      this.url = new URL(url);
-    } catch (MalformedURLException e) {
-      throw Exceptions.wrap(e);
-    }
+    this.url = url;
   }
 
   /**
@@ -158,6 +152,7 @@ public class HttpRequest {
   public HttpRequest formBody(Object body) {
     this.body = body;
     this.func = this::formBodyConvert;
+    this.headers.put(Constants.CONTENT_TYPE, Constants.APPLICATION_FORM_URLENCODED);
     return this;
   }
 
@@ -167,8 +162,10 @@ public class HttpRequest {
    * @param body 请求体
    * @return request
    */
-  public HttpRequest jsonBody(Object body) {
+  public HttpRequest jsonBody(String body) {
     this.body = body;
+    this.func = this::jsonBodyConvert;
+    this.headers.put(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
     return this;
   }
 
@@ -179,7 +176,7 @@ public class HttpRequest {
    * @throws IOException io异常
    */
   public HttpResponse execute() throws IOException {
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
     if (this.connectTimeout >= 0) {
       connection.setConnectTimeout(this.connectTimeout);
     }
@@ -201,21 +198,20 @@ public class HttpRequest {
       connection.connect();
       connection.getOutputStream().write(bytes);
     }
-    return new HttpResponse(connection.getResponseCode(), connection.getResponseMessage(),
-        MoreObjects.firstNonNull(connection.getErrorStream(), connection.getInputStream()));
+    return new HttpResponse(connection, charset);
   }
 
   private byte[] formBodyConvert(Object obj) {
     if (obj == null) {
       return new byte[0];
     }
-    StringBuilder sb = new StringBuilder();
-    Map<String, Object> map = MoreObjects.beanToMap(obj);
-    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL).append(v));
-    if (sb.length() > 0) {
-      sb.deleteCharAt(0);
-    }
-    return sb.toString().getBytes(charset);
+    return MoreObjects.beanToQueryString(obj).getBytes(charset);
   }
 
+  private byte[] jsonBodyConvert(Object json) {
+    if (json == null) {
+      return new byte[0];
+    }
+    return json.toString().getBytes(charset);
+  }
 }

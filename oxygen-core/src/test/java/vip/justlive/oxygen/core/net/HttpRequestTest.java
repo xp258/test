@@ -40,7 +40,7 @@ public class HttpRequestTest {
   @Test
   public void test1() throws IOException {
     HttpResponse response = HttpRequest
-        .post("http://localhost:8080/api/login/validate")
+        .post("https://cn.bing.com/AS/Suggestions?pt=page.serp&bq=Charset&mkt=zh-cn&ds=mobileweb&qry=charset&cp=7&cvid=5E954FAA1B634A69A7CCF9438379A606")
         .charset(StandardCharsets.UTF_8)
         .connectTimeout(1000)
         .readTimeout(1000)
@@ -49,7 +49,8 @@ public class HttpRequestTest {
         .addHeader("token", "zzz")
         .execute();
     Assert.assertEquals(200, response.getCode());
-    System.out.println(IOUtils.toString(response.getBody()));
+    System.out.println(response.bodyAsString());
+    System.out.println(response.getHeaders());
   }
 
   @Data
