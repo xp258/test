@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.net;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -39,6 +40,7 @@ public class HttpRequest {
   private HttpMethod method;
   private Charset charset = StandardCharsets.UTF_8;
   private Map<String, String> headers = new HashMap<>(4);
+  private Object queryParam;
   private Object body;
   private Function<Object, byte[]> func;
 
@@ -144,6 +146,17 @@ public class HttpRequest {
   }
 
   /**
+   * 设置url的query参数
+   *
+   * @param queryParam query参数
+   * @return request
+   */
+  public HttpRequest queryParam(Object queryParam) {
+    this.queryParam = queryParam;
+    return this;
+  }
+
+  /**
    * 增加表单请求体
    *
    * @param body 请求体
@@ -176,7 +189,17 @@ public class HttpRequest {
    * @throws IOException io异常
    */
   public HttpResponse execute() throws IOException {
-    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+    String httpUrl = this.url;
+    if (queryParam != null) {
+      String queryString = MoreObjects.beanToQueryString(queryParam, true);
+      if (!url.contains(Constants.QUESTION_MARK)) {
+        httpUrl += Constants.QUESTION_MARK;
+      } else if (!url.endsWith(Constants.AND)) {
+        httpUrl += Constants.AND;
+      }
+      httpUrl += queryString;
+    }
+    HttpURLConnection connection = (HttpURLConnection) new URL(httpUrl).openConnection();
     if (this.connectTimeout >= 0) {
       connection.setConnectTimeout(this.connectTimeout);
     }
@@ -196,7 +219,10 @@ public class HttpRequest {
       byte[] bytes = this.func.apply(body);
       connection.setFixedLengthStreamingMode(bytes.length);
       connection.connect();
-      connection.getOutputStream().write(bytes);
+      try (OutputStream out = connection.getOutputStream()) {
+        out.write(bytes);
+        out.flush();
+      }
     }
     return new HttpResponse(connection, charset);
   }

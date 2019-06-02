@@ -13,8 +13,12 @@
  */
 package vip.justlive.oxygen.core.util;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
@@ -125,12 +129,50 @@ public class MoreObjects {
    * @return queryString
    */
   public static String beanToQueryString(Object bean) {
+    return beanToQueryString(bean, false);
+  }
+
+  /**
+   * bean转换成queryString
+   *
+   * @param bean 对象
+   * @param urlEncoded url encoded
+   * @return queryString
+   */
+  public static String beanToQueryString(Object bean, boolean urlEncoded) {
     Map<String, Object> map = MoreObjects.beanToMap(bean);
     StringBuilder sb = new StringBuilder();
-    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL).append(v));
+    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL)
+        .append(urlEncoded ? urlEncode(v.toString()) : v));
     if (sb.length() > 0) {
       sb.deleteCharAt(0);
     }
     return sb.toString();
+  }
+
+  /**
+   * url encode
+   *
+   * @param s string
+   * @return encoded
+   */
+  public static String urlEncode(String s) {
+    return urlEncode(s, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * url encode
+   *
+   * @param s string
+   * @param charset 字符集
+   * @return encoded
+   */
+  public static String urlEncode(String s, Charset charset) {
+    try {
+      return URLEncoder.encode(s, charset.name());
+    } catch (UnsupportedEncodingException e) {
+      // nothing
+    }
+    return s;
   }
 }

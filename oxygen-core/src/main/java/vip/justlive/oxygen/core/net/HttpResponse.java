@@ -76,7 +76,7 @@ public class HttpResponse implements Closeable {
    * @throws IOException io异常
    */
   public String bodyAsString() throws IOException {
-    return IOUtils.toString(body, charset);
+    return bodyAsString(charset);
   }
 
   /**

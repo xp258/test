@@ -20,7 +20,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.IOUtils;
 
 /**
  * @author wubo
@@ -37,20 +36,19 @@ public class HttpRequestTest {
     }
   }
 
-  @Test
   public void test1() throws IOException {
     HttpResponse response = HttpRequest
-        .post("https://cn.bing.com/AS/Suggestions?pt=page.serp&bq=Charset&mkt=zh-cn&ds=mobileweb&qry=charset&cp=7&cvid=5E954FAA1B634A69A7CCF9438379A606")
+        .post("http://localhost:8080/api/login/validate")
         .charset(StandardCharsets.UTF_8)
         .connectTimeout(1000)
         .readTimeout(1000)
         .followRedirects(false)
-        .formBody(new Body().mobile("1").captcha("2"))
+        .queryParam(new Body().mobile("1").captcha("2"))
+        .jsonBody("{\"a\":1}")
         .addHeader("token", "zzz")
         .execute();
     Assert.assertEquals(200, response.getCode());
-    System.out.println(response.bodyAsString());
-    System.out.println(response.getHeaders());
+    Assert.assertNotNull(response.bodyAsString());
   }
 
   @Data
