@@ -183,6 +183,19 @@ public class HttpRequest {
   }
 
   /**
+   * 增加自定义请求体
+   *
+   * @param body 请求体
+   * @param func 请求体转换
+   * @return request
+   */
+  public HttpRequest body(Object body, Function<Object, byte[]> func) {
+    this.body = body;
+    this.func = func;
+    return this;
+  }
+
+  /**
    * 执行
    *
    * @return response
