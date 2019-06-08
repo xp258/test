@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
@@ -174,5 +175,25 @@ public class MoreObjects {
       // nothing
     }
     return s;
+  }
+
+  /**
+   * always true
+   *
+   * @param <T> 泛型
+   * @return predicate
+   */
+  public static <T> Predicate<T> alwaysTrue() {
+    return t -> true;
+  }
+
+  /**
+   * always false
+   *
+   * @param <T> 泛型
+   * @return predicate
+   */
+  public static <T> Predicate<T> alwaysFalse() {
+    return t -> false;
   }
 }
