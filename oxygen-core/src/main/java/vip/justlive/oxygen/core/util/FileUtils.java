@@ -38,7 +38,9 @@ public class FileUtils {
    * @param dir 目录
    */
   public static void mkdirs(File dir) {
-    Checks.notNull(dir);
+    if (dir == null) {
+      return;
+    }
     if (dir.exists()) {
       log.info("mkdirs [{}] exists", dir);
     } else {
@@ -55,7 +57,9 @@ public class FileUtils {
    * @param path 路径
    */
   public static void mkdirs(Path path) {
-    Checks.notNull(path);
+    if (path == null) {
+      return;
+    }
     mkdirs(path.toFile());
   }
 
@@ -65,7 +69,9 @@ public class FileUtils {
    * @param path 路径
    */
   public static void mkdirs(String path) {
-    Checks.notNull(path);
+    if (path == null) {
+      return;
+    }
     mkdirs(new File(path));
   }
 
@@ -92,7 +98,9 @@ public class FileUtils {
    * @param file 文件
    */
   public static void mkdirsForFile(File file) {
-    Checks.notNull(file);
+    if (file == null) {
+      return;
+    }
     File dir = file.getParentFile();
     if (dir != null && !dir.exists()) {
       mkdirs(dir);
@@ -105,7 +113,9 @@ public class FileUtils {
    * @param file 文件
    */
   public static void touch(File file) {
-    Checks.notNull(file);
+    if (file == null) {
+      return;
+    }
     if (!file.exists()) {
       mkdirsForFile(file);
       try {
@@ -127,7 +137,9 @@ public class FileUtils {
    * @param path 文件路径
    */
   public static void touch(Path path) {
-    Checks.notNull(path);
+    if (path == null) {
+      return;
+    }
     touch(path.toFile());
   }
 
@@ -137,7 +149,10 @@ public class FileUtils {
    * @param filepath 文件路径
    */
   public static void touch(String filepath) {
-    touch(new File(Checks.notNull(filepath)));
+    if (filepath == null) {
+      return;
+    }
+    touch(new File(filepath));
   }
 
   /**
