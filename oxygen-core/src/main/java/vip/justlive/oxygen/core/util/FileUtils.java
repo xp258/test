@@ -234,5 +234,51 @@ public class FileUtils {
     }
   }
 
+  /**
+   * 获取文件绝对路径
+   *
+   * @param file 文件
+   * @return path
+   */
+  public static String absolutePath(File file) {
+    Checks.notNull(file);
+    try {
+      return file.getCanonicalPath();
+    } catch (IOException e) {
+      return file.getAbsolutePath();
+    }
+  }
+
+  /**
+   * 是否是相同的文件路径
+   *
+   * @param file 文件
+   * @param another 另一文件
+   * @return true为相同路径
+   */
+  public static boolean isSamePath(File file, File another) {
+    if (file == another || file.equals(another)) {
+      return true;
+    }
+    return absolutePath(file).equals(absolutePath(another));
+  }
+
+  /**
+   * 判断是否为根目录
+   *
+   * @param dir 目录
+   * @return true为根目录
+   */
+  public static boolean isRoot(File dir) {
+    if (dir == null || !dir.isDirectory()) {
+      return false;
+    }
+    for (File file : File.listRoots()) {
+      if (isSamePath(file, dir)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
 }
