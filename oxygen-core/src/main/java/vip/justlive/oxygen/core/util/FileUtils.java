@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
@@ -281,4 +282,68 @@ public class FileUtils {
     return false;
   }
 
+  /**
+   * 删除文件或目录
+   *
+   * @param file 文件
+   * @return count
+   */
+  public static int delete(File file) {
+    if (file != null && file.exists()) {
+      if (file.isFile()) {
+        return deleteFile(file);
+      } else {
+        return deleteDir(file);
+      }
+    }
+    return 0;
+  }
+
+  /**
+   * 删除文件
+   *
+   * @param file 文件
+   * @return count
+   */
+  public static int deleteFile(File file) {
+    if (file != null && file.isFile()) {
+      return deletePath(file.toPath());
+    }
+    return 0;
+  }
+
+  /**
+   * 删除目录
+   *
+   * @param file 目录
+   * @return count
+   */
+  public static int deleteDir(File file) {
+    if (file != null && file.isDirectory()) {
+      File[] files = file.listFiles();
+      int count = 0;
+      if (files != null && files.length > 0) {
+        for (File subFile : files) {
+          if (subFile.isFile()) {
+            count += deleteFile(subFile);
+          } else {
+            count += deleteDir(subFile);
+          }
+        }
+      }
+      count += deletePath(file.toPath());
+      return count;
+    }
+    return 0;
+  }
+
+  private static int deletePath(Path path) {
+    try {
+      Files.delete(path);
+      return 1;
+    } catch (IOException e) {
+      log.warn("delete file error", e);
+    }
+    return 0;
+  }
 }
