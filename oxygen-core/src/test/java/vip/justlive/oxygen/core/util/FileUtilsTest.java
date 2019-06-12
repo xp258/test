@@ -13,19 +13,15 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.function.Predicate;
 import org.junit.Test;
 
 public class FileUtilsTest {
-
-  @Test(expected = NullPointerException.class)
-  public void mkdirs() {
-    File file = null;
-    FileUtils.mkdirs(file);
-  }
 
   @Test
   public void mkdirs1() {
@@ -44,6 +40,9 @@ public class FileUtilsTest {
     FileUtils.mkdirs(Paths.get(name));
     assertTrue(file.exists());
     assertTrue(file.isDirectory());
+    file = new File("/tmp/a");
+    assertEquals(7, FileUtils.countDirs(file));
+    assertEquals(7, FileUtils.delete(file));
   }
 
   @Test
@@ -53,6 +52,7 @@ public class FileUtilsTest {
     File file = new File(parent + "/1/2");
     assertTrue(file.exists());
     assertTrue(file.isDirectory());
+    assertEquals(4, FileUtils.delete(new File("/tmp/a")));
   }
 
 
@@ -62,6 +62,7 @@ public class FileUtilsTest {
     File file = new File("/tmp/a/5");
     assertTrue(file.exists());
     assertTrue(file.isDirectory());
+    assertEquals(2, FileUtils.delete(new File("/tmp/a")));
   }
 
   @Test
@@ -70,11 +71,28 @@ public class FileUtilsTest {
     File file = new File("/tmp/a/6/a.log");
     assertTrue(file.exists());
     assertTrue(file.isFile());
+    assertEquals(3, FileUtils.delete(new File("/tmp/a")));
   }
 
 
   @Test
   public void extension() {
     assertEquals("txt", FileUtils.extension("a.txt"));
+  }
+
+  @Test
+  public void count() {
+    Predicate<File> filter = file -> file.getName().endsWith(".log");
+    assertEquals(0, FileUtils.countDirs(new File("/tmp/a/7")));
+    assertEquals(0, FileUtils.countFiles(new File("/tmp/a/7")));
+    FileUtils.mkdirs("/tmp/a/7");
+    assertEquals(1, FileUtils.countDirs(new File("/tmp/a/7")));
+    assertEquals(0, FileUtils.countDirs(new File("/tmp/a/7"), filter));
+    assertEquals(0, FileUtils.countFiles(new File("/tmp/a/7")));
+    FileUtils.touch("/tmp/a/7/a.log");
+    assertEquals(0, FileUtils.countDirs(new File("/tmp/a/7/a.log")));
+    assertEquals(1, FileUtils.countFiles(new File("/tmp/a/7/a.log")));
+    assertEquals(0, FileUtils.countFiles(new File("/tmp/a/7/a.log"), filter.negate()));
+    assertEquals(3, FileUtils.delete(new File("/tmp/a")));
   }
 }

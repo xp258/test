@@ -214,6 +214,17 @@ public class FileUtils {
    * @param file 文件
    * @return count
    */
+  public static int countDirs(File file) {
+    return countDirs(file, MoreObjects.alwaysTrue());
+  }
+
+  /**
+   * count dirs
+   *
+   * @param file 文件
+   * @param filter 过滤器
+   * @return count
+   */
   public static int countDirs(File file, Predicate<File> filter) {
     Checks.notNull(file, "file cant not be null");
     Checks.notNull(filter, "filter can not be null");
