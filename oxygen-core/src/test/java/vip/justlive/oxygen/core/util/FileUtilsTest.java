@@ -14,9 +14,11 @@
 package vip.justlive.oxygen.core.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
 import org.junit.Test;
@@ -41,6 +43,7 @@ public class FileUtilsTest {
     assertTrue(file.exists());
     assertTrue(file.isDirectory());
     file = new File("/tmp/a");
+    assertEquals(0, FileUtils.countFiles(file));
     assertEquals(7, FileUtils.countDirs(file));
     assertEquals(7, FileUtils.delete(file));
   }
@@ -81,7 +84,7 @@ public class FileUtilsTest {
   }
 
   @Test
-  public void count() {
+  public void t0() {
     Predicate<File> filter = file -> file.getName().endsWith(".log");
     assertEquals(0, FileUtils.countDirs(new File("/tmp/a/7")));
     assertEquals(0, FileUtils.countFiles(new File("/tmp/a/7")));
@@ -94,5 +97,39 @@ public class FileUtilsTest {
     assertEquals(1, FileUtils.countFiles(new File("/tmp/a/7/a.log")));
     assertEquals(0, FileUtils.countFiles(new File("/tmp/a/7/a.log"), filter.negate()));
     assertEquals(3, FileUtils.delete(new File("/tmp/a")));
+    assertEquals(0, FileUtils.delete(null));
+    assertEquals(0, FileUtils.deleteFile(null));
+    assertEquals(0, FileUtils.deleteDir(null));
+
+    FileUtils.touch("/tmp/a/7/a.log");
+    assertEquals(1, FileUtils.delete(new File("/tmp/a/7/a.log")));
+    FileUtils.delete(new File("/tmp/a"));
+  }
+
+  @Test
+  public void t1() {
+    assertFalse(FileUtils.isRoot(null));
+    assertFalse(FileUtils.isRoot(new File(".")));
+    assertTrue(FileUtils.isRoot(new File("d:/")));
+
+    assertFalse(FileUtils.isSamePath(new File("/tmp/a"), new File("/tmp/a/b")));
+    assertTrue(FileUtils.isSamePath(new File("/tmp/a"), new File("/tmp/a/b/..")));
+  }
+
+  @Test
+  public void t2() {
+    FileUtils.mkdirs((File) null);
+    FileUtils.mkdirs((String) null);
+    FileUtils.mkdirs((Path) null);
+    FileUtils.mkdirsForFile(null);
+    FileUtils.mkdirs("/tmp/a/8");
+    FileUtils.mkdirs("/tmp/a/8");
+
+    FileUtils.touch((Path) null);
+    FileUtils.touch((String) null);
+    FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
+    FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
+
+    FileUtils.delete(new File("/tmp/a"));
   }
 }
