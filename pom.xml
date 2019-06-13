@@ -35,6 +35,7 @@
     <lombok.version>1.18.4</lombok.version>
     <slf4j.version>1.7.25</slf4j.version>
 
+    <skipTests>true</skipTests>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
@@ -136,6 +137,27 @@
           <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
       </distributionManagement>
+    </profile>
+    <profile>
+      <id>doc</id>
+      <build>
+        <plugins>
+          <!-- Javadoc -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 

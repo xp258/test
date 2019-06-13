@@ -14,6 +14,7 @@ public class RespVo<T> extends RespData<T> {
   /**
    * 成功返回
    *
+   * @param <T> 泛型
    * @return 返回实体
    */
   public static <T> RespVo<T> success() {
