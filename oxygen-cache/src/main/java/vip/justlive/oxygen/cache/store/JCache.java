@@ -30,8 +30,6 @@ import vip.justlive.oxygen.core.util.ClassUtils;
 @UtilityClass
 public class JCache {
 
-  private static final boolean EHCACHE_ENABLED = ClassUtils.isPresent("net.sf.ehcache.Cache");
-
   static Map<String, Cache> cacheImpls = new ConcurrentHashMap<>(4, 1);
 
   /**
@@ -95,9 +93,6 @@ public class JCache {
         throw Exceptions.wrap(e);
       }
     } else {
-      if (EHCACHE_ENABLED) {
-        return new EhCacheImpl();
-      }
       return new LocalCacheImpl();
     }
   }
