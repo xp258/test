@@ -59,7 +59,7 @@ public class JCache {
    */
   public static Cache cache(String name) {
     if (!cacheImpls.containsKey(name)) {
-      cacheImpls.putIfAbsent(name, createCache());
+      cacheImpls.putIfAbsent(name, createCache(name));
     }
     return cacheImpls.get(name);
   }
@@ -83,17 +83,17 @@ public class JCache {
     cacheImpls.clear();
   }
 
-  private static Cache createCache() {
+  private static Cache createCache(String name) {
     CoreConf config = ConfigFactory.load(CoreConf.class);
     if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
       try {
         Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
-        return (Cache) clazz.getConstructor().newInstance();
+        return (Cache) clazz.getConstructor(String.class).newInstance(name);
       } catch (Exception e) {
         throw Exceptions.wrap(e);
       }
     } else {
-      return new LocalCacheImpl();
+      return new LocalCacheImpl(name);
     }
   }
 }
