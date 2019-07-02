@@ -44,7 +44,7 @@ public class Server {
    * 监听端口并启动服务
    */
   public void listen() {
-    listen(-1);
+    listen(8080);
   }
 
   /**
