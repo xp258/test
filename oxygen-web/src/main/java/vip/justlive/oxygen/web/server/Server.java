@@ -36,7 +36,7 @@ public class Server {
    */
   public static Server server() {
     Server server = new Server();
-    server.webServer = ServiceLoaderUtils.loadSerivce(WebServer.class);
+    server.webServer = ServiceLoaderUtils.loadService(WebServer.class);
     return server;
   }
 
