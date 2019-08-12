@@ -374,6 +374,14 @@ public class ClassUtils {
     return getAnnotation(clazz, annotation) != null;
   }
 
+  /**
+   * 获取注解 支持派生注解
+   *
+   * @param clazz 类型
+   * @param annotation 注解
+   * @param <A> 泛型
+   * @return 注解
+   */
   @SuppressWarnings("unchecked")
   public static <A extends Annotation> A getAnnotation(Class<?> clazz,
       Class<A> annotation) {
@@ -401,7 +409,7 @@ public class ClassUtils {
   private static void recursivelyCollectAnnotations(Set<Annotation> visited,
       Annotation annotation) {
     Class<? extends Annotation> annotationType = annotation.annotationType();
-    if (isInJavaLangAnnotationPackage(annotationType) || !Modifier
+    if (annotationType == null || isInJavaLangAnnotationPackage(annotationType) || !Modifier
         .isPublic(annotationType.getModifiers()) || !visited.add(annotation)) {
       return;
     }
