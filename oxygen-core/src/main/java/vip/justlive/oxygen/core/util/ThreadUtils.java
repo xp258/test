@@ -36,7 +36,7 @@ public class ThreadUtils {
       .withInitial(ConcurrentHashMap::new);
 
   private static final ThreadPoolExecutor CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-      60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+      60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
       new ThreadFactoryBuilder().setDaemon(true).setNameFormat("cached-pool-%d").build());
 
 
