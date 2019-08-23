@@ -27,12 +27,15 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class AbstractWorker<T> implements Runnable {
 
-  protected final ChannelContext channelContext;
-  protected LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
-  protected Lock lock = new ReentrantLock(true);
+  final ChannelContext channelContext;
+  LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
   volatile boolean stopped;
 
-  protected AbstractWorker(ChannelContext channelContext) {
+  private Lock lock = new ReentrantLock(true);
+  private int maxLoop = 10;
+  private int executeCount = 0;
+
+  AbstractWorker(ChannelContext channelContext) {
     this.channelContext = channelContext;
   }
 
@@ -49,8 +52,8 @@ public abstract class AbstractWorker<T> implements Runnable {
   /**
    * 执行任务
    */
-  public void execute() {
-    if (!stopped) {
+  public synchronized void execute() {
+    if (!stopped && executeCount++ % maxLoop == 0) {
       channelContext.getGroupContext().getWorkerExecutor().execute(this);
     }
   }
@@ -84,19 +87,26 @@ public abstract class AbstractWorker<T> implements Runnable {
 
   @Override
   public void run() {
+    lock.lock();
+    try {
+      for (int i = 0; i < maxLoop; i++) {
+        loopRun();
+      }
+    } finally {
+      executeCount = Math.max(executeCount - maxLoop, 0);
+      lock.unlock();
+    }
+  }
+
+  private void loopRun() {
     if (stopped) {
       return;
     }
-    lock.lock();
-    try {
-      List<T> data = new LinkedList<>();
-      queue.drainTo(data);
-      if (data.isEmpty()) {
-        return;
-      }
-      handle(data);
-    } finally {
-      lock.unlock();
+    List<T> data = new LinkedList<>();
+    queue.drainTo(data);
+    if (data.isEmpty()) {
+      return;
     }
+    handle(data);
   }
 }

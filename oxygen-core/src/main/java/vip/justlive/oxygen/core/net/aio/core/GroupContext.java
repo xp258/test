@@ -102,14 +102,14 @@ public class GroupContext {
 
   public ThreadPoolExecutor getGroupExecutor() {
     if (groupExecutor == null) {
-      groupExecutor = ThreadUtils.newThreadPool(20, 30, 120, Integer.MAX_VALUE, "aio-server-%d");
+      groupExecutor = ThreadUtils.newThreadPool(100, 100, 120, Integer.MAX_VALUE, "aio-server-%d");
     }
     return groupExecutor;
   }
 
   public ThreadPoolExecutor getWorkerExecutor() {
     if (workerExecutor == null) {
-      workerExecutor = ThreadUtils.newThreadPool(20, 30, 120, Integer.MAX_VALUE, "aio-worker-%d");
+      workerExecutor = ThreadUtils.newThreadPool(200, 200, 120, Integer.MAX_VALUE, "aio-worker-%d");
     }
     return workerExecutor;
   }
