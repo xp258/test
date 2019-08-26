@@ -15,6 +15,10 @@
 package vip.justlive.oxygen.core.util;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.net.ServerSocketFactory;
 import lombok.experimental.UtilityClass;
@@ -121,5 +125,48 @@ public class SystemUtils {
     throw Exceptions.fail(String
         .format("Can not find available port in range [%d, %d] after [%d] attempts", minPort,
             maxPort, searchCounter));
+  }
+
+  /**
+   * 获取本机地址
+   *
+   * @return address
+   */
+  public static InetAddress getLocalAddress() {
+    InetAddress candidateAddress = null;
+    try {
+      Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+      if (interfaces != null) {
+        candidateAddress = getByNetworkInterfaces(interfaces);
+      }
+    } catch (SocketException e) {
+      // ignore
+    }
+
+    if (candidateAddress == null) {
+      try {
+        candidateAddress = InetAddress.getLocalHost();
+      } catch (UnknownHostException e) {
+        // ignore
+      }
+    }
+    return candidateAddress;
+  }
+
+  private InetAddress getByNetworkInterfaces(Enumeration<NetworkInterface> interfaces) {
+    InetAddress candidateAddress = null;
+    while (interfaces.hasMoreElements()) {
+      NetworkInterface network = interfaces.nextElement();
+      Enumeration<InetAddress> addresses = network.getInetAddresses();
+      while (addresses.hasMoreElements()) {
+        InetAddress address = addresses.nextElement();
+        if (address.isSiteLocalAddress()) {
+          return address;
+        } else if (!address.isLoopbackAddress() || !address.isLinkLocalAddress()) {
+          candidateAddress = address;
+        }
+      }
+    }
+    return candidateAddress;
   }
 }

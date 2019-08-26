@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,7 +48,7 @@ public class ChannelContext {
   private AsynchronousSocketChannel channel;
   private InetSocketAddress address;
   private volatile boolean closed;
-  private volatile boolean inSync;
+  private volatile CompletableFuture<Void> future;
 
   // stat
 
@@ -74,7 +75,6 @@ public class ChannelContext {
     this.readHandler = new ReadHandler(this);
     this.writeWorker = new WriteWorker(this);
     this.writeHandler = new WriteHandler(this);
-    this.inSync = true;
     setChannel(channel);
   }
 
@@ -89,6 +89,7 @@ public class ChannelContext {
     } catch (IOException e) {
       //ignore
     }
+    this.future = new CompletableFuture<>();
   }
 
   public void write(Object data) {
@@ -112,21 +113,14 @@ public class ChannelContext {
   }
 
   public void sync() {
-    while (inSync) {
-      try {
-        synchronized (this) {
-          wait();
-        }
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
+    if (future != null) {
+      future.join();
     }
   }
 
   public synchronized void start() {
     closed = false;
-    inSync = false;
-    notifyAll();
+    future.complete(null);
     readWorker.start();
     writeWorker.start();
     retryAttempts = 0;
@@ -134,8 +128,6 @@ public class ChannelContext {
   }
 
   public synchronized void close() {
-    inSync = false;
-    notifyAll();
     if (closed) {
       return;
     }
