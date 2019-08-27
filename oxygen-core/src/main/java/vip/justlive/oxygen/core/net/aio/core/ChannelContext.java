@@ -112,12 +112,6 @@ public class ChannelContext {
     readWorker.execute();
   }
 
-  public void sync() {
-    if (future != null) {
-      future.join();
-    }
-  }
-
   public synchronized void start() {
     closed = false;
     future.complete(null);

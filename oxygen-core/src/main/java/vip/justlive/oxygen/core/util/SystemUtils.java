@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.util;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -22,6 +23,7 @@ import java.util.Enumeration;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.net.ServerSocketFactory;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -126,6 +128,21 @@ public class SystemUtils {
         .format("Can not find available port in range [%d, %d] after [%d] attempts", minPort,
             maxPort, searchCounter));
   }
+
+  /**
+   * 解析成InetSocketAddress，格式host:port
+   *
+   * @param address 需要解析的地址
+   * @return address
+   */
+  public static InetSocketAddress parseAddress(String address) {
+    if (address == null || address.trim().length() == 0) {
+      return null;
+    }
+    String[] hostPort = address.trim().split(Constants.COLON);
+    return new InetSocketAddress(hostPort[0].trim(), Integer.parseInt(hostPort[1].trim()));
+  }
+
 
   /**
    * 获取本机地址
