@@ -92,6 +92,11 @@ public class ChannelContext {
     this.future = new CompletableFuture<>();
   }
 
+  /**
+   * 写数据
+   *
+   * @param data 数据
+   */
   public void write(Object data) {
     if (closed) {
       return;
@@ -112,15 +117,20 @@ public class ChannelContext {
     readWorker.execute();
   }
 
+  /**
+   * 启动
+   */
   public synchronized void start() {
     closed = false;
-    future.complete(null);
     readWorker.start();
     writeWorker.start();
     retryAttempts = 0;
     groupContext.bind(this);
   }
 
+  /**
+   * 关闭
+   */
   public synchronized void close() {
     if (closed) {
       return;
