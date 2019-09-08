@@ -13,8 +13,6 @@
  */
 package vip.justlive.oxygen.core.domain;
 
-import vip.justlive.oxygen.core.constant.Constants;
-
 /**
  * json返回实体
  *
@@ -41,7 +39,7 @@ public class Resp extends RespData<Object> {
    */
   public static Resp success(Object data) {
     Resp resp = new Resp();
-    resp.setData(data).setCode(Constants.SUCCESS_CODE);
+    resp.setData(data).setCode(SUCCESS_CODE);
     return resp;
   }
 
@@ -52,7 +50,7 @@ public class Resp extends RespData<Object> {
    * @return 返回实体
    */
   public static Resp error(String message) {
-    return error(Constants.DEFAULT_FAIL_CODE, message);
+    return error(DEFAULT_FAIL_CODE, message);
   }
 
   /**
@@ -74,6 +72,6 @@ public class Resp extends RespData<Object> {
    * @return 是否成功
    */
   public boolean isSuccess() {
-    return Constants.SUCCESS_CODE.equals(getCode());
+    return SUCCESS_CODE.equals(getCode());
   }
 }

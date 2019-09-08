@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.core.exception;
 
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 用于创建CodedException
@@ -61,7 +60,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e, String code, String message) {
-    return new CodedException(e, errorMessage(Constants.DEFAULT_NODULE, code, message));
+    return new CodedException(e, errorMessage(code, message));
   }
 
   /**
@@ -83,7 +82,7 @@ public class Exceptions {
    * @return 异常编码包装
    */
   public static ErrorCode errorMessage(String message) {
-    return errorMessage(Constants.DEFAULT_FAIL_CODE, message);
+    return new ErrorCode(message);
   }
 
   /**
@@ -94,7 +93,7 @@ public class Exceptions {
    * @return 异常编码包装
    */
   public static ErrorCode errorMessage(String code, String message) {
-    return errorMessage(Constants.DEFAULT_NODULE, code, message);
+    return new ErrorCode(code, message);
   }
 
   /**
@@ -116,7 +115,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException fail(String message) {
-    return fail(Constants.DEFAULT_FAIL_CODE, message);
+    return fail(errorMessage(message));
   }
 
   /**

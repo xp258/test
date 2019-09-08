@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.web.router.Route;
 
 /**
@@ -288,7 +288,7 @@ public class Request implements Serializable {
    * @return true为ajax请求
    */
   public boolean isAjax() {
-    return Objects.equals(getHeader(Constants.X_REQUESTED_WITH), Constants.XML_HTTP_REQUEST);
+    return Objects.equals(getHeader(HttpHeaders.X_REQUESTED_WITH), HttpHeaders.XML_HTTP_REQUEST);
   }
 
   /**

@@ -16,7 +16,7 @@ package vip.justlive.oxygen.web.servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration.Dynamic;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * web启动器
@@ -33,7 +33,7 @@ public class DefaultWebAppInitializer implements WebAppInitializer {
     Dynamic dynamic = context
         .addServlet(DispatcherServlet.class.getSimpleName(), DispatcherServlet.class);
     dynamic.setLoadOnStartup(0);
-    dynamic.addMapping(Constants.ROOT_PATH);
+    dynamic.addMapping(Strings.SLASH);
     dynamic.setAsyncSupported(true);
   }
 

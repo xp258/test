@@ -17,7 +17,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 
 /**
  * json请求解析
@@ -28,7 +28,7 @@ public class JsonRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {
-    return Constants.APPLICATION_JSON.equalsIgnoreCase(Request.current().getContentType());
+    return HttpHeaders.APPLICATION_JSON.equalsIgnoreCase(Request.current().getContentType());
   }
 
   @Override
@@ -39,6 +39,6 @@ public class JsonRequestParse implements RequestParse {
     for (String key : jsonObject.keySet()) {
       margeParam(map, key, jsonObject.getString(key));
     }
-    margeParam(Request.current().getParams(), Constants.BODY_STORE_KEY, body);
+    margeParam(Request.current().getParams(), HttpHeaders.BODY_STORE_KEY, body);
   }
 }

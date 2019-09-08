@@ -13,9 +13,6 @@
  */
 package vip.justlive.oxygen.core.io;
 
-import static vip.justlive.oxygen.core.constant.Constants.ALL_CLASSPATH_PREFIX;
-import static vip.justlive.oxygen.core.constant.Constants.CLASSPATH_PREFIX;
-import static vip.justlive.oxygen.core.constant.Constants.FILE_PREFIX;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -29,11 +26,11 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.PathMatcher;
-import vip.justlive.oxygen.core.util.ResourceUtils;
-import vip.justlive.oxygen.core.util.ResourceUtils.JarFileInfo;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
+import vip.justlive.oxygen.core.util.Urls.JarFileInfo;
 
 /**
  * 抽象资源加载器
@@ -148,12 +145,13 @@ public abstract class AbstractResourceLoader {
     for (String location : locations) {
       try {
         log.info("parsing resource for [{}]", location);
-        if (location.startsWith(ALL_CLASSPATH_PREFIX)) {
+        if (location.startsWith(Strings.ALL_CLASSPATH_PREFIX)) {
+          list.addAll(this.resolveAllClassPathResource(
+              location.substring(Strings.ALL_CLASSPATH_PREFIX.length())));
+        } else if (location.startsWith(Strings.CLASSPATH_PREFIX)) {
           list.addAll(
-              this.resolveAllClassPathResource(location.substring(ALL_CLASSPATH_PREFIX.length())));
-        } else if (location.startsWith(CLASSPATH_PREFIX)) {
-          list.addAll(this.resolveClassPathResource(location.substring(CLASSPATH_PREFIX.length())));
-        } else if (location.startsWith(FILE_PREFIX)) {
+              this.resolveClassPathResource(location.substring(Strings.CLASSPATH_PREFIX.length())));
+        } else if (location.startsWith(Strings.FILE_PREFIX)) {
           list.addAll(this.resolveFileSystemResource(location));
         } else {
           list.addAll(this.resolveClassPathResource(location));
@@ -180,7 +178,7 @@ public abstract class AbstractResourceLoader {
     if (matcher.isPattern(location)) {
       list.addAll(this.findMatchPath(location, true));
     } else {
-      Enumeration<URL> res = loader.getResources(ResourceUtils.cutRootPath(location));
+      Enumeration<URL> res = loader.getResources(Urls.cutRootPath(location));
       if (res == null) {
         return list;
       }
@@ -221,7 +219,7 @@ public abstract class AbstractResourceLoader {
     if (matcher.isPattern(location)) {
       list.addAll(this.findMatchPath(location, false));
     } else {
-      list.add(new FileSystemResource(location.substring(FILE_PREFIX.length())));
+      list.add(new FileSystemResource(location.substring(Strings.FILE_PREFIX.length())));
     }
     return list;
   }
@@ -240,7 +238,7 @@ public abstract class AbstractResourceLoader {
     String subPattern = location.substring(rootPath.length());
     List<SourceResource> rootResources;
     if (multi) {
-      Enumeration<URL> urls = this.loader.getResources(ResourceUtils.cutRootPath(rootPath));
+      Enumeration<URL> urls = this.loader.getResources(Urls.cutRootPath(rootPath));
       rootResources = new LinkedList<>();
       while (urls.hasMoreElements()) {
         rootResources.add(new UrlResource(urls.nextElement()));
@@ -251,9 +249,9 @@ public abstract class AbstractResourceLoader {
 
     for (SourceResource resource : rootResources) {
       URL rootUrl = resource.getURL();
-      if (Constants.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {
+      if (Urls.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {
         all.addAll(this.findFileMatchPath(resource, subPattern));
-      } else if (ResourceUtils.isJarURL(rootUrl)) {
+      } else if (Urls.isJarURL(rootUrl)) {
         all.addAll(this.findJarMatchPath(resource, rootUrl, subPattern));
       } else {
         // TODO others
@@ -274,7 +272,7 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> findJarMatchPath(SourceResource resource, URL rootUrl,
       String subPattern) throws IOException {
     List<SourceResource> all = new LinkedList<>();
-    JarFileInfo jarFileInfo = ResourceUtils.getJarFileInfo(rootUrl);
+    JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
     try {
       this.look(resource, subPattern, all, jarFileInfo.jarFile, jarFileInfo.jarFileUrl,
           jarFileInfo.rootEntryPath);
@@ -300,8 +298,8 @@ public abstract class AbstractResourceLoader {
     if (log.isDebugEnabled()) {
       log.debug("Looking for matching resources in jar file [" + jarFileUrl + "]");
     }
-    if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Constants.PATH_SEPARATOR)) {
-      rootEntryPath += Constants.PATH_SEPARATOR;
+    if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
+      rootEntryPath += Strings.SLASH;
     }
     for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements(); ) {
       JarEntry entry = entries.nextElement();

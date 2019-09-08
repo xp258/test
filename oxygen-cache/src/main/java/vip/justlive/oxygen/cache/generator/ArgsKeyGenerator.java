@@ -16,9 +16,9 @@ package vip.justlive.oxygen.cache.generator;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.ReflectUtils;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -39,7 +39,7 @@ public class ArgsKeyGenerator implements KeyGenerator {
     }
     String key = params[0].toString();
     Object[] args = (Object[]) params[1];
-    return String.join(Constants.DOT, method.getDeclaringClass().getName(), method.getName(),
+    return String.join(Strings.DOT, method.getDeclaringClass().getName(), method.getName(),
         MoreObjects.safeToString(parse(key, args)));
   }
 

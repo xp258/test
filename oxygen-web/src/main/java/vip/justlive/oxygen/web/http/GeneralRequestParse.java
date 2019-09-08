@@ -14,7 +14,8 @@
 package vip.justlive.oxygen.web.http;
 
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * 请求基础解析
@@ -42,11 +43,11 @@ public class GeneralRequestParse implements RequestParse {
     request.contextPath = req.getContextPath();
     request.url = req.getRequestURL().toString();
     if (request.getQueryString() != null) {
-      request.url = request.getUrl() + Constants.QUESTION_MARK + request.getQueryString();
+      request.url = request.getUrl() + Strings.QUESTION_MARK + request.getQueryString();
     }
-    String host = req.getHeader(Constants.HOST_NAME);
-    if (host.contains(Constants.COLON)) {
-      String[] arr = host.split(Constants.COLON);
+    String host = req.getHeader(HttpHeaders.HOST_NAME);
+    if (host.contains(Strings.COLON)) {
+      String[] arr = host.split(Strings.COLON);
       request.host = arr[0];
       request.port = Integer.parseInt(arr[1]);
     } else {
@@ -58,11 +59,11 @@ public class GeneralRequestParse implements RequestParse {
   }
 
   private String getIpAddress(final Request request, String remoteIp) {
-    String ip = request.getHeader(Constants.X_FORWARDED_FOR);
+    String ip = request.getHeader(HttpHeaders.X_FORWARDED_FOR);
     if (checkIp(ip)) {
       // 应对x-forwarded-for 中返回多个服务器ip的情况
-      if (ip.contains(Constants.COMMA)) {
-        for (String a : ip.split(Constants.COMMA)) {
+      if (ip.contains(Strings.COMMA)) {
+        for (String a : ip.split(Strings.COMMA)) {
           if (checkIp(ip)) {
             return a.trim();
           }
@@ -70,15 +71,15 @@ public class GeneralRequestParse implements RequestParse {
       }
       return ip;
     }
-    ip = request.getHeader(Constants.PROXY_CLIENT_IP);
+    ip = request.getHeader(HttpHeaders.PROXY_CLIENT_IP);
     if (checkIp(ip)) {
       return ip;
     }
-    ip = request.getHeader(Constants.WL_PROXY_CLIENT_IP);
+    ip = request.getHeader(HttpHeaders.WL_PROXY_CLIENT_IP);
     if (checkIp(ip)) {
       return ip;
     }
-    ip = request.getHeader(Constants.X_REAL_IP);
+    ip = request.getHeader(HttpHeaders.X_REAL_IP);
     if (checkIp(ip)) {
       return ip;
     }
@@ -90,7 +91,7 @@ public class GeneralRequestParse implements RequestParse {
   }
 
   private boolean checkIp(String ip) {
-    return ip != null && ip.length() > 0 && !Constants.UNKNOWN.equalsIgnoreCase(ip);
+    return ip != null && ip.length() > 0 && !Strings.UNKNOWN.equalsIgnoreCase(ip);
   }
 
 }

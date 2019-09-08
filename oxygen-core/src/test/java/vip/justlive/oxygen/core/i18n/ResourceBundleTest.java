@@ -18,11 +18,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.util.ResourceBundle;
 
 /**
  * @author wubo
  */
-public class LangTest {
+public class ResourceBundleTest {
 
   @Before
   public void before() {
@@ -31,23 +32,23 @@ public class LangTest {
 
   @Test
   public void getMessage() {
-    Assert.assertEquals("key_zh_CN", Lang.getMessage("i18n.k1"));
-    Lang.setThreadLocale(new Locale("en", "US"));
-    Assert.assertEquals("key_en_US", Lang.getMessage("i18n.k1"));
-    Lang.setThreadLocale(new Locale("en"));
-    Assert.assertEquals("key", Lang.getMessage("i18n.k1"));
+    Assert.assertEquals("key_zh_CN", ResourceBundle.getMessage("i18n.k1"));
+    ResourceBundle.setThreadLocale(new Locale("en", "US"));
+    Assert.assertEquals("key_en_US", ResourceBundle.getMessage("i18n.k1"));
+    ResourceBundle.setThreadLocale(new Locale("en"));
+    Assert.assertEquals("key", ResourceBundle.getMessage("i18n.k1"));
 
   }
 
   @Test
   public void getMessage1() {
-    Assert.assertEquals("key2_en_US", Lang.getMessage("i18n.k2", new Locale("en", "US")));
-    Assert.assertNull(Lang.getMessage("i18n.k2"));
+    Assert.assertEquals("key2_en_US", ResourceBundle.getMessage("i18n.k2", new Locale("en", "US")));
+    Assert.assertNull(ResourceBundle.getMessage("i18n.k2"));
   }
 
   @Test
   public void getMessage2() {
-    Assert.assertEquals("key2_en_US", Lang.getMessage("i18n.k2", "en", "US"));
-    Assert.assertNull(Lang.getMessage("i18n.k2"));
+    Assert.assertEquals("key2_en_US", ResourceBundle.getMessage("i18n.k2", "en", "US"));
+    Assert.assertNull(ResourceBundle.getMessage("i18n.k2"));
   }
 }

@@ -13,8 +13,6 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import static vip.justlive.oxygen.core.constant.Constants.FILE_PREFIX;
-
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URI;
@@ -24,7 +22,6 @@ import java.net.URLConnection;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 资源工具类
@@ -32,7 +29,40 @@ import vip.justlive.oxygen.core.constant.Constants;
  * @author wubo
  */
 @UtilityClass
-public class ResourceUtils {
+public class Urls {
+
+  /**
+   * URL协议-文件
+   */
+  public static final String URL_PROTOCOL_FILE = "file";
+  /**
+   * URL协议-jar
+   */
+  public static final String URL_PROTOCOL_JAR = "jar";
+  /**
+   * URL协议-war
+   */
+  public static final String URL_PROTOCOL_WAR = "war";
+  /**
+   * URL协议-zip
+   */
+  public static final String URL_PROTOCOL_ZIP = "zip";
+  /**
+   * URL协议-WebSphere jar
+   */
+  public static final String URL_PROTOCOL_WSJAR = "wsjar";
+  /**
+   * URL协议-JBoss jar
+   */
+  public static final String URL_PROTOCOL_VFSZIP = "vfszip";
+  /**
+   * war路径分隔符
+   */
+  public static final String WAR_URL_SEPARATOR = "*/";
+  /**
+   * jar路径分隔符
+   */
+  public static final String JAR_URL_SEPARATOR = "!/";
 
   /**
    * 判断URL是否是jar文件
@@ -42,10 +72,9 @@ public class ResourceUtils {
    */
   public static boolean isJarURL(URL url) {
     String protocol = url.getProtocol();
-    return (Constants.URL_PROTOCOL_JAR.equals(protocol) || Constants.URL_PROTOCOL_WAR
-        .equals(protocol) || Constants.URL_PROTOCOL_ZIP.equals(protocol)
-        || Constants.URL_PROTOCOL_VFSZIP.equals(protocol) || Constants.URL_PROTOCOL_WSJAR
-        .equals(protocol));
+    return (URL_PROTOCOL_JAR.equals(protocol) || URL_PROTOCOL_WAR.equals(protocol)
+        || URL_PROTOCOL_ZIP.equals(protocol) || URL_PROTOCOL_VFSZIP.equals(protocol)
+        || URL_PROTOCOL_WSJAR.equals(protocol));
   }
 
   /**
@@ -78,12 +107,12 @@ public class ResourceUtils {
    * @return 路径
    */
   public static String relativePath(String rootPath, String relative) {
-    int last = rootPath.lastIndexOf(Constants.PATH_SEPARATOR);
+    int last = rootPath.lastIndexOf(Strings.SLASH);
     String newPath = rootPath;
     if (last > -1) {
       newPath = rootPath.substring(0, last);
-      if (!relative.startsWith(Constants.PATH_SEPARATOR)) {
-        newPath += Constants.PATH_SEPARATOR;
+      if (!relative.startsWith(Strings.SLASH)) {
+        newPath += Strings.SLASH;
       }
       newPath += relative;
     }
@@ -98,8 +127,8 @@ public class ResourceUtils {
    */
   public static String cutRootPath(String path) {
     String usePath = path;
-    if (usePath.startsWith(Constants.ROOT_PATH)) {
-      usePath = usePath.substring(Constants.ROOT_PATH.length());
+    if (usePath.startsWith(Strings.SLASH)) {
+      usePath = usePath.substring(Strings.SLASH.length());
     }
     return usePath;
   }
@@ -115,17 +144,17 @@ public class ResourceUtils {
     MoreObjects.notNull(parent);
     MoreObjects.notNull(child);
     StringBuilder sb = new StringBuilder(parent);
-    if (parent.endsWith(Constants.ROOT_PATH) && child.startsWith(Constants.ROOT_PATH)) {
+    if (parent.endsWith(Strings.SLASH) && child.startsWith(Strings.SLASH)) {
       sb.deleteCharAt(sb.length() - 1);
     }
-    if (!parent.endsWith(Constants.ROOT_PATH) && !child.startsWith(Constants.ROOT_PATH)) {
-      sb.append(Constants.ROOT_PATH);
+    if (!parent.endsWith(Strings.SLASH) && !child.startsWith(Strings.SLASH)) {
+      sb.append(Strings.SLASH);
     }
     sb.append(child);
-    if (sb.indexOf(Constants.ROOT_PATH) != 0) {
-      sb.insert(0, Constants.ROOT_PATH);
+    if (sb.indexOf(Strings.SLASH) != 0) {
+      sb.insert(0, Strings.SLASH);
     }
-    if (sb.length() > 1 && sb.lastIndexOf(Constants.ROOT_PATH) == sb.length() - 1) {
+    if (sb.length() > 1 && sb.lastIndexOf(Strings.SLASH) == sb.length() - 1) {
       sb.deleteCharAt(sb.length() - 1);
     }
     return sb.toString();
@@ -139,12 +168,12 @@ public class ResourceUtils {
    * @throws IOException io异常
    */
   public static JarFile getJarFile(String jarFileUrl) throws IOException {
-    if (jarFileUrl.startsWith(FILE_PREFIX)) {
+    if (jarFileUrl.startsWith(Strings.FILE_PREFIX)) {
       try {
-        return new JarFile(ResourceUtils.toURI(jarFileUrl).getSchemeSpecificPart());
+        return new JarFile(Urls.toURI(jarFileUrl).getSchemeSpecificPart());
       } catch (URISyntaxException ex) {
         // 失败可能是因为url不正确，去除协议尝试
-        return new JarFile(jarFileUrl.substring(FILE_PREFIX.length()));
+        return new JarFile(jarFileUrl.substring(Strings.FILE_PREFIX.length()));
       }
     } else {
       return new JarFile(jarFileUrl);
@@ -168,14 +197,14 @@ public class ResourceUtils {
       jarFile = jarCon.getJarFile();
       jarFileUrl = jarCon.getJarFileURL().toExternalForm();
       JarEntry jarEntry = jarCon.getJarEntry();
-      rootEntryPath = (jarEntry != null ? jarEntry.getName() : Constants.EMPTY);
+      rootEntryPath = (jarEntry != null ? jarEntry.getName() : Strings.EMPTY);
     } else {
       String urlFile = url.getFile();
-      int separatorLength = Constants.WAR_URL_SEPARATOR.length();
-      int separatorIndex = urlFile.indexOf(Constants.WAR_URL_SEPARATOR);
+      int separatorLength = WAR_URL_SEPARATOR.length();
+      int separatorIndex = urlFile.indexOf(WAR_URL_SEPARATOR);
       if (separatorIndex == -1) {
-        separatorIndex = urlFile.indexOf(Constants.JAR_URL_SEPARATOR);
-        separatorLength = Constants.JAR_URL_SEPARATOR.length();
+        separatorIndex = urlFile.indexOf(JAR_URL_SEPARATOR);
+        separatorLength = JAR_URL_SEPARATOR.length();
       }
       if (separatorIndex != -1) {
         jarFileUrl = urlFile.substring(0, separatorIndex);
@@ -184,7 +213,7 @@ public class ResourceUtils {
       } else {
         jarFile = new JarFile(urlFile);
         jarFileUrl = urlFile;
-        rootEntryPath = Constants.EMPTY;
+        rootEntryPath = Strings.EMPTY;
       }
     }
     return new JarFileInfo(jarFile, jarFileUrl, rootEntryPath);

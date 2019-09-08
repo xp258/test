@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.core.convert;
 
 import java.lang.reflect.Array;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * String - 数组 转换器
@@ -41,7 +41,7 @@ public class StringToArrayConverter implements ArrayConverter {
       if (source == null || source.toString().length() == 0) {
         return null;
       }
-      String[] sourceArray = source.toString().split(Constants.COMMA);
+      String[] sourceArray = source.toString().split(Strings.COMMA);
       Class<?> componentType = targetType.getComponentType();
       Object targetArray = Array.newInstance(componentType, sourceArray.length);
 

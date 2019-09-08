@@ -15,7 +15,6 @@ package vip.justlive.oxygen.web.http;
 
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.web.WebPlugin;
 
 /**
@@ -43,7 +42,7 @@ public class SessionRequestParse implements RequestParse {
   }
 
   private Session getSession(Request request) {
-    String id = request.getCookieValue(Constants.SESSION_COOKIE_KEY);
+    String id = request.getCookieValue(Session.SESSION_COOKIE_KEY);
     if (id != null) {
       return WebPlugin.SESSION_MANAGER.getSession(id);
     }

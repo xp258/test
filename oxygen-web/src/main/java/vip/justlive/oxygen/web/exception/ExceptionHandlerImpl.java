@@ -17,10 +17,10 @@ import com.alibaba.fastjson.JSON;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.domain.Resp;
 import vip.justlive.oxygen.core.exception.CodedException;
 import vip.justlive.oxygen.core.exception.ErrorCode;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -45,7 +45,7 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
     if (resp == null) {
       resp = Resp.error(e.toString());
     }
-    response.setContentType(Constants.APPLICATION_JSON);
+    response.setContentType(HttpHeaders.APPLICATION_JSON);
     response.setStatus(status);
     try {
       response.getOut()

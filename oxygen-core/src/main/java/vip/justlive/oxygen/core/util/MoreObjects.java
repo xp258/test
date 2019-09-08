@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -94,32 +93,6 @@ public class MoreObjects {
   }
 
   /**
-   * 获取第一个不为null或空字符串的值
-   *
-   * @param first first value
-   * @param second second value
-   * @param others other values
-   * @return nonEmpty
-   */
-  public static String firstNonEmpty(String first, String second, String... others) {
-    if (first != null && first.length() > 0) {
-      return first;
-    }
-    if (second != null && second.length() > 0) {
-      return second;
-    }
-    if (others == null || others.length == 0) {
-      throw new IllegalArgumentException();
-    }
-    for (String str : others) {
-      if (str != null && str.length() > 0) {
-        return str;
-      }
-    }
-    throw new IllegalArgumentException();
-  }
-
-  /**
    * 对象转map
    *
    * @param bean 对象
@@ -170,7 +143,7 @@ public class MoreObjects {
   public static String beanToQueryString(Object bean, boolean urlEncoded) {
     Map<String, Object> map = MoreObjects.beanToMap(bean);
     StringBuilder sb = new StringBuilder();
-    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL)
+    map.forEach((k, v) -> sb.append(Strings.AND).append(k).append(Strings.EQUAL)
         .append(urlEncoded ? urlEncode(v.toString()) : v));
     if (sb.length() > 0) {
       sb.deleteCharAt(0);
@@ -232,7 +205,7 @@ public class MoreObjects {
    */
   public static String safeToString(Object obj) {
     if (obj == null) {
-      return Constants.EMPTY;
+      return Strings.EMPTY;
     }
     return obj.toString();
   }

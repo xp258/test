@@ -15,7 +15,7 @@ package vip.justlive.oxygen.web.result;
 
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.util.Urls;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
@@ -50,7 +50,7 @@ public class JspViewResultHandler implements ResultHandler {
     Request request = ctx.request();
     Response response = ctx.response();
     data.getData().forEach(request.getOriginalRequest()::setAttribute);
-    String path = ResourceUtils.concat(jspPrefix, data.getPath());
+    String path = Urls.concat(jspPrefix, data.getPath());
     try {
       request.getOriginalRequest().getRequestDispatcher(path)
           .forward(request.getOriginalRequest(), response.getOriginalResponse());

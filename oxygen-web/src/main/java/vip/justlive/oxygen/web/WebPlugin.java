@@ -22,7 +22,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.util.Urls;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
@@ -102,7 +102,7 @@ public class WebPlugin implements Plugin {
         }
         Method requestMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
         Mapping mapping = method.getAnnotation(Mapping.class);
-        String routePath = ResourceUtils.concat(rootPath, mapping.value());
+        String routePath = Urls.concat(rootPath, mapping.value());
         Route route = vip.justlive.oxygen.web.router.Router.router().path(routePath);
         for (HttpMethod httpMethod : mapping.method()) {
           route.method(httpMethod);

@@ -28,6 +28,15 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class RespData<T> implements Serializable {
 
+  /**
+   * 成功code
+   */
+  public static final String SUCCESS_CODE = "00000";
+  /**
+   * 失败code
+   */
+  public static final String DEFAULT_FAIL_CODE = "99999";
+
   private static final long serialVersionUID = 1L;
   /**
    * 返回结果编码

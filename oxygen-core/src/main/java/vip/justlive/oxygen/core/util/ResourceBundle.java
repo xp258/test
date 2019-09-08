@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.i18n;
+package vip.justlive.oxygen.core.util;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,11 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.AbstractResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
-import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * i18n
@@ -35,13 +33,13 @@ import vip.justlive.oxygen.core.util.ClassUtils;
  * @author wubo
  */
 @Slf4j
-public class Lang extends AbstractResourceLoader implements Plugin {
+public class ResourceBundle extends AbstractResourceLoader implements Plugin {
 
   private static final Properties PROPS = new Properties();
   private static final Map<String, Properties> I18N = new HashMap<>(2);
-  private static final ThreadLocal<Locale> LOCALE = ThreadLocal.withInitial(Lang::defaultLocale);
+  private static final ThreadLocal<Locale> LOCALE = ThreadLocal.withInitial(ResourceBundle::defaultLocale);
 
-  public Lang() {
+  public ResourceBundle() {
     init();
   }
 
@@ -104,7 +102,7 @@ public class Lang extends AbstractResourceLoader implements Plugin {
    * @return message
    */
   public static String getMessage(String key, String language, String country) {
-    Properties props = I18N.get(language + Constants.UNDERSCORE + country);
+    Properties props = I18N.get(language + Strings.UNDERSCORE + country);
     String value = null;
     if (props != null) {
       value = props.getProperty(key);
@@ -144,13 +142,13 @@ public class Lang extends AbstractResourceLoader implements Plugin {
     List<SourceResource> res = this.parse(locations);
     for (SourceResource resource : res) {
       this.resources.add(resource);
-      String[] arr = resource.path().split(Constants.UNDERSCORE);
+      String[] arr = resource.path().split(Strings.UNDERSCORE);
       try {
         if (arr.length == 1) {
           PROPS.load(getReader(resource));
         } else if (arr.length == 3) {
           I18N.computeIfAbsent(
-              arr[1] + Constants.UNDERSCORE + arr[2].substring(0, arr[2].indexOf(Constants.DOT)),
+              arr[1] + Strings.UNDERSCORE + arr[2].substring(0, arr[2].indexOf(Strings.DOT)),
               k -> new Properties()).load(getReader(resource));
         } else {
           log.warn("file [{}] used an illegal name", resource.path());

@@ -22,8 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.result.Result;
 
 /**
@@ -120,7 +121,7 @@ public class Response implements Serializable {
    * @param maxAge max age
    */
   public void setCookie(String name, String value, Integer maxAge) {
-    setCookie(name, value, null, Constants.ROOT_PATH, maxAge, false);
+    setCookie(name, value, null, Strings.SLASH, maxAge, false);
   }
 
   /**
@@ -132,7 +133,7 @@ public class Response implements Serializable {
    * @param secure secure
    */
   public void setCookie(String name, String value, Integer maxAge, boolean secure) {
-    setCookie(name, value, null, Constants.ROOT_PATH, maxAge, secure);
+    setCookie(name, value, null, Strings.SLASH, maxAge, secure);
   }
 
   /**
@@ -221,7 +222,7 @@ public class Response implements Serializable {
    * @param data 数据
    */
   public void text(String data) {
-    setContentType(Constants.TEXT_PLAIN);
+    setContentType(HttpHeaders.TEXT_PLAIN);
     write(data);
   }
 
@@ -231,7 +232,7 @@ public class Response implements Serializable {
    * @param data 数据
    */
   public void html(String data) {
-    setContentType(Constants.TEXT_HTML);
+    setContentType(HttpHeaders.TEXT_HTML);
     write(data);
   }
 

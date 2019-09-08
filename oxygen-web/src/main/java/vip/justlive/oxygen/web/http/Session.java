@@ -26,8 +26,12 @@ import lombok.Setter;
 @Getter
 public class Session implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  /**
+   * session cookie key
+   */
+  public static final String SESSION_COOKIE_KEY = "OX_SESSION";
 
+  private static final long serialVersionUID = 1L;
   private String id;
   @Setter
   private long expired;

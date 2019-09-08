@@ -14,8 +14,8 @@
 package vip.justlive.oxygen.web.result;
 
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
@@ -53,7 +53,7 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     ViewResult data = (ViewResult) result;
     Request request = ctx.request();
     Response response = ctx.response();
-    response.setContentType(Constants.TEXT_HTML);
+    response.setContentType(HttpHeaders.TEXT_HTML);
     check();
     response.write(resolver.handler(request, response, data.getPath(), data.getData()));
   }

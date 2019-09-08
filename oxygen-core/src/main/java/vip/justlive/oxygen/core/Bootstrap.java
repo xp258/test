@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * 引导类
@@ -46,7 +46,7 @@ public final class Bootstrap {
    * 使用默认地址进行加载，然后使用覆盖路径再次加载
    */
   public static void initConfig() {
-    initConfig(Constants.CONFIG_PATHS);
+    initConfig("classpath*:config.properties", "classpath*:/config/*.properties");
   }
 
   /**
@@ -58,7 +58,7 @@ public final class Bootstrap {
     ConfigFactory.loadProperties(locations);
     String overridePath = ConfigFactory.getProperty("config.override.path");
     if (overridePath != null && overridePath.length() > 0) {
-      ConfigFactory.loadProperties(overridePath.split(Constants.COMMA));
+      ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
     }
   }
 

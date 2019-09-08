@@ -28,13 +28,14 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.FileUtils;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 
@@ -83,12 +84,12 @@ public class StaticRouteHandler implements RouteHandler {
     Request req = ctx.request();
     Response resp = ctx.response();
     resp.setContentType(source.getContentType());
-    String browserETag = req.getHeader(Constants.IF_NONE_MATCH);
-    String ifModifiedSince = req.getHeader(Constants.IF_MODIFIED_SINCE);
+    String browserETag = req.getHeader(HttpHeaders.IF_NONE_MATCH);
+    String ifModifiedSince = req.getHeader(HttpHeaders.IF_MODIFIED_SINCE);
     long last = source.lastModified();
     String eTag = source.eTag();
-    SimpleDateFormat format = new SimpleDateFormat(Constants.ETAG_DATA_FORMAT, Locale.US);
-    resp.setHeader(Constants.ETAG, eTag);
+    SimpleDateFormat format = new SimpleDateFormat(HttpHeaders.ETAG_DATA_FORMAT, Locale.US);
+    resp.setHeader(HttpHeaders.ETAG, eTag);
     try {
       if (eTag.equals(browserETag) && ifModifiedSince != null
           && format.parse(ifModifiedSince).getTime() >= last) {
@@ -99,9 +100,10 @@ public class StaticRouteHandler implements RouteHandler {
       log.warn("Can't parse 'If-Modified-Since' header date [{}]", ifModifiedSince);
     }
     String lastDate = format.format(new Date(last));
-    resp.setHeader(Constants.LAST_MODIFIED, lastDate);
+    resp.setHeader(HttpHeaders.LAST_MODIFIED, lastDate);
     if (route.maxAge() > 0) {
-      resp.setHeader(Constants.CACHE_CONTROL, Constants.MAX_AGE + Constants.EQUAL + route.maxAge());
+      resp.setHeader(HttpHeaders.CACHE_CONTROL,
+          HttpHeaders.MAX_AGE + Strings.EQUAL + route.maxAge());
     }
     try {
       Files.copy(source.getPath(), resp.getOut());
@@ -173,8 +175,8 @@ public class StaticRouteHandler implements RouteHandler {
     StaticSource(File file, String requestPath) {
       this.path = file.toPath();
       this.requestPath = requestPath;
-      String suffix = requestPath.substring(requestPath.lastIndexOf(Constants.DOT) + 1);
-      contentType = MIME_TYPES.getProperty(suffix, Constants.APPLICATION_OCTET_STREAM);
+      String suffix = requestPath.substring(requestPath.lastIndexOf(Strings.DOT) + 1);
+      contentType = MIME_TYPES.getProperty(suffix, HttpHeaders.APPLICATION_OCTET_STREAM);
     }
 
     /**
@@ -193,8 +195,8 @@ public class StaticRouteHandler implements RouteHandler {
      * @return etag
      */
     String eTag() {
-      return Constants.DOUBLE_QUOTATION_MARK + lastModified() + Constants.HYPHEN + path.hashCode()
-          + Constants.DOUBLE_QUOTATION_MARK;
+      return Strings.DOUBLE_QUOTATION_MARK + lastModified() + Strings.DASH + path.hashCode()
+          + Strings.DOUBLE_QUOTATION_MARK;
     }
   }
 }

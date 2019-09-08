@@ -14,10 +14,10 @@
 package vip.justlive.oxygen.web.result;
 
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
 import vip.justlive.oxygen.core.template.TemplateEngine;
 import vip.justlive.oxygen.core.template.Templates;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -56,7 +56,7 @@ public class SimpleViewResultHandler implements ResultHandler {
   public void apply(RoutingContext ctx, Result result) {
     ViewResult data = (ViewResult) result;
     Response response = ctx.response();
-    response.setContentType(Constants.TEXT_HTML);
+    response.setContentType(HttpHeaders.TEXT_HTML);
     String template;
     if (viewCacheEnabled) {
       template = Templates.cachedTemplate(prefix + data.getPath());

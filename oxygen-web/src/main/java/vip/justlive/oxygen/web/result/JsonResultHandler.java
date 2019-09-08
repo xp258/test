@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.web.result;
 
 import com.alibaba.fastjson.JSON;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -34,7 +34,7 @@ public class JsonResultHandler implements ResultHandler {
   public void apply(RoutingContext ctx, Result result) {
     JsonResult data = (JsonResult) result;
     Response response = ctx.response();
-    response.setContentType(Constants.APPLICATION_JSON);
+    response.setContentType(HttpHeaders.APPLICATION_JSON);
     response.write(JSON.toJSONString(data.getData()));
   }
 }

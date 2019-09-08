@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.web.http;
 
 import javax.servlet.http.HttpServletRequest;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 
 /**
  * text请求解析
@@ -28,13 +28,13 @@ public class TextRequestParse implements RequestParse {
   @Override
   public boolean supported(HttpServletRequest req) {
     String contentType = Request.current().getContentType();
-    return Constants.APPLICATION_XML.equalsIgnoreCase(contentType) || Constants.TEXT_HTML
-        .equalsIgnoreCase(contentType) || Constants.TEXT_PLAIN.equalsIgnoreCase(contentType)
-        || Constants.TEXT_XML.equalsIgnoreCase(contentType);
+    return HttpHeaders.APPLICATION_XML.equalsIgnoreCase(contentType) || HttpHeaders.TEXT_HTML
+        .equalsIgnoreCase(contentType) || HttpHeaders.TEXT_PLAIN.equalsIgnoreCase(contentType)
+        || HttpHeaders.TEXT_XML.equalsIgnoreCase(contentType);
   }
 
   @Override
   public void handle(HttpServletRequest req) {
-    margeParam(Request.current().getParams(), Constants.BODY_STORE_KEY, readBody(req));
+    margeParam(Request.current().getParams(), HttpHeaders.BODY_STORE_KEY, readBody(req));
   }
 }

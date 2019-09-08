@@ -23,9 +23,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.WebPlugin;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
@@ -36,6 +36,7 @@ import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.http.Session;
 import vip.justlive.oxygen.web.result.JspViewResultHandler;
 import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.result.ResultHandler;
@@ -81,7 +82,7 @@ public class DispatcherServlet extends HttpServlet {
       log.debug("DispatcherServlet accept request for [{}] on method [{}]", requestPath,
           httpMethod);
     }
-    if (requestPath.length() > 1 && requestPath.endsWith(Constants.ROOT_PATH)) {
+    if (requestPath.length() > 1 && requestPath.endsWith(Strings.SLASH)) {
       requestPath = requestPath.substring(0, requestPath.length() - 1);
     }
 
@@ -165,8 +166,8 @@ public class DispatcherServlet extends HttpServlet {
     response.getHeaders().forEach(resp::addHeader);
 
     if (request.getSession() != null && !request.getSession().getId()
-        .equals(request.getCookieValue(Constants.SESSION_COOKIE_KEY))) {
-      response.setCookie(Constants.SESSION_COOKIE_KEY, request.getSession().getId());
+        .equals(request.getCookieValue(Session.SESSION_COOKIE_KEY))) {
+      response.setCookie(Session.SESSION_COOKIE_KEY, request.getSession().getId());
     }
     WebPlugin.SESSION_MANAGER.restoreSession(request.getSession());
 
@@ -201,12 +202,12 @@ public class DispatcherServlet extends HttpServlet {
           ctx.request().getMethod());
     }
     IocPlugin.beanStore().getBean(ExceptionHandler.class)
-        .handle(ctx, Exceptions.fail("No handler found"), Constants.NOT_FOUND);
+        .handle(ctx, Exceptions.fail("No handler found"), 404);
   }
 
   private void handlerError(RoutingContext ctx, Exception e) {
     log.error("DispatcherServlet occurs an error for path [{}]", ctx.requestPath(), e);
-    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, Constants.SERVER_ERROR);
+    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
   }
 
   @Override
