@@ -41,32 +41,19 @@ public class ErrorCode implements Serializable {
    */
   private String message;
 
-  protected ErrorCode(String message) {
+  public ErrorCode(String message) {
     this.message = message;
   }
 
-  protected ErrorCode(String code, String message) {
+  public ErrorCode(String code, String message) {
     this.code = code;
     this.message = message;
   }
 
-  protected ErrorCode(String module, String code, String message) {
+  public ErrorCode(String module, String code, String message) {
     this.module = module;
     this.code = code;
     this.message = message;
-  }
-
-  /**
-   * 获取module + code
-   *
-   * @return module + code
-   */
-  public String getModuleCode() {
-    if (module == null) {
-      return code;
-    } else {
-      return module.concat(code);
-    }
   }
 
   @Override
