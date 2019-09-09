@@ -16,8 +16,8 @@ package vip.justlive.oxygen.web.result;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.WebConf;
-import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -26,6 +26,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
+@Bean
 public class ThymeleafViewResultHandler implements ResultHandler {
 
   private static final boolean THYMELEAF_SUPPORTED = ClassUtils
@@ -51,11 +52,10 @@ public class ThymeleafViewResultHandler implements ResultHandler {
   @Override
   public void apply(RoutingContext ctx, Result result) {
     ViewResult data = (ViewResult) result;
-    Request request = ctx.request();
     Response response = ctx.response();
     response.setContentType(HttpHeaders.TEXT_HTML);
     check();
-    response.write(resolver.handler(request, response, data.getPath(), data.getData()));
+    response.write(resolver.resolve(ctx.request(), data.getPath(), data.getData()));
   }
 
   private synchronized void check() {

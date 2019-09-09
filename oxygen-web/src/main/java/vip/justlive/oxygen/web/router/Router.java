@@ -23,7 +23,8 @@ import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.web.http.HttpMethod;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
+import vip.justlive.oxygen.web.http.Request;
 
 /**
  * Router
@@ -72,13 +73,40 @@ public class Router {
   }
 
   /**
+   * lookup route handle
+   *
+   * @param request 请求
+   * @return route handle
+   */
+  public static RouteHandler lookup(Request request) {
+    RouteHandler handler = lookupStatic(request.getPath());
+    if (handler != null) {
+      return handler;
+    }
+    Route route = lookup(request.getMethod(), request.getPath());
+    if (route != null) {
+      request.setRoute(route);
+      return route.handler();
+    }
+    return null;
+  }
+
+  /**
+   * clear
+   */
+  public static void clear() {
+    SIMPLE_HANDLERS.clear();
+    REGEX_HANDLERS.clear();
+  }
+
+  /**
    * lookup route
    *
    * @param method request method
    * @param path request path
    * @return route
    */
-  public static Route lookup(HttpMethod method, String path) {
+  private static Route lookup(HttpMethod method, String path) {
     Route route = SIMPLE_HANDLERS.get(path);
     if (route != null && route.methods().contains(method)) {
       return route;
@@ -96,23 +124,15 @@ public class Router {
    * lookup static handle
    *
    * @param path path
-   * @return handler
+   * @return handle
    */
-  public static RouteHandler lookupStatic(String path) {
+  private static RouteHandler lookupStatic(String path) {
     for (Map.Entry<String, RouteHandler> entry : STATIC_HANDLERS.entrySet()) {
       if (path.startsWith(entry.getKey())) {
         return entry.getValue();
       }
     }
     return null;
-  }
-
-  /**
-   * clear
-   */
-  public static void clear() {
-    SIMPLE_HANDLERS.clear();
-    REGEX_HANDLERS.clear();
   }
 
   private static void buildRoute(Route route) {

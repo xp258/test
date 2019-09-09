@@ -11,27 +11,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package vip.justlive.oxygen.core.domain;
+package vip.justlive.oxygen.core.util;
 
 /**
- * 返回
+ * json返回实体
  *
- * @param <T> 泛型
  * @author wubo
- * @since 2.0.4
  */
-public class RespVo<T> extends RespData<T> {
+public class Resp extends RespData<Object> {
 
   private static final long serialVersionUID = 1L;
 
   /**
    * 成功返回
    *
-   * @param <T> 泛型
    * @return 返回实体
    */
-  public static <T> RespVo<T> success() {
+  public static Resp success() {
     return success(null);
   }
 
@@ -39,11 +35,10 @@ public class RespVo<T> extends RespData<T> {
    * 成功返回
    *
    * @param data 数据
-   * @param <T> 泛型
    * @return 返回实体
    */
-  public static <T> RespVo<T> success(T data) {
-    RespVo<T> resp = new RespVo<>();
+  public static Resp success(Object data) {
+    Resp resp = new Resp();
     resp.setData(data).setCode(SUCCESS_CODE);
     return resp;
   }
@@ -52,10 +47,9 @@ public class RespVo<T> extends RespData<T> {
    * 失败返回
    *
    * @param message 消息
-   * @param <T> 泛型
    * @return 返回实体
    */
-  public static <T> RespVo<T> error(String message) {
+  public static Resp error(String message) {
     return error(DEFAULT_FAIL_CODE, message);
   }
 
@@ -64,11 +58,10 @@ public class RespVo<T> extends RespData<T> {
    *
    * @param code 编码
    * @param message 消息
-   * @param <T> 泛型
    * @return 返回实体
    */
-  public static <T> RespVo<T> error(String code, String message) {
-    RespVo<T> resp = new RespVo<>();
+  public static Resp error(String code, String message) {
+    Resp resp = new Resp();
     resp.setCode(code).setMessage(message);
     return resp;
   }

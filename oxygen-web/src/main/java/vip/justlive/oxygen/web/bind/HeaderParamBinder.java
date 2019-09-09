@@ -17,6 +17,7 @@ import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.annotation.HeaderParam;
 
 /**
@@ -24,6 +25,7 @@ import vip.justlive.oxygen.web.annotation.HeaderParam;
  *
  * @author wubo
  */
+@Bean
 public class HeaderParamBinder implements ParamBinder {
 
   @Override

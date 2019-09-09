@@ -11,41 +11,46 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.servlet;
+package vip.justlive.oxygen.core.util;
 
-import javax.servlet.ServletContext;
+import java.io.Serializable;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
- * web application 启动初始接口
+ * 返回
  *
+ * @param <T> 泛型
  * @author wubo
+ * @since 2.0.0
  */
-public interface WebAppInitializer extends Comparable<WebAppInitializer> {
+@Data
+@Accessors(chain = true)
+public class RespData<T> implements Serializable {
 
   /**
-   * 启动执行
-   *
-   * @param context servlet上下文
+   * 成功code
    */
-  void onStartup(ServletContext context);
+  public static final String SUCCESS_CODE = "00000";
+  /**
+   * 失败code
+   */
+  public static final String DEFAULT_FAIL_CODE = "99999";
+
+  private static final long serialVersionUID = 1L;
+  /**
+   * 返回结果编码
+   */
+  private String code;
 
   /**
-   * 加载顺序，默认0，越小越先加载
-   *
-   * @return order
+   * 结果描述信息
    */
-  default int order() {
-    return 0;
-  }
+  private String message;
 
   /**
-   * sort compare
-   *
-   * @param o compare object
-   * @return result
+   * T 返回数据
    */
-  @Override
-  default int compareTo(WebAppInitializer o) {
-    return Integer.compare(order(), o.order());
-  }
+  private T data;
+
 }

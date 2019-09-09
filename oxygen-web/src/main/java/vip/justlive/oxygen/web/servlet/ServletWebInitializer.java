@@ -13,32 +13,33 @@
  */
 package vip.justlive.oxygen.web.servlet;
 
+import java.util.Set;
+import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration.Dynamic;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.util.Strings;
 
 /**
- * web启动器
+ * servlet容器自动初始化
+ * <br>
+ * 应用于部署在外部容器，eg: jetty,tomcat
+ * <br>
+ * 先启动Servlet服务器,服务器启动应用(ServletWebInitializer),然后启动IOC容器
  *
  * @author wubo
  */
-public class DefaultWebAppInitializer implements WebAppInitializer {
+public class ServletWebInitializer implements ServletContainerInitializer {
 
   @Override
-  public void onStartup(ServletContext context) {
-
+  public void onStartup(Set<Class<?>> classes, ServletContext ctx) {
     Bootstrap.start();
 
-    Dynamic dynamic = context
+    Dynamic dynamic = ctx
         .addServlet(DispatcherServlet.class.getSimpleName(), DispatcherServlet.class);
     dynamic.setLoadOnStartup(0);
     dynamic.addMapping(Strings.SLASH);
     dynamic.setAsyncSupported(true);
   }
 
-  @Override
-  public int order() {
-    return Integer.MIN_VALUE;
-  }
 }

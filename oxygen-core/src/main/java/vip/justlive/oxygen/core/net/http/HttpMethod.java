@@ -47,5 +47,9 @@ public enum HttpMethod {
   /**
    * trace
    */
-  TRACE
+  TRACE,
+  /**
+   * patch
+   */
+  PATCH
 }

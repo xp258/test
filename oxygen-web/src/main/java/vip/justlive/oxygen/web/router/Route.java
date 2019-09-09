@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import vip.justlive.oxygen.web.http.HttpMethod;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
 
 /**
  * 路由

@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.web.http;
 
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.WebPlugin;
 
 /**
@@ -22,16 +22,16 @@ import vip.justlive.oxygen.web.WebPlugin;
  *
  * @author wubo
  */
-public class SessionRequestParse implements RequestParse {
+@Bean
+public class SessionParser implements Parser {
 
   @Override
-  public boolean supported(HttpServletRequest req) {
-    return true;
+  public int order() {
+    return 140;
   }
 
   @Override
-  public void handle(HttpServletRequest req) {
-    Request request = Request.current();
+  public void parse(Request request) {
     Session session = getSession(request);
     if (session == null) {
       session = new Session();

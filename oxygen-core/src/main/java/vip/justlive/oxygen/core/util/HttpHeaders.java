@@ -22,6 +22,7 @@ public class HttpHeaders {
   public static final String FORM_DATA_NAME = "name";
   public static final String FORM_DATA_FILENAME = "filename";
   public static final String MAX_AGE = "max-age";
+
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
   public static final String ACCEPT_ENCODING = "Accept-Encoding";
@@ -40,11 +41,13 @@ public class HttpHeaders {
   public static final String LAST_MODIFIED = "Last-Modified";
   public static final String LOCATION = "Location";
   public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
+  public static final String SERVER = "Server";
   public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
   public static final String X_REAL_IP = "X-Real-IP";
   public static final String X_REQUESTED_WITH = "X-Requested-With";
   public static final String XML_HTTP_REQUEST = "XMLHttpRequest";
+
   public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
   public static final String APPLICATION_JSON = "application/json";
   public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
@@ -55,8 +58,6 @@ public class HttpHeaders {
   public static final String TEXT_XML = "text/xml";
   public static final String TEXT_HTML = "text/html";
 
-  private static final String[] EMPTY = new String[0];
-
   /**
    * 获取header
    *
@@ -66,7 +67,7 @@ public class HttpHeaders {
    */
   public static String[] getHeaders(String name, Map<String, String[]> headers) {
     if (headers == null || name == null) {
-      return EMPTY;
+      return Strings.EMPTY_ARRAY;
     }
     String[] values = headers.get(name);
     if (values != null) {
@@ -81,7 +82,7 @@ public class HttpHeaders {
         return entry.getValue();
       }
     }
-    return EMPTY;
+    return Strings.EMPTY_ARRAY;
   }
 
   /**

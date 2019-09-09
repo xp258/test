@@ -19,6 +19,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.ResourceBundle;
 import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -28,6 +29,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * @author wubo
  */
 @Slf4j
+@Bean
 public class I18nWebHook implements WebHook {
 
   @Override
@@ -47,7 +49,8 @@ public class I18nWebHook implements WebHook {
       } else {
         Locale locale = new Locale(arr[0], arr[1]);
         if (log.isDebugEnabled()) {
-          log.debug("change locale from [{}] to [{}]", ResourceBundle.currentThreadLocale(), locale);
+          log.debug("change locale from [{}] to [{}]", ResourceBundle.currentThreadLocale(),
+              locale);
         }
         request.getSession().put(conf.getI18nSessionKey(), locale);
         ResourceBundle.setThreadLocale(locale);

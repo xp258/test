@@ -168,7 +168,7 @@ class MultipartStream {
     return new File(dir, String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
   }
 
-  class WrapByteArrayOutputStream extends ByteArrayOutputStream {
+  static class WrapByteArrayOutputStream extends ByteArrayOutputStream {
 
     /**
      * 当前下标的byte

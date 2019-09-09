@@ -15,14 +15,20 @@ package vip.justlive.oxygen.web.result;
 
 import java.util.Locale;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.context.IContext;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 import org.thymeleaf.templateresource.ITemplateResource;
 import org.thymeleaf.templateresource.StringTemplateResource;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.template.Templates;
+import vip.justlive.oxygen.core.util.ResourceBundle;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
@@ -32,7 +38,7 @@ import vip.justlive.oxygen.web.http.Response;
  *
  * @author wubo
  */
-public class ThymeleafResolver {
+class ThymeleafResolver {
 
   private final TemplateEngine templateEngine;
 
@@ -45,10 +51,25 @@ public class ThymeleafResolver {
     this.templateEngine.setTemplateResolver(resolver);
   }
 
-  public String handler(Request request, Response response, String path, Map<String, Object> data) {
-    return templateEngine.process(path,
-        new WebContext(request.getOriginalRequest(), response.getOriginalResponse(),
-            request.getOriginalRequest().getServletContext(), Locale.getDefault(), data));
+  String resolve(Request request, String path, Map<String, Object> data) {
+    IContext context;
+    Locale locale = ResourceBundle.currentThreadLocale();
+    if (request.getAttribute(Request.ORIGINAL_REQUEST) instanceof ChannelContext) {
+      context = new Context(locale, data);
+    } else {
+      context = new WebContentBuilder().build(request, locale, data);
+    }
+    return templateEngine.process(path, context);
+  }
+
+  static class WebContentBuilder {
+
+    WebContext build(Request request, Locale locale, Map<String, Object> data) {
+      HttpServletRequest req = (HttpServletRequest) request.getAttribute(Request.ORIGINAL_REQUEST);
+      HttpServletResponse resp = (HttpServletResponse) request
+          .getAttribute(Response.ORIGINAL_RESPONSE);
+      return new WebContext(req, resp, req.getServletContext(), locale, data);
+    }
   }
 
   /**

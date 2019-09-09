@@ -105,12 +105,12 @@ public class FatJarScanner implements JarScanner {
 
   /**
    * Scan the provided ServletContext and class loade r for JAR files. Each JAR file found will be
-   * passed to the callback handler to be processed.
+   * passed to the callback handle to be processed.
    *
    * @param scanType The type of JAR scan to perform. This is passed to the filter which uses it to
    * determine how to filter the results
    * @param context The ServletContext - used to locate and access WEB-INF/lib
-   * @param callback The handler to process any JARs found
+   * @param callback The handle to process any JARs found
    */
   @Override
   public void scan(JarScanType scanType, ServletContext context, JarScannerCallback callback) {

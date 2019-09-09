@@ -13,28 +13,32 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * multipart请求解析
  *
  * @author wubo
  */
-public class MultipartRequestParse implements RequestParse {
+@Bean
+public class MultipartParser implements Parser {
 
   @Override
-  public boolean supported(HttpServletRequest req) {
-    return Request.current().isMultipart();
+  public int order() {
+    return 120;
   }
 
   @Override
-  public void handle(HttpServletRequest req) {
-    Request request = Request.current();
+  public void parse(Request request) {
+    if (!request.isMultipart() || request.body == null) {
+      return;
+    }
     try {
-      MultipartStream multipart = new MultipartStream(req.getInputStream(),
+      MultipartStream multipart = new MultipartStream(new ByteArrayInputStream(request.body),
           request.getMultipart().getBoundary(), request.getEncoding());
       multipart.readMultipartItem();
       multipart.formData.forEach((k, v) -> margeParam(request.getParams(), k, v));

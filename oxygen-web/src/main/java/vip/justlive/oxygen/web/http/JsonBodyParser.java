@@ -15,30 +15,35 @@ package vip.justlive.oxygen.web.http;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import java.nio.charset.Charset;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * json请求解析
  *
  * @author wubo
  */
-public class JsonRequestParse implements RequestParse {
+@Bean
+public class JsonBodyParser implements Parser {
 
   @Override
-  public boolean supported(HttpServletRequest req) {
-    return HttpHeaders.APPLICATION_JSON.equalsIgnoreCase(Request.current().getContentType());
+  public int order() {
+    return 100;
   }
 
   @Override
-  public void handle(HttpServletRequest req) {
-    String body = readBody(req);
+  public void parse(Request request) {
+    if (!HttpHeaders.APPLICATION_JSON.equalsIgnoreCase(request.getContentType())) {
+      return;
+    }
+
+    String body = new String(request.body, Charset.forName(request.getEncoding()));
     JSONObject jsonObject = JSON.parseObject(body);
-    Map<String, String[]> map = Request.current().getParams();
+    Map<String, String[]> map = request.getParams();
     for (String key : jsonObject.keySet()) {
       margeParam(map, key, jsonObject.getString(key));
     }
-    margeParam(Request.current().getParams(), HttpHeaders.BODY_STORE_KEY, body);
   }
 }

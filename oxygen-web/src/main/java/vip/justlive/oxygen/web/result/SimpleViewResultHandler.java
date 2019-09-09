@@ -18,6 +18,7 @@ import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
 import vip.justlive.oxygen.core.template.TemplateEngine;
 import vip.justlive.oxygen.core.template.Templates;
 import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -28,6 +29,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * @author wubo
  * @see vip.justlive.oxygen.core.template.SimpleTemplateEngine
  */
+@Bean
 public class SimpleViewResultHandler implements ResultHandler {
 
   private final String suffix;

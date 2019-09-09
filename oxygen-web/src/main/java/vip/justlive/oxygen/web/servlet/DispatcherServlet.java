@@ -14,33 +14,22 @@
 package vip.justlive.oxygen.web.servlet;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.ioc.IocPlugin;
+import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.WebPlugin;
-import vip.justlive.oxygen.web.exception.ExceptionHandler;
-import vip.justlive.oxygen.web.hook.I18nWebHook;
-import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Cookie;
-import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
-import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.http.Session;
 import vip.justlive.oxygen.web.result.JspViewResultHandler;
 import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.result.ResultHandler;
-import vip.justlive.oxygen.web.router.Route;
 import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.Router;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -55,68 +44,42 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
 public class DispatcherServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
-  private static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
-  private static final List<WebHook> WEB_HOOKS = new LinkedList<>();
-  private static final List<ResultHandler> RESULT_HANDLERS = new LinkedList<>();
-
-  public static void load() {
-    REQUEST_PARSES.addAll(ServiceLoaderUtils.loadServices(RequestParse.class));
-    Collections.sort(REQUEST_PARSES);
-    Map<String, WebHook> hooks = IocPlugin.beanStore().getCastBeanMap(WebHook.class);
-    if (hooks != null) {
-      WEB_HOOKS.addAll(hooks.values());
-    }
-    WEB_HOOKS.add(new I18nWebHook());
-    Collections.sort(WEB_HOOKS);
-    RESULT_HANDLERS.addAll(ServiceLoaderUtils.loadServices(ResultHandler.class));
-    Collections.sort(RESULT_HANDLERS);
-  }
-
-  public static void clear() {
-    REQUEST_PARSES.clear();
-  }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp, HttpMethod httpMethod) {
-    String requestPath = req.getServletPath();
     if (log.isDebugEnabled()) {
-      log.debug("DispatcherServlet accept request for [{}] on method [{}]", requestPath,
+      log.debug("DispatcherServlet accept request for [{}] on method [{}]", req.getServletPath(),
           httpMethod);
     }
-    if (requestPath.length() > 1 && requestPath.endsWith(Strings.SLASH)) {
-      requestPath = requestPath.substring(0, requestPath.length() - 1);
+
+    String requestUri = req.getRequestURI();
+    String queryString = req.getQueryString();
+    if (queryString != null && queryString.length() > 0) {
+      requestUri += Strings.QUESTION_MARK + queryString;
     }
 
-    final Request request = Request.set(req);
-    final Response response = Response.set(resp);
-    final RoutingContext ctx = new RoutingContextImpl(request, response, requestPath);
+    final Request request = new Request(httpMethod, requestUri, req.getProtocol());
+    request.addAttribute(Request.ORIGINAL_REQUEST, req);
+    request.addAttribute(Response.ORIGINAL_RESPONSE, resp).local();
+    final Response response = new Response(request);
+    response.local();
+    final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
-      RouteHandler handler = Router.lookupStatic(requestPath);
+      Context.parseRequest(request);
+      RouteHandler handler = Router.lookup(request);
       if (handler == null) {
-        Route route = Router.lookup(httpMethod, requestPath);
-        if (route == null) {
-          handlerNotFound(ctx);
-          return;
-        }
-        request.setRoute(route);
-        handler = route.handler();
+        RouteHandler.notFound(ctx);
+        return;
       }
-
-      for (RequestParse requestParse : REQUEST_PARSES) {
-        if (requestParse.supported(req)) {
-          requestParse.handle(req);
-        }
-      }
-
-      if (!invokeBefore(ctx)) {
+      if (!Context.invokeBefore(ctx)) {
         return;
       }
       handler.handle(ctx);
-      handleResult(ctx, response.getResult());
-      invokeAfter(ctx);
+      handleResult(ctx, response.getResult(), resp);
+      Context.invokeAfter(ctx);
     } catch (Exception e) {
-      handlerError(ctx, e);
+      RouteHandler.error(ctx, e);
     } finally {
-      invokeFinished(ctx);
+      Context.invokeFinished(ctx);
       copyResponse(request, response, resp);
       copyStream(response, resp);
       Request.clear();
@@ -124,37 +87,16 @@ public class DispatcherServlet extends HttpServlet {
     }
   }
 
-  private void handleResult(RoutingContext ctx, Result result) {
-    for (ResultHandler handler : RESULT_HANDLERS) {
+  private void handleResult(RoutingContext ctx, Result result, HttpServletResponse resp) {
+    for (ResultHandler handler : Context.HANDLERS) {
       if (handler.support(result)) {
         if (handler instanceof JspViewResultHandler) {
-          copyResponse(ctx.request(), ctx.response(), ctx.response().getOriginalResponse());
+          copyResponse(ctx.request(), ctx.response(), resp);
         }
         handler.apply(ctx, result);
         break;
       }
     }
-  }
-
-  private void invokeFinished(RoutingContext ctx) {
-    for (int i = WEB_HOOKS.size() - 1; i >= 0; i--) {
-      WEB_HOOKS.get(i).finished(ctx);
-    }
-  }
-
-  private void invokeAfter(RoutingContext ctx) {
-    for (int i = WEB_HOOKS.size() - 1; i >= 0; i--) {
-      WEB_HOOKS.get(i).after(ctx);
-    }
-  }
-
-  private boolean invokeBefore(RoutingContext ctx) {
-    for (WebHook webHook : WEB_HOOKS) {
-      if (!webHook.before(ctx)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private void copyResponse(Request request, Response response, HttpServletResponse resp) {
@@ -196,24 +138,9 @@ public class DispatcherServlet extends HttpServlet {
     }
   }
 
-  private void handlerNotFound(RoutingContext ctx) {
-    if (log.isDebugEnabled()) {
-      log.debug("DispatcherServlet not found path [{}] on method [{}]", ctx.requestPath(),
-          ctx.request().getMethod());
-    }
-    IocPlugin.beanStore().getBean(ExceptionHandler.class)
-        .handle(ctx, Exceptions.fail("No handler found"), 404);
-  }
-
-  private void handlerError(RoutingContext ctx, Exception e) {
-    log.error("DispatcherServlet occurs an error for path [{}]", ctx.requestPath(), e);
-    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
-  }
-
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    resp.setHeader("Server", "oxygen");
     if (HttpMethod.PATCH.name().equals(req.getMethod())) {
       doService(req, resp, HttpMethod.PATCH);
     } else {

@@ -138,7 +138,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     expiringPolicy = builder.expiringPolicy;
     scheduleDelay = builder.scheduleDelay;
     if (scheduleDelay <= 0) {
-      scheduleDelay = Math.max((int) timeUnit.toSeconds(duration) / 2, 60);
+      scheduleDelay = Math.max((int) timeUnit.toSeconds(duration) / 4, 60);
     }
     accumulateThreshold = builder.accumulateThreshold;
     int index = INS.getAndIncrement();

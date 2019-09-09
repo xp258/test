@@ -42,6 +42,7 @@ public class Bytes {
   public static final byte QUESTION_MARK = '?';
   public static final byte SEMICOLON = ';';
   public static final byte SLASH = '/';
+  public static final byte SPACE = ' ';
   public static final byte UNDERSCORE = '_';
 
   protected byte[] buffer;

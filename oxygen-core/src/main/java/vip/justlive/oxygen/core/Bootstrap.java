@@ -41,6 +41,15 @@ public final class Bootstrap {
   }
 
   /**
+   * 版本
+   *
+   * @return version
+   */
+  public static String version() {
+    return "oxygen/2.1.2";
+  }
+
+  /**
    * 初始化配置
    * <br>
    * 使用默认地址进行加载，然后使用覆盖路径再次加载

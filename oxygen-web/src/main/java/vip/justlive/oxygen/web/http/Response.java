@@ -20,8 +20,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
+import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Strings;
@@ -35,57 +35,40 @@ import vip.justlive.oxygen.web.result.Result;
 @Data
 public class Response implements Serializable {
 
+  public static final String ORIGINAL_RESPONSE = "_ORIGINAL_RESPONSE";
+
   private static final long serialVersionUID = 1L;
   private static final ThreadLocal<Response> LOCAL = new ThreadLocal<>();
 
-  private final transient HttpServletResponse originalResponse;
-
+  private final Request request;
+  /**
+   * cookies
+   */
+  private final Map<String, Cookie> cookies = new HashMap<>(4);
+  /**
+   * headers
+   */
+  private final Map<String, String> headers = new HashMap<>(4);
   /**
    * 返回码
    */
   private int status = 200;
-
   /**
    * 编码
    */
   private String encoding = StandardCharsets.UTF_8.name();
-
   /**
    * contentType
    */
   private String contentType;
-
   /**
    * out
    */
   private transient ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-  /**
-   * cookies
-   */
-  private Map<String, Cookie> cookies = new HashMap<>(4);
-
-  /**
-   * headers
-   */
-  private Map<String, String> headers = new HashMap<>(4);
-
   /**
    * result
    */
   private transient Result result;
-
-  /**
-   * 设置线程值response
-   *
-   * @param originalResponse 原始response
-   * @return response
-   */
-  public static Response set(HttpServletResponse originalResponse) {
-    Response response = new Response(originalResponse);
-    LOCAL.set(response);
-    return response;
-  }
 
   /**
    * 当前请求的response
@@ -101,6 +84,14 @@ public class Response implements Serializable {
    */
   public static void clear() {
     LOCAL.remove();
+  }
+
+  /**
+   * 设置到当前线存储
+   */
+  public void local() {
+    setHeader(HttpHeaders.SERVER, Bootstrap.version());
+    LOCAL.set(this);
   }
 
   /**

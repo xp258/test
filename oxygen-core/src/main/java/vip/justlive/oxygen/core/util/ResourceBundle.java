@@ -37,7 +37,8 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
 
   private static final Properties PROPS = new Properties();
   private static final Map<String, Properties> I18N = new HashMap<>(2);
-  private static final ThreadLocal<Locale> LOCALE = ThreadLocal.withInitial(ResourceBundle::defaultLocale);
+  private static final ThreadLocal<Locale> LOCALE = ThreadLocal
+      .withInitial(ResourceBundle::defaultLocale);
 
   public ResourceBundle() {
     init();
