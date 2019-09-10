@@ -14,11 +14,16 @@
 package vip.justlive.oxygen.core.util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.experimental.UtilityClass;
@@ -219,13 +224,65 @@ public class Urls {
     return new JarFileInfo(jarFile, jarFileUrl, rootEntryPath);
   }
 
+  /**
+   * url encode
+   *
+   * @param s string
+   * @return encoded
+   */
+  public static String urlEncode(String s) {
+    return urlEncode(s, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * url encode
+   *
+   * @param s string
+   * @param charset 字符集
+   * @return encoded
+   */
+  public static String urlEncode(String s, Charset charset) {
+    try {
+      return URLEncoder.encode(s, charset.name());
+    } catch (UnsupportedEncodingException e) {
+      // nothing
+    }
+    return s;
+  }
+
+  /**
+   * url decode
+   *
+   * @param s string
+   * @return decoded
+   */
+  public static String urlDecode(String s) {
+    return urlDecode(s, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * url decode
+   *
+   * @param s string
+   * @param charset 字符集
+   * @return decoded
+   */
+  public static String urlDecode(String s, Charset charset) {
+    try {
+      return URLDecoder.decode(s, charset.name());
+    } catch (UnsupportedEncodingException e) {
+      // nothing
+    }
+    return s;
+  }
+
   public static class JarFileInfo {
 
     public final JarFile jarFile;
     public final String jarFileUrl;
     public final String rootEntryPath;
 
-    public JarFileInfo(JarFile jarFile, String jarFileUrl, String rootEntryPath) {
+    private JarFileInfo(JarFile jarFile, String jarFileUrl, String rootEntryPath) {
       this.jarFile = jarFile;
       this.jarFileUrl = jarFileUrl;
       this.rootEntryPath = rootEntryPath;

@@ -14,15 +14,14 @@
 
 package vip.justlive.oxygen.web.http;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Locale;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.Bytes;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -111,25 +110,22 @@ public class HeaderParser implements Parser {
       if (c == Bytes.OCTOTHORP) {
         break;
       } else if (c == Bytes.EQUAL && key == null) {
-        key = urlDecodeQuery(request, start, index);
+        key = Urls.urlDecode(request.queryString.substring(start, index),
+            Charset.forName(request.encoding));
         start = index + 1;
       } else if (c == Bytes.AND && key != null) {
-        margeParam(request.getParams(), key, urlDecodeQuery(request, start, index));
+        margeParam(request.getParams(), key,
+            Urls.urlDecode(request.queryString.substring(start, index),
+                Charset.forName(request.encoding)));
         key = null;
         start = index + 1;
       }
       index++;
     }
     if (key != null) {
-      margeParam(request.getParams(), key, urlDecodeQuery(request, start, index));
-    }
-  }
-
-  private String urlDecodeQuery(Request request, int start, int end) {
-    try {
-      return URLDecoder.decode(request.queryString.substring(start, end), request.encoding);
-    } catch (UnsupportedEncodingException e) {
-      throw Exceptions.wrap(e);
+      margeParam(request.getParams(), key,
+          Urls.urlDecode(request.queryString.substring(start, index),
+              Charset.forName(request.encoding)));
     }
   }
 

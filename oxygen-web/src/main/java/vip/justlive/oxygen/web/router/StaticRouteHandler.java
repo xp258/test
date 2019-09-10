@@ -18,10 +18,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
@@ -71,7 +72,6 @@ public class StaticRouteHandler implements RouteHandler {
     }
   }
 
-
   @Override
   public void handle(RoutingContext ctx) {
     StaticSource source = findStaticResource(ctx.requestPath());
@@ -86,21 +86,19 @@ public class StaticRouteHandler implements RouteHandler {
     resp.setContentType(source.getContentType());
     String browserETag = req.getHeader(HttpHeaders.IF_NONE_MATCH);
     String ifModifiedSince = req.getHeader(HttpHeaders.IF_MODIFIED_SINCE);
-    long last = source.lastModified();
+    ZonedDateTime last = Instant.ofEpochMilli(source.lastModified()).atZone(ZoneId.systemDefault());
     String eTag = source.eTag();
-    SimpleDateFormat format = new SimpleDateFormat(HttpHeaders.ETAG_DATA_FORMAT, Locale.US);
     resp.setHeader(HttpHeaders.ETAG, eTag);
     try {
-      if (eTag.equals(browserETag) && ifModifiedSince != null
-          && format.parse(ifModifiedSince).getTime() >= last) {
+      if (eTag.equals(browserETag) && ifModifiedSince != null && !ZonedDateTime
+          .parse(ifModifiedSince, DateTimeFormatter.RFC_1123_DATE_TIME).isBefore(last)) {
         resp.setStatus(304);
         return;
       }
-    } catch (ParseException e) {
+    } catch (DateTimeParseException e) {
       log.warn("Can't parse 'If-Modified-Since' header date [{}]", ifModifiedSince);
     }
-    String lastDate = format.format(new Date(last));
-    resp.setHeader(HttpHeaders.LAST_MODIFIED, lastDate);
+    resp.setHeader(HttpHeaders.LAST_MODIFIED, DateTimeFormatter.RFC_1123_DATE_TIME.format(last));
     if (route.maxAge() > 0) {
       resp.setHeader(HttpHeaders.CACHE_CONTROL,
           HttpHeaders.MAX_AGE + Strings.EQUAL + route.maxAge());

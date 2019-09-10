@@ -140,6 +140,7 @@ public class WebPlugin implements Plugin {
     if (sessionStore != null) {
       SESSION_MANAGER.setStore(sessionStore);
     }
+    SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
 
     Context.PARSERS.addAll(IocPlugin.beanStore().getCastBeanMap(Parser.class).values());
     Collections.sort(Context.PARSERS);

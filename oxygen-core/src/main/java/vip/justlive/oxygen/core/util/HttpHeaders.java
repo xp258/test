@@ -12,7 +12,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class HttpHeaders {
 
-  public static final String ETAG_DATA_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
   public static final String BODY_STORE_KEY = "_body";
   public static final String BOUNDARY = "boundary";
   public static final String HTTP_PREFIX = "http://";
@@ -47,6 +46,7 @@ public class HttpHeaders {
   public static final String X_REAL_IP = "X-Real-IP";
   public static final String X_REQUESTED_WITH = "X-Requested-With";
   public static final String XML_HTTP_REQUEST = "XMLHttpRequest";
+  public static final String SET_COOKIE = "Set-Cookie";
 
   public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
   public static final String APPLICATION_JSON = "application/json";

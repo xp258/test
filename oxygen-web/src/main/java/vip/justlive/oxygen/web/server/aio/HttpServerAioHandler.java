@@ -15,11 +15,13 @@
 package vip.justlive.oxygen.web.server.aio;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.net.aio.core.AioHandler;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
@@ -41,6 +43,7 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
  *
  * @author wubo
  */
+@Slf4j
 @RequiredArgsConstructor
 public class HttpServerAioHandler implements AioHandler {
 
@@ -74,6 +77,10 @@ public class HttpServerAioHandler implements AioHandler {
     response.getHeaders().forEach(
         (k, v) -> bytes.write(k).write(Bytes.COLON).write(Bytes.SPACE).write(v).write(Bytes.CR)
             .write(Bytes.LF));
+    // cookies
+    response.getCookies().values()
+        .forEach(cookie -> bytes.write(cookie.toBytes()).write(Bytes.CR).write(Bytes.LF));
+
     bytes.write(Bytes.CR).write(Bytes.LF);
 
     // 响应体
@@ -85,9 +92,15 @@ public class HttpServerAioHandler implements AioHandler {
 
   @Override
   public Object decode(ByteBuffer buffer, int readableSize, ChannelContext channelContext) {
+    int index = buffer.position();
     RequestBuilder builder = parseStatusText(buffer);
     if (builder != null && parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
-      return builder.build(channelContext);
+      Request request = builder.build(channelContext);
+      if (log.isDebugEnabled()) {
+        log.debug("Received Http [{}]",
+            new String(buffer.array(), index, buffer.position(), StandardCharsets.ISO_8859_1));
+      }
+      return request;
     }
     return null;
   }
@@ -126,7 +139,6 @@ public class HttpServerAioHandler implements AioHandler {
       Response.clear();
     }
   }
-
 
   private RequestBuilder parseStatusText(ByteBuffer buffer) {
     int position = buffer.position();
@@ -167,7 +179,6 @@ public class HttpServerAioHandler implements AioHandler {
       return true;
     }
     String name = null;
-    List<String> values = new LinkedList<>();
     byte[] data;
     while (buffer.hasRemaining()) {
       byte b = buffer.get();
@@ -177,17 +188,11 @@ public class HttpServerAioHandler implements AioHandler {
         getData(data, buffer, curr, position);
         name = new String(data);
         position = curr;
-      } else if (name != null && b == Bytes.COMMA) {
-        data = new byte[curr - position - 1];
-        getData(data, buffer, curr, position);
-        values.add(new String(data).trim());
       } else if (name != null && lineFinished(buffer, b)) {
         data = new byte[curr - position - 2];
         getData(data, buffer, curr, position);
-        values.add(new String(data).trim());
-        builder.headers.put(name, values.toArray(new String[0]));
+        builder.addHeader(name, new String(data).trim());
         name = null;
-        values.clear();
         position = curr;
         if (headerFinished(buffer)) {
           return true;
@@ -235,13 +240,20 @@ public class HttpServerAioHandler implements AioHandler {
     final String method;
     final String requestUri;
     final String version;
-    final Map<String, String[]> headers = new LinkedHashMap<>();
+    final Map<String, List<String>> headers = new LinkedHashMap<>();
     byte[] body;
 
+    void addHeader(String key, String value) {
+      List<String> values = headers.computeIfAbsent(key, k -> new ArrayList<>(1));
+      if (!values.contains(value)) {
+        values.add(value);
+      }
+    }
+
     String getContentLength() {
-      for (Map.Entry<String, String[]> entry : headers.entrySet()) {
+      for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
         if (entry.getKey().equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)) {
-          return entry.getValue()[0];
+          return entry.getValue().get(0);
         }
       }
       return null;
@@ -250,7 +262,8 @@ public class HttpServerAioHandler implements AioHandler {
     Request build(ChannelContext channelContext) {
       Request request = new Request(HttpMethod.valueOf(method), requestUri, version,
           webConf.getContextPath(), body);
-      request.getHeaders().putAll(headers);
+      String[] arr = new String[0];
+      headers.forEach((k, v) -> request.getHeaders().put(k, v.toArray(arr)));
       request.addAttribute(Request.ORIGINAL_REQUEST, channelContext);
       return request;
     }
