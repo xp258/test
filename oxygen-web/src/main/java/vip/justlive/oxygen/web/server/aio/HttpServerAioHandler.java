@@ -34,7 +34,6 @@ import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.RouteHandler;
-import vip.justlive.oxygen.web.router.Router;
 import vip.justlive.oxygen.web.router.RoutingContext;
 import vip.justlive.oxygen.web.router.RoutingContextImpl;
 
@@ -114,7 +113,7 @@ public class HttpServerAioHandler implements AioHandler {
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
       Context.parseRequest(request);
-      RouteHandler handler = Router.lookup(request);
+      RouteHandler handler = request.getRouteHandler();
       if (handler == null) {
         RouteHandler.notFound(ctx);
         return;

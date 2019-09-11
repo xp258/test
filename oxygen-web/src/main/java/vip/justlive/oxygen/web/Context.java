@@ -17,6 +17,7 @@ package vip.justlive.oxygen.web;
 import java.lang.reflect.Parameter;
 import java.util.LinkedList;
 import java.util.List;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.web.bind.DataBinder;
 import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.hook.WebHook;
@@ -30,6 +31,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
+@UtilityClass
 public class Context {
 
   static final List<ParamBinder> BINDERS = new LinkedList<>();

@@ -67,7 +67,7 @@ public class StaticRouteHandler implements RouteHandler {
   public StaticRouteHandler(StaticRoute route) {
     this.route = route;
     if (this.route.cachingEnabled()) {
-      expiringMap = ExpiringMap.<String, StaticSource>builder().name("SRouter")
+      expiringMap = ExpiringMap.<String, StaticSource>builder().name("Static-Source")
           .expiration(10, TimeUnit.MINUTES).asyncExpiredListeners(this::cleanExpiredFile).build();
     }
   }
@@ -155,7 +155,7 @@ public class StaticRouteHandler implements RouteHandler {
       try {
         Files.deleteIfExists(source.path);
       } catch (IOException e) {
-        log.error("delete file error,", e);
+        log.error("delete file error", e);
       }
     }
   }

@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.PathMatcher;
@@ -62,16 +64,22 @@ public abstract class AbstractResourceLoader {
   /**
    * 未找到是否忽略，启用则跳过，否则抛出异常
    */
+  @Getter
+  @Setter
   protected boolean ignoreNotFound;
 
   /**
    * 文件编码
    */
+  @Getter
+  @Setter
   protected String encoding;
 
   /**
    * 字符集
    */
+  @Getter
+  @Setter
   protected Charset charset;
 
   /**
@@ -83,30 +91,6 @@ public abstract class AbstractResourceLoader {
    * 初始化
    */
   public abstract void init();
-
-  public boolean isIgnoreNotFound() {
-    return ignoreNotFound;
-  }
-
-  public void setIgnoreNotFound(boolean ignoreNotFound) {
-    this.ignoreNotFound = ignoreNotFound;
-  }
-
-  public String getEncoding() {
-    return encoding;
-  }
-
-  public void setEncoding(String encoding) {
-    this.encoding = encoding;
-  }
-
-  public Charset getCharset() {
-    return charset;
-  }
-
-  public void setCharset(Charset charset) {
-    this.charset = charset;
-  }
 
   /**
    * 获取资源列表
@@ -253,8 +237,6 @@ public abstract class AbstractResourceLoader {
         all.addAll(this.findFileMatchPath(resource, subPattern));
       } else if (Urls.isJarURL(rootUrl)) {
         all.addAll(this.findJarMatchPath(resource, rootUrl, subPattern));
-      } else {
-        // TODO others
       }
     }
     return all;
@@ -296,7 +278,7 @@ public abstract class AbstractResourceLoader {
   private void look(SourceResource resource, String subPattern, List<SourceResource> all,
       JarFile jarFile, String jarFileUrl, String rootEntryPath) throws IOException {
     if (log.isDebugEnabled()) {
-      log.debug("Looking for matching resources in jar file [" + jarFileUrl + "]");
+      log.debug("Looking for matching resources in jar file [{}]", jarFileUrl);
     }
     if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
       rootEntryPath += Strings.SLASH;

@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.convert;
 
 import java.lang.reflect.Array;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.Strings;
 
 /**
@@ -52,7 +53,7 @@ public class StringToArrayConverter implements ArrayConverter {
       return targetArray;
     }
 
-    throw new IllegalArgumentException(String
+    throw Exceptions.fail(String
         .format("unsupported [%s] convert from [%s] to [%s]", source, sourceType, targetType));
   }
 

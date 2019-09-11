@@ -25,7 +25,7 @@ import lombok.ToString;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.web.router.Route;
+import vip.justlive.oxygen.web.router.RouteHandler;
 
 /**
  * Request
@@ -71,7 +71,7 @@ public class Request implements Serializable {
   /**
    * attributes
    */
-  private final Map<String, Object> attributes = new HashMap<>(2);
+  private final transient Map<String, Object> attributes = new HashMap<>(2);
   /**
    * body
    */
@@ -120,7 +120,8 @@ public class Request implements Serializable {
    * 是否https
    */
   boolean secure;
-  transient Route route;
+
+  transient RouteHandler routeHandler;
   /**
    * 异常
    */
@@ -321,12 +322,4 @@ public class Request implements Serializable {
     return Objects.equals(getHeader(HttpHeaders.X_REQUESTED_WITH), HttpHeaders.XML_HTTP_REQUEST);
   }
 
-  /**
-   * 设置route
-   *
-   * @param route route
-   */
-  public void setRoute(Route route) {
-    this.route = route;
-  }
 }

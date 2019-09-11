@@ -24,7 +24,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.web.http.Request;
 
 /**
  * Router
@@ -73,25 +72,6 @@ public class Router {
   }
 
   /**
-   * lookup route handle
-   *
-   * @param request 请求
-   * @return route handle
-   */
-  public static RouteHandler lookup(Request request) {
-    RouteHandler handler = lookupStatic(request.getPath());
-    if (handler != null) {
-      return handler;
-    }
-    Route route = lookup(request.getMethod(), request.getPath());
-    if (route != null) {
-      request.setRoute(route);
-      return route.handler();
-    }
-    return null;
-  }
-
-  /**
    * clear
    */
   public static void clear() {
@@ -106,7 +86,7 @@ public class Router {
    * @param path request path
    * @return route
    */
-  private static Route lookup(HttpMethod method, String path) {
+  public static Route lookup(HttpMethod method, String path) {
     Route route = SIMPLE_HANDLERS.get(path);
     if (route != null && route.methods().contains(method)) {
       return route;
@@ -126,7 +106,7 @@ public class Router {
    * @param path path
    * @return handle
    */
-  private static RouteHandler lookupStatic(String path) {
+  public static RouteHandler lookupStatic(String path) {
     for (Map.Entry<String, RouteHandler> entry : STATIC_HANDLERS.entrySet()) {
       if (path.startsWith(entry.getKey())) {
         return entry.getValue();

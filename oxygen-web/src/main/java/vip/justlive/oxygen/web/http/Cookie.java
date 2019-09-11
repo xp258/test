@@ -14,6 +14,9 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.Serializable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.Data;
 import vip.justlive.oxygen.core.util.Bytes;
 import vip.justlive.oxygen.core.util.HttpHeaders;
@@ -61,6 +64,8 @@ public class Cookie implements Serializable {
     bytes.write(HttpHeaders.SET_COOKIE).write(Bytes.COLON).write(Bytes.SPACE).write(name)
         .write(Strings.EQUAL).write(value);
     if (maxAge != null) {
+      bytes.write("; Expires=").write(DateTimeFormatter.RFC_1123_DATE_TIME
+          .format(ZonedDateTime.now(ZoneId.of("GMT")).plusSeconds(maxAge)));
       bytes.write("; Max-Age=").write(maxAge.toString());
     }
     if (Strings.hasText(domain)) {

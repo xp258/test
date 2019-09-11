@@ -84,7 +84,7 @@ public class FileSystemResource implements SourceResource {
   }
 
   @Override
-  public File getFile() throws IOException {
+  public File getFile() {
     return file;
   }
 

@@ -29,6 +29,9 @@ public class Bytes {
 
   public static final byte AND = '&';
   public static final byte ANY = '*';
+  public static final byte CLOSE_BRACE = '}';
+  public static final byte CLOSE_BRACKET = ']';
+  public static final byte CLOSE_PAREN = ')';
   public static final byte COLON = ':';
   public static final byte COMMA = ',';
   public static final byte CR = '\r';
@@ -39,6 +42,9 @@ public class Bytes {
   public static final byte EQUAL = '=';
   public static final byte LF = '\n';
   public static final byte OCTOTHORP = '#';
+  public static final byte OPEN_BRACE = '{';
+  public static final byte OPEN_BRACKET = '[';
+  public static final byte OPEN_PAREN = '(';
   public static final byte QUESTION_MARK = '?';
   public static final byte SEMICOLON = ';';
   public static final byte SLASH = '/';

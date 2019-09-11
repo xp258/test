@@ -15,6 +15,9 @@ public class Strings {
   public static final String AND = "&";
   public static final String ANY = "*";
   public static final String ANY_PATH = "/*";
+  public static final String CLOSE_BRACE = "}";
+  public static final String CLOSE_BRACKET = "]";
+  public static final String CLOSE_PAREN = ")";
   public static final String COLON = ":";
   public static final String COMMA = ",";
   public static final String DASH = "-";
@@ -25,6 +28,9 @@ public class Strings {
   public static final String EMPTY = "";
   public static final String EQUAL = "=";
   public static final String OCTOTHORP = "#";
+  public static final String OPEN_BRACE = "{";
+  public static final String OPEN_BRACKET = "[";
+  public static final String OPEN_PAREN = "(";
   public static final String QUESTION_MARK = "?";
   public static final String SEMICOLON = ";";
   public static final String SLASH = "/";

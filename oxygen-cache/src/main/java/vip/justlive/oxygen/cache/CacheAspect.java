@@ -38,7 +38,7 @@ import vip.justlive.oxygen.ioc.annotation.Inject;
 @Bean
 public class CacheAspect {
 
-  static final Cache CACHE = new LocalCacheImpl("AspectCache");
+  static final Cache CACHE = new LocalCacheImpl("Aspect-Cache");
   private final DefaultKeyGenerator defaultKeyGenerator;
   private final ArgsKeyGenerator argsKeyGenerator;
 

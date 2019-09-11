@@ -64,7 +64,7 @@ public class DefaultClassScanner implements ClassScanner {
       try {
         this.findMatchPath(transfer, classes);
       } catch (IOException e) {
-        log.warn("scan package [{}] -> [{}] fail", pkg, transfer, e);
+        log.warn("scan package [{}] -> [{}] failed", pkg, transfer, e);
       }
     }
     return classes;
@@ -99,7 +99,7 @@ public class DefaultClassScanner implements ClassScanner {
       try {
         classes.add(loader.loadClass(className));
       } catch (ClassNotFoundException | NoClassDefFoundError e) {
-        log.warn("class [{}] cannot load ", className);
+        log.warn("class [{}] can not load ", className);
       }
     }
   }
@@ -126,7 +126,7 @@ public class DefaultClassScanner implements ClassScanner {
           try {
             classes.add(loader.loadClass(className));
           } catch (ClassNotFoundException | NoClassDefFoundError e) {
-            log.warn("class [{}] cannot load ", className);
+            log.warn("class [{}] cannot load", className);
           }
         }
       }

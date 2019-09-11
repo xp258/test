@@ -18,6 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.router.Route;
+import vip.justlive.oxygen.web.router.RouteHandler;
+import vip.justlive.oxygen.web.router.Router;
 
 /**
  * path请求解析
@@ -34,14 +36,23 @@ public class PathUrlParser implements Parser {
 
   @Override
   public void parse(Request request) {
-    Route route = request.getRoute();
+    RouteHandler handler = Router.lookupStatic(request.getPath());
+    Route route = null;
+    if (handler != null) {
+      request.routeHandler = handler;
+    } else {
+      route = Router.lookup(request.getMethod(), request.getPath());
+      if (route != null) {
+        request.routeHandler = route.handler();
+      }
+    }
     if (route == null || route.pathVars().isEmpty()) {
       return;
     }
     String path = request.getPath();
-    Matcher matcher = Pattern.compile(request.getRoute().path()).matcher(path);
+    Matcher matcher = Pattern.compile(route.path()).matcher(path);
     if (matcher.matches()) {
-      List<String> pathVariables = request.getRoute().pathVars();
+      List<String> pathVariables = route.pathVars();
       for (int i = 1, len = matcher.groupCount(); i <= len; i++) {
         request.addAttribute(Request.PATH_VARS + pathVariables.get(i - 1), matcher.group(i));
       }

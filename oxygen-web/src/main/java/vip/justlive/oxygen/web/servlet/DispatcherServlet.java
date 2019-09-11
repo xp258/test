@@ -31,7 +31,6 @@ import vip.justlive.oxygen.web.result.JspViewResultHandler;
 import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.RouteHandler;
-import vip.justlive.oxygen.web.router.Router;
 import vip.justlive.oxygen.web.router.RoutingContext;
 import vip.justlive.oxygen.web.router.RoutingContextImpl;
 
@@ -65,17 +64,16 @@ public class DispatcherServlet extends HttpServlet {
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
       Context.parseRequest(request);
-      RouteHandler handler = Router.lookup(request);
+      RouteHandler handler = request.getRouteHandler();
       if (handler == null) {
         RouteHandler.notFound(ctx);
         return;
       }
-      if (!Context.invokeBefore(ctx)) {
-        return;
+      if (Context.invokeBefore(ctx)) {
+        handler.handle(ctx);
+        handleResult(ctx, response.getResult(), resp);
+        Context.invokeAfter(ctx);
       }
-      handler.handle(ctx);
-      handleResult(ctx, response.getResult(), resp);
-      Context.invokeAfter(ctx);
     } catch (Exception e) {
       RouteHandler.error(ctx, e);
     } finally {
