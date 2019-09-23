@@ -15,7 +15,7 @@ package vip.justlive.oxygen.web.http;
 
 import java.util.UUID;
 import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.web.WebPlugin;
+import vip.justlive.oxygen.web.Context;
 
 /**
  * session parse
@@ -36,7 +36,7 @@ public class SessionParser implements Parser {
     if (session == null) {
       session = new Session();
       session.setId(UUID.randomUUID().toString());
-      WebPlugin.SESSION_MANAGER.createSession(session);
+      Context.SESSION_MANAGER.createSession(session);
     }
     request.session = session;
   }
@@ -44,7 +44,7 @@ public class SessionParser implements Parser {
   private Session getSession(Request request) {
     String id = request.getCookieValue(Session.SESSION_COOKIE_KEY);
     if (id != null) {
-      return WebPlugin.SESSION_MANAGER.getSession(id);
+      return Context.SESSION_MANAGER.getSession(id);
     }
     return null;
   }

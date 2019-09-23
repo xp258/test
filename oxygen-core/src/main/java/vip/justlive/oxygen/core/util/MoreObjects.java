@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -179,4 +180,20 @@ public class MoreObjects {
     }
     return obj.toString();
   }
+
+  /**
+   * 捕获异常的foreach
+   *
+   * @param iterable 迭代对象
+   * @param consumer 处理单元
+   * @param <T> 泛型
+   */
+  public static <T> void caughtForeach(Iterable<T> iterable, Consumer<? super T> consumer) {
+    if (consumer instanceof CaughtConsumer) {
+      iterable.forEach(consumer);
+    } else {
+      iterable.forEach(new CaughtConsumer<>(consumer));
+    }
+  }
+
 }

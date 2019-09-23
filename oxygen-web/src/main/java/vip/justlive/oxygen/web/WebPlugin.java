@@ -33,7 +33,6 @@ import vip.justlive.oxygen.web.exception.ExceptionHandler;
 import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
 import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Parser;
-import vip.justlive.oxygen.web.http.SessionManager;
 import vip.justlive.oxygen.web.http.SessionStore;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
@@ -46,8 +45,6 @@ import vip.justlive.oxygen.web.router.Route;
  */
 @Slf4j
 public class WebPlugin implements Plugin {
-
-  public static final SessionManager SESSION_MANAGER = new SessionManager();
 
   @Override
   public int order() {
@@ -138,9 +135,9 @@ public class WebPlugin implements Plugin {
   private void loadWebEnv() {
     SessionStore sessionStore = IocPlugin.beanStore().getBean(SessionStore.class);
     if (sessionStore != null) {
-      SESSION_MANAGER.setStore(sessionStore);
+      Context.SESSION_MANAGER.setStore(sessionStore);
     }
-    SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
+    Context.SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
 
     Context.PARSERS.addAll(IocPlugin.beanStore().getCastBeanMap(Parser.class).values());
     Collections.sort(Context.PARSERS);

@@ -43,7 +43,7 @@ public class SessionManager {
    *
    * @param session session
    */
-  public void createSession(Session session) {
+  void createSession(Session session) {
     session.setManager(this);
     session.setExpired(expired);
     store.put(session.getId(), session, session.getExpired());

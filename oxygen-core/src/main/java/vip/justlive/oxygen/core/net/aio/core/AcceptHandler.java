@@ -48,7 +48,7 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
         server.getGroupContext().getAioListener().onConnected(channelContext);
       }
     } catch (IOException e) {
-      log.error("Aio连接处理失败", e);
+      log.error("Aio accept completed error", e);
     } finally {
       server.getServerChannel().accept(server, this);
     }
@@ -56,7 +56,7 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
 
   @Override
   public void failed(Throwable exc, Server server) {
-    log.error("Aio连接接收失败", exc);
+    log.error("Aio accept error", exc);
     server.getServerChannel().accept(server, this);
   }
 }

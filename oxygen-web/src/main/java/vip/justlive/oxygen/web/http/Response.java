@@ -70,6 +70,11 @@ public class Response implements Serializable {
    */
   private transient Result result;
 
+  public Response(Request request) {
+    this.request = request;
+    setHeader(HttpHeaders.SERVER, Bootstrap.version());
+  }
+
   /**
    * 当前请求的response
    *
@@ -90,7 +95,6 @@ public class Response implements Serializable {
    * 设置到当前线存储
    */
   public void local() {
-    setHeader(HttpHeaders.SERVER, Bootstrap.version());
     LOCAL.set(this);
   }
 

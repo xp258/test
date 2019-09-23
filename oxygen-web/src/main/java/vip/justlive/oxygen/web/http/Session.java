@@ -44,7 +44,7 @@ public class Session implements Serializable {
    *
    * @param id sessionId
    */
-  public void setId(String id) {
+  void setId(String id) {
     if (id != null && manager != null) {
       manager.removeSession(this.id);
     }
@@ -100,7 +100,7 @@ public class Session implements Serializable {
    *
    * @param manager sessionManager
    */
-  public void setManager(SessionManager manager) {
+  void setManager(SessionManager manager) {
     this.manager = manager;
   }
 }

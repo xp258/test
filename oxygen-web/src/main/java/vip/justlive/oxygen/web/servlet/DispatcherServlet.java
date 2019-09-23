@@ -22,11 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.Context;
-import vip.justlive.oxygen.web.WebPlugin;
 import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
-import vip.justlive.oxygen.web.http.Session;
 import vip.justlive.oxygen.web.result.JspViewResultHandler;
 import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.result.ResultHandler;
@@ -105,11 +103,7 @@ public class DispatcherServlet extends HttpServlet {
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
 
-    if (request.getSession() != null && !request.getSession().getId()
-        .equals(request.getCookieValue(Session.SESSION_COOKIE_KEY))) {
-      response.setCookie(Session.SESSION_COOKIE_KEY, request.getSession().getId());
-    }
-    WebPlugin.SESSION_MANAGER.restoreSession(request.getSession());
+    Context.restoreSession(request, response);
 
     for (Cookie cookie : response.getCookies().values()) {
       javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),

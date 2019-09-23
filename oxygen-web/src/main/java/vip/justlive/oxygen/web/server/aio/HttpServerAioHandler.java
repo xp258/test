@@ -108,6 +108,13 @@ public class HttpServerAioHandler implements AioHandler {
   public void handle(Object data, ChannelContext channelContext) {
     Request request = (Request) data;
     Response response = new Response(request);
+
+    if (request.getMethod() == HttpMethod.UNKNOWN) {
+      response.write("method is not supported");
+      channelContext.write(response);
+      return;
+    }
+
     request.local();
     response.local();
     final RoutingContext ctx = new RoutingContextImpl(request, response);
@@ -133,6 +140,7 @@ public class HttpServerAioHandler implements AioHandler {
       RouteHandler.error(ctx, e);
     } finally {
       Context.invokeFinished(ctx);
+      Context.restoreSession(request, response);
       channelContext.write(response);
       Request.clear();
       Response.clear();
@@ -259,7 +267,7 @@ public class HttpServerAioHandler implements AioHandler {
     }
 
     Request build(ChannelContext channelContext) {
-      Request request = new Request(HttpMethod.valueOf(method), requestUri, version,
+      Request request = new Request(HttpMethod.find(method), requestUri, version,
           webConf.getContextPath(), body);
       String[] arr = new String[0];
       headers.forEach((k, v) -> request.getHeaders().put(k, v.toArray(arr)));

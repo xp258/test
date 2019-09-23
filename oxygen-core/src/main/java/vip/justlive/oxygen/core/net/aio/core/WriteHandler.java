@@ -15,7 +15,7 @@
 package vip.justlive.oxygen.core.net.aio.core;
 
 import java.nio.channels.CompletionHandler;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -24,18 +24,18 @@ import lombok.RequiredArgsConstructor;
  * @author wubo
  */
 @RequiredArgsConstructor
-public class WriteHandler implements CompletionHandler<Integer, Semaphore> {
+public class WriteHandler implements CompletionHandler<Integer, CompletableFuture<Void>> {
 
   private final ChannelContext channelContext;
 
   @Override
-  public void completed(Integer result, Semaphore semaphore) {
+  public void completed(Integer result, CompletableFuture<Void> future) {
+    future.complete(null);
     channelContext.setLastSentAt(System.currentTimeMillis());
-    semaphore.release();
   }
 
   @Override
-  public void failed(Throwable exc, Semaphore semaphore) {
-    semaphore.release();
+  public void failed(Throwable exc, CompletableFuture<Void> future) {
+    future.completeExceptionally(exc);
   }
 }

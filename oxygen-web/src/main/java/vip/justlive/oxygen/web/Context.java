@@ -23,6 +23,9 @@ import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Parser;
 import vip.justlive.oxygen.web.http.Request;
+import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.http.Session;
+import vip.justlive.oxygen.web.http.SessionManager;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -34,6 +37,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
 @UtilityClass
 public class Context {
 
+  public static final SessionManager SESSION_MANAGER = new SessionManager();
   static final List<ParamBinder> BINDERS = new LinkedList<>();
   static final List<WebHook> HOOKS = new LinkedList<>();
   public static final List<ResultHandler> HANDLERS = new LinkedList<>();
@@ -99,6 +103,20 @@ public class Context {
    */
   public static void parseRequest(Request request) {
     PARSERS.forEach(parser -> parser.parse(request));
+  }
+
+  /**
+   * 重新保存session
+   *
+   * @param request 请求
+   * @param response 响应
+   */
+  public static void restoreSession(Request request, Response response) {
+    if (request.getSession() != null && !request.getSession().getId()
+        .equals(request.getCookieValue(Session.SESSION_COOKIE_KEY))) {
+      response.setCookie(Session.SESSION_COOKIE_KEY, request.getSession().getId());
+    }
+    SESSION_MANAGER.restoreSession(request.getSession());
   }
 
 }
