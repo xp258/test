@@ -37,6 +37,18 @@ public class WebConf {
   private String contextPath;
 
   /**
+   * aio服务连接空闲超时时间
+   */
+  @Value("${server.aio.idleTimeout:10000}")
+  private long aioIdleTimeout;
+
+  /**
+   * aio请求连接超时时间
+   */
+  @Value("${server.aio.requestTimeout:-1}")
+  private long aioRequestTimeout;
+
+  /**
    * session失效时间，单位秒
    */
   @Value("${web.session.expired:3600}")

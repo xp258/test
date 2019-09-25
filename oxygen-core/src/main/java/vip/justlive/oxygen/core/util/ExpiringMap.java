@@ -493,9 +493,6 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   private void notifyListener(K key, V value) {
-    if (log.isDebugEnabled()) {
-      log.debug("[{}] expired key [{}] and now realSize is [{}]", this.name, key, this.realSize());
-    }
     if (asyncExpiredListeners != null && !asyncExpiredListeners.isEmpty()) {
       for (ExpiredListener<K, V> listener : asyncExpiredListeners) {
         listener.expire(key, value);
@@ -584,7 +581,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     private ExpiringPolicy expiringPolicy = ExpiringPolicy.CREATED;
     private CleanPolicy cleanPolicy = CleanPolicy.ACCUMULATE;
     private int scheduleDelay = -1;
-    private int accumulateThreshold = 50;
+    private int accumulateThreshold = 10000;
     private String name;
 
     private Builder() {

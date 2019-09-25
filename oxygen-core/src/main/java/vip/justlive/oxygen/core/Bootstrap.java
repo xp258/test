@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.util.IOUtils;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.Strings;
 
@@ -36,8 +37,20 @@ public final class Bootstrap {
   private static final List<Plugin> PLUGINS = new ArrayList<>(5);
   private static final AtomicBoolean STATE = new AtomicBoolean(false);
   private static final Thread SHUTDOWN_HOOK = new Thread(Bootstrap::doClose);
+  private static final String VERSION;
 
   Bootstrap() {
+  }
+
+  static {
+    String version;
+    try {
+      version = IOUtils
+          .toString(Bootstrap.class.getResourceAsStream("/vip/justlive/oxygen/core/Version"));
+    } catch (Exception e) {
+      version = "oxygen/unknown";
+    }
+    VERSION = version;
   }
 
   /**
@@ -46,7 +59,7 @@ public final class Bootstrap {
    * @return version
    */
   public static String version() {
-    return "oxygen/2.1.2";
+    return VERSION;
   }
 
   /**

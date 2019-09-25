@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.net.aio.core;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.CompletionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,9 @@ public class ReadHandler implements CompletionHandler<Integer, ByteBuffer> {
 
   @Override
   public void failed(Throwable exc, ByteBuffer buffer) {
-    log.error("{} read error", channelContext, exc);
+    if (!(channelContext.isClosed() && exc instanceof AsynchronousCloseException)) {
+      log.error("{} read error", channelContext, exc);
+    }
     channelContext.close();
   }
 }

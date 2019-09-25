@@ -16,6 +16,7 @@ package vip.justlive.oxygen.web.server.aio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -39,6 +40,7 @@ public class AioWebServer implements WebServer {
     this.port = port;
     WebConf webConf = ConfigFactory.load(WebConf.class);
     GroupContext groupContext = new GroupContext(new HttpServerAioHandler(webConf));
+    groupContext.setAioListener(new HttpServerAioListener());
     this.server = new Server(groupContext);
     Bootstrap.start();
     try {
@@ -46,6 +48,10 @@ public class AioWebServer implements WebServer {
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }
+    groupContext.getScheduledExecutor().scheduleWithFixedDelay(
+        new ConnectionTimeoutUpdater(groupContext, webConf.getAioIdleTimeout(),
+            webConf.getAioRequestTimeout()), webConf.getAioIdleTimeout(),
+        webConf.getAioIdleTimeout(), TimeUnit.MILLISECONDS);
     this.server.sync();
   }
 
