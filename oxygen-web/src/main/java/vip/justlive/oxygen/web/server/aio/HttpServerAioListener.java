@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.web.server.aio;
 
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.net.aio.core.AioListener;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.util.HttpHeaders;
@@ -24,13 +25,14 @@ import vip.justlive.oxygen.web.http.Response;
  *
  * @author wubo
  */
+@Slf4j
 public class HttpServerAioListener implements AioListener {
 
   @Override
   public void onWriteHandled(ChannelContext channelContext, Object data, Throwable throwable) {
     Response response = (Response) data;
-    String connection = response.getRequest().getHeader(HttpHeaders.CONNECTION);
-    if (!HttpHeaders.CONNECTION_KEEP_ALIVE.equalsIgnoreCase(connection)) {
+    if (throwable != null || !HttpHeaders.CONNECTION_KEEP_ALIVE
+        .equalsIgnoreCase(response.getRequest().getHeader(HttpHeaders.CONNECTION))) {
       channelContext.close();
     }
   }

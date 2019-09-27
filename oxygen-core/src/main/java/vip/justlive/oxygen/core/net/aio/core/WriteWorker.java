@@ -54,7 +54,12 @@ public class WriteWorker extends AbstractWorker<Object> {
     try {
       semaphore.acquire();
     } catch (InterruptedException e) {
+      AioListener listener = channelContext.getGroupContext().getAioListener();
+      if (listener != null) {
+        MoreObjects.caughtForeach(data, item -> listener.onWriteHandled(channelContext, item, e));
+      }
       Thread.currentThread().interrupt();
+      return;
     }
 
     if (channelContext.isClosed()) {
@@ -65,10 +70,10 @@ public class WriteWorker extends AbstractWorker<Object> {
     CompletableFuture<Void> future = new CompletableFuture<>();
     future.whenComplete((r, e) -> complete(e, data));
     try {
-      channelContext.getChannel()
-          .write(Utils.composite(buffers), future, channelContext.getWriteHandler());
+      WriteHandler.WriteContext ctx = new WriteHandler.WriteContext(future,
+          Utils.composite(buffers));
+      channelContext.getChannel().write(ctx.buffer, ctx, channelContext.getWriteHandler());
     } catch (Exception e) {
-      semaphore.release();
       complete(e, data);
       throw e;
     }
@@ -81,4 +86,5 @@ public class WriteWorker extends AbstractWorker<Object> {
       MoreObjects.caughtForeach(data, item -> listener.onWriteHandled(channelContext, item, exc));
     }
   }
+
 }

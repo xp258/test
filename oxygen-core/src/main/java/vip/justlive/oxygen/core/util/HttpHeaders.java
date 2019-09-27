@@ -22,8 +22,9 @@ public class HttpHeaders {
   public static final String FORM_DATA_FILENAME = "filename";
   public static final String MAX_AGE = "max-age";
 
-  public static final String CONNECTION_CLOSE = "Close";
-  public static final String CONNECTION_KEEP_ALIVE = "Keep-Alive";
+  public static final String CHUNKED = "chunked";
+  public static final String CONNECTION_CLOSE = "close";
+  public static final String CONNECTION_KEEP_ALIVE = "keep-alive";
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
@@ -45,6 +46,7 @@ public class HttpHeaders {
   public static final String LOCATION = "Location";
   public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
   public static final String SERVER = "Server";
+  public static final String TRANSFER_ENCODING = "Transfer-Encoding";
   public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
   public static final String X_REAL_IP = "X-Real-IP";

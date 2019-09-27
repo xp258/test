@@ -38,9 +38,15 @@ public class AioWebServer implements WebServer {
   @Override
   public void listen(int port) {
     this.port = port;
-    WebConf webConf = ConfigFactory.load(WebConf.class);
-    GroupContext groupContext = new GroupContext(new HttpServerAioHandler(webConf));
+    AioServerConf serverConf = ConfigFactory.load(AioServerConf.class);
+    GroupContext groupContext = new GroupContext(
+        new HttpServerAioHandler(ConfigFactory.load(WebConf.class).getContextPath()));
     groupContext.setAioListener(new HttpServerAioListener());
+    groupContext.setAcceptThreads(serverConf.getAcceptThreads());
+    groupContext.setAcceptMaxWaiter(serverConf.getAcceptMaxWaiter());
+    groupContext.setWorkerThreads(serverConf.getWorkerThreads());
+    groupContext.setWorkerMaxWaiter(serverConf.getWorkerMaxWaiter());
+    groupContext.setDaemon(serverConf.isDaemon());
     this.server = new Server(groupContext);
     Bootstrap.start();
     try {
@@ -49,10 +55,9 @@ public class AioWebServer implements WebServer {
       throw Exceptions.wrap(e);
     }
     groupContext.getScheduledExecutor().scheduleWithFixedDelay(
-        new ConnectionTimeoutUpdater(groupContext, webConf.getAioIdleTimeout(),
-            webConf.getAioRequestTimeout()), webConf.getAioIdleTimeout(),
-        webConf.getAioIdleTimeout(), TimeUnit.MILLISECONDS);
-    this.server.sync();
+        new ConnectionTimeoutUpdater(groupContext, serverConf.getAioIdleTimeout(),
+            serverConf.getAioRequestTimeout()), serverConf.getAioIdleTimeout(),
+        serverConf.getAioIdleTimeout(), TimeUnit.MILLISECONDS);
   }
 
   @Override

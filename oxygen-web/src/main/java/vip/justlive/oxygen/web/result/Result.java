@@ -41,7 +41,6 @@ public interface Result {
   static ViewResult view(String path) {
     ViewResult result = new ViewResult();
     result.setPath(path);
-    result.addAttribute("ctx", Request.current().getContextPath());
     return result;
   }
 

@@ -29,7 +29,6 @@ import vip.justlive.oxygen.core.util.Bytes;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.Context;
-import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.result.ResultHandler;
@@ -46,7 +45,7 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
 @RequiredArgsConstructor
 public class HttpServerAioHandler implements AioHandler {
 
-  private final WebConf webConf;
+  private final String contextPath;
 
   @Override
   public ByteBuffer encode(Object data, ChannelContext channelContext) {
@@ -61,6 +60,10 @@ public class HttpServerAioHandler implements AioHandler {
       body = response.getOut().toByteArray();
     }
 
+    String connection = response.getRequest().getHeader(HttpHeaders.CONNECTION);
+    if (HttpHeaders.CONNECTION_KEEP_ALIVE.equalsIgnoreCase(connection)) {
+      response.setHeader(HttpHeaders.CONNECTION, HttpHeaders.CONNECTION_KEEP_ALIVE);
+    }
     // content-length
     response.setHeader(HttpHeaders.CONTENT_LENGTH, Integer.toString(body.length));
     // content-type
@@ -267,8 +270,8 @@ public class HttpServerAioHandler implements AioHandler {
     }
 
     Request build(ChannelContext channelContext) {
-      Request request = new Request(HttpMethod.find(method), requestUri, version,
-          webConf.getContextPath(), body);
+      Request request = new Request(HttpMethod.find(method), requestUri, version, contextPath,
+          body);
       String[] arr = new String[0];
       headers.forEach((k, v) -> request.getHeaders().put(k, v.toArray(arr)));
       request.addAttribute(Request.ORIGINAL_REQUEST, channelContext);
