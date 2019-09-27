@@ -268,6 +268,7 @@ public class Request implements Serializable {
    *
    * @param key 键
    * @param value 值
+   * @return request
    */
   public Request addAttribute(String key, Object value) {
     this.attributes.put(key, value);
@@ -278,6 +279,7 @@ public class Request implements Serializable {
    * 添加多属性
    *
    * @param attrs 属性
+   * @return request
    */
   public Request addAttribute(Map<String, Object> attrs) {
     this.attributes.putAll(attrs);

@@ -89,6 +89,7 @@ public class Bytes {
    * 写入字节
    *
    * @param b 字节
+   * @return Bytes
    */
   public synchronized Bytes write(byte b) {
     ensureCapacity(count + 1);
@@ -101,6 +102,7 @@ public class Bytes {
    * 写入字符串 UTF-8编码
    *
    * @param str 字符串
+   * @return Bytes
    */
   public Bytes write(String str) {
     return write(str, StandardCharsets.UTF_8);
@@ -111,6 +113,7 @@ public class Bytes {
    *
    * @param str 字符串
    * @param charset 编码
+   * @return Bytes
    */
   public Bytes write(String str, Charset charset) {
     if (str == null) {
@@ -123,6 +126,7 @@ public class Bytes {
    * 写入字节数组
    *
    * @param b 字节数组
+   * @return Bytes
    */
   public Bytes write(byte[] b) {
     return write(b, 0, b.length);
@@ -134,6 +138,7 @@ public class Bytes {
    * @param b 字节数组
    * @param off 起始
    * @param len 长度
+   * @return Bytes
    */
   public synchronized Bytes write(byte[] b, int off, int len) {
     if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) - b.length > 0)) {
