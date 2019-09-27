@@ -81,10 +81,10 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     ThymeleafResolver() {
       WebConf webConf = ConfigFactory.load(WebConf.class);
       this.templateEngine = new TemplateEngine();
-      ResourceTemplateResolver resolver = new ResourceTemplateResolver(
+      ResourceTemplateResolver templateResolver = new ResourceTemplateResolver(
           webConf.getThymeleafViewPrefix());
-      resolver.setCacheable(webConf.isViewCacheEnabled());
-      this.templateEngine.setTemplateResolver(resolver);
+      templateResolver.setCacheable(webConf.isViewCacheEnabled());
+      this.templateEngine.setTemplateResolver(templateResolver);
     }
 
     String resolve(Request request, String path, Map<String, Object> data) {

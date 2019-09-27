@@ -116,6 +116,7 @@ public class DispatcherServlet extends HttpServlet {
       if (cookie.getDomain() != null) {
         jCookie.setDomain(cookie.getDomain());
       }
+      jCookie.setSecure(cookie.isSecure());
       resp.addCookie(jCookie);
     }
   }

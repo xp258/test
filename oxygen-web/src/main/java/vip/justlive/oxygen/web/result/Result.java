@@ -13,8 +13,6 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import vip.justlive.oxygen.web.http.Request;
-
 /**
  * 结果标记
  *
