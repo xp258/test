@@ -98,22 +98,22 @@ public class SimpleTemplateEngine implements TemplateEngine {
   @RequiredArgsConstructor
   private class Script implements Consumer<StringBuilder> {
 
-    final String script;
+    final String value;
 
     @Override
     public void accept(StringBuilder sb) {
-      sb.append(script);
+      sb.append(value);
     }
   }
 
   @RequiredArgsConstructor
   private class Statement implements Consumer<StringBuilder> {
 
-    final String statement;
+    final String value;
 
     @Override
     public void accept(StringBuilder sb) {
-      sb.append("$out.write(''+(").append(statement).append("));");
+      sb.append("$out.write(''+(").append(value).append("));");
     }
   }
 
