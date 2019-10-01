@@ -360,7 +360,14 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public V putIfAbsent(K key, V value) {
+    if (duration > 0) {
+      return putIfAbsent(key, value, duration);
+    }
     return putIfAbsent(key, new ExpiringValue<>(value));
+  }
+
+  public V putIfAbsent(K key, V value, long duration) {
+    return putIfAbsent(key, value, duration, timeUnit);
   }
 
   public V putIfAbsent(K key, V value, long duration, TimeUnit timeUnit) {

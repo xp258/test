@@ -18,6 +18,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.config.CoreConf;
+import vip.justlive.oxygen.core.exception.CodedException;
 
 /**
  * @author wubo
@@ -29,15 +30,26 @@ public class SimpleTemplateEngineTest {
 
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
-    attrs.put("b", "b");
     CoreConf conf = new CoreConf();
     conf.setBaseTempDir("/aaa");
     attrs.put("c", conf);
 
-    String template = "<i>${a}</i><i>${b}</i><i>${c.baseTempDir}</i>";
+    String template = "<i>${a}</i><i>${1+3}</i><i>${c.baseTempDir}</i>";
 
     SimpleTemplateEngine engine = new SimpleTemplateEngine();
     String result = engine.render(template, attrs);
-    Assert.assertEquals("<i>1</i><i>b</i><i>/aaa</i>", result);
+    Assert.assertEquals("<i>1</i><i>4</i><i>/aaa</i>", result);
+
+    template = "<a>${x,$</a>";
+    result = engine.render(template, attrs);
+    Assert.assertEquals(template, result);
+
+    template = "<a>${x,${a}</a>";
+    try {
+      engine.render(template, attrs);
+      Assert.fail();
+    } catch (CodedException e) {
+      // ignore
+    }
   }
 }
