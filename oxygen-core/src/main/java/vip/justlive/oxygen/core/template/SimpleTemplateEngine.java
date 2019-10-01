@@ -13,12 +13,15 @@
  */
 package vip.justlive.oxygen.core.template;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -27,6 +30,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
+import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
@@ -41,6 +45,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
 
   private static final String VALUE_PREFIX = "${";
   private static final String VALUE_SUFFIX = Strings.CLOSE_BRACE;
+  private static final String SCRIPT_PREFIX = "#:";
 
   private static final ScriptEngine ENGINE;
   private static final Compilable COMPILABLE;
@@ -79,37 +84,84 @@ public class SimpleTemplateEngine implements TemplateEngine {
     }
   }
 
+  @RequiredArgsConstructor
+  private class Text implements Consumer<StringBuilder> {
+
+    final int index;
+
+    @Override
+    public void accept(StringBuilder sb) {
+      sb.append("$out.write($data[").append(index).append("]);");
+    }
+  }
+
+  @RequiredArgsConstructor
+  private class Script implements Consumer<StringBuilder> {
+
+    final String script;
+
+    @Override
+    public void accept(StringBuilder sb) {
+      sb.append(script);
+    }
+  }
+
+  @RequiredArgsConstructor
+  private class Statement implements Consumer<StringBuilder> {
+
+    final String statement;
+
+    @Override
+    public void accept(StringBuilder sb) {
+      sb.append("$out.write(''+(").append(statement).append("));");
+    }
+  }
+
   private class TemplateSpec {
 
     String parsed;
     CompiledScript compiledScript;
     List<String> data = new ArrayList<>();
+    List<Consumer<StringBuilder>> consumers = new ArrayList<>();
 
     TemplateSpec(String template) throws ScriptException {
       StringBuilder sb = new StringBuilder("var func = function(){");
-      String source = template;
-      while (true) {
-        int start = source.indexOf(VALUE_PREFIX);
-        int end = source.indexOf(VALUE_SUFFIX);
-        if (start == -1 || end <= start) {
-          sb.append("$out.write($data[").append(data.size()).append("]);");
-          data.add(source);
-          break;
-        }
-        sb.append("$out.write($data[").append(data.size()).append("]);");
-        data.add(source.substring(0, start));
-        String statement = source.substring(start + 2, end);
-        if (statement.contains(VALUE_PREFIX)) {
-          throw Exceptions.fail("模板有误,缺失'}'");
-        }
-        sb.append("$out.write(''+(").append(statement).append("));");
-        source = source.substring(end + 1);
+      BufferedReader reader = new BufferedReader(new StringReader(template));
+      reader.lines().forEach(this::parse);
+      for (Consumer<StringBuilder> consumer : consumers) {
+        consumer.accept(sb);
       }
       sb.append("};func();");
       if (COMPILABLE != null) {
         compiledScript = COMPILABLE.compile(sb.toString());
       } else {
         parsed = sb.toString();
+      }
+    }
+
+    private void parse(String line) {
+      line = line.trim();
+      if (line.startsWith(SCRIPT_PREFIX)) {
+        consumers.add(new Script(line.substring(SCRIPT_PREFIX.length())));
+        return;
+      }
+
+      while (true) {
+        int start = line.indexOf(VALUE_PREFIX);
+        int end = line.indexOf(VALUE_SUFFIX);
+        if (start == -1 || end <= start) {
+          consumers.add(new Text(data.size()));
+          data.add(line);
+          break;
+        }
+        String statement = line.substring(start + 2, end);
+        if (statement.contains(VALUE_PREFIX)) {
+          throw Exceptions.fail("模板有误,缺失'}'");
+        }
+        consumers.add(new Text(data.size()));
+        data.add(line.substring(0, start));
+        consumers.add(new Statement(statement));
+        line = line.substring(end + 1);
       }
     }
 

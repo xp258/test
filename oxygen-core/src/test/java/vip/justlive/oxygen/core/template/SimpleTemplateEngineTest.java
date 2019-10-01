@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.template;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ public class SimpleTemplateEngineTest {
     CoreConf conf = new CoreConf();
     conf.setBaseTempDir("/aaa");
     attrs.put("c", conf);
+    attrs.put("b", Arrays.asList(1, 2, 3));
 
     String template = "<i>${a}</i><i>${1+3}</i><i>${c.baseTempDir}</i>";
 
@@ -51,5 +53,13 @@ public class SimpleTemplateEngineTest {
     } catch (CodedException e) {
       // ignore
     }
+
+    template = "#: if(a == 1) { \n 1+2${a}x${a} \n #:}";
+    result = engine.render(template, attrs);
+    Assert.assertEquals("1+21x1", result);
+
+    template = "#: for(var it in b) { \n ${b[it]} \n #:}";
+    result = engine.render(template, attrs);
+    Assert.assertEquals("123", result);
   }
 }
