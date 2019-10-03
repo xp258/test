@@ -19,6 +19,7 @@ import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,6 +58,9 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
   @Override
   public void failed(Throwable exc, Server server) {
     log.error("Aio accept error", exc);
+    if (exc instanceof ClosedChannelException && server.getGroupContext().isStopped()) {
+      return;
+    }
     server.getServerChannel().accept(server, this);
   }
 }
