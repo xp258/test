@@ -19,7 +19,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.exception.CodedException;
 
 /**
  * @author wubo
@@ -47,12 +46,8 @@ public class SimpleTemplateEngineTest {
     Assert.assertEquals(template, result);
 
     template = "<a>${x,${a}</a>";
-    try {
-      engine.render(template, attrs);
-      Assert.fail();
-    } catch (CodedException e) {
-      // ignore
-    }
+    result = engine.render(template, attrs);
+    Assert.assertEquals("<a>${x,1</a>", result);
 
     template = "#: if(a == 1) { \n 1+2${a}x${a} \n #:}";
     result = engine.render(template, attrs);

@@ -156,7 +156,8 @@ public class SimpleTemplateEngine implements TemplateEngine {
         }
         String statement = line.substring(start + 2, end);
         if (statement.contains(VALUE_PREFIX)) {
-          throw Exceptions.fail("模板有误,缺失'}'");
+          start = line.lastIndexOf(VALUE_PREFIX);
+          statement = line.substring(start + 2, end);
         }
         consumers.add(new Text(data.size()));
         data.add(line.substring(0, start));
