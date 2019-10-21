@@ -33,7 +33,11 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
 
   @Override
   public void completed(AsynchronousSocketChannel channel, Server server) {
+    if (log.isDebugEnabled()) {
+      log.debug("Aio accept {}", channel);
+    }
     if (!channel.isOpen()) {
+      log.warn("channel has closed {}", channel);
       return;
     }
     try {
