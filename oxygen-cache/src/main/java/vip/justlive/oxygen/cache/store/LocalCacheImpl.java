@@ -99,7 +99,22 @@ public class LocalCacheImpl implements Cache {
   }
 
   @Override
+  public synchronized long incr(String key, int by) {
+    Long value = get(key, Long.class);
+    if (value == null) {
+      value = (long) by;
+      set(key, value);
+    } else {
+      value += by;
+      replace(key, value);
+    }
+    return value;
+  }
+
+  @Override
   public void clear() {
     expiringMap.clear();
   }
+
+
 }

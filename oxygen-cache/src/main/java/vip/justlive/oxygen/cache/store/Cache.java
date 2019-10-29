@@ -143,6 +143,46 @@ public interface Cache {
   void remove(String... keys);
 
   /**
+   * Increment the element value (must be a Number) by 1.
+   *
+   * @param key Element key
+   * @return The new value
+   */
+  default long incr(String key) {
+    return incr(key, 1);
+  }
+
+  /**
+   * Increment the element value (must be a Number).
+   *
+   * @param key Element key
+   * @param by The incr value
+   * @return The new value
+   */
+  long incr(String key, int by);
+
+  /**
+   * Decrement the element value (must be a Number) by 1.
+   *
+   * @param key Element key
+   * @return The new value
+   */
+  default long decr(String key) {
+    return decr(key, 1);
+  }
+
+  /**
+   * Decrement the element value (must be a Number).
+   *
+   * @param key Element key
+   * @param by The decr value
+   * @return The new value
+   */
+  default long decr(String key, int by) {
+    return incr(key, -by);
+  }
+
+  /**
    * Clear the cache
    */
   void clear();
