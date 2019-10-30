@@ -15,6 +15,8 @@ package vip.justlive.oxygen.core.template;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -79,15 +81,18 @@ public class SimpleTemplateEngine implements TemplateEngine {
     }
   }
 
-  private class TemplateSpec {
+  static class TemplateSpec {
 
     String parsed;
     CompiledScript compiledScript;
+    List<String> data = new ArrayList<>();
 
     TemplateSpec(String template) throws ScriptException {
-      parsed = String.format("var func = function(){%s};func();", SCRIPT_PARSER.parse(template,
-          text -> VARS_PARSER.parse(text, a -> String.format("$out.write('%s');", a.trim()),
-              b -> String.format("$out.write(''+(%s));", b)), Function.identity()));
+      parsed = String.format("var func = function(){%s};func();",
+          SCRIPT_PARSER.parse(template, text -> VARS_PARSER.parse(text, a -> {
+            data.add(a.trim());
+            return String.format("$out.write($data[%s]);", data.size() - 1);
+          }, b -> String.format("$out.write(''+(%s));", b)), Function.identity()));
       if (COMPILABLE != null) {
         compiledScript = COMPILABLE.compile(parsed);
       } else {
@@ -101,6 +106,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
       ctx.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
       bindings.putAll(attrs);
       bindings.put("$out", writer);
+      bindings.put("$data", data);
       if (compiledScript != null) {
         compiledScript.eval(bindings);
       } else {
