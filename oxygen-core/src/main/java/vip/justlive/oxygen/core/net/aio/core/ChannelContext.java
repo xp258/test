@@ -48,7 +48,7 @@ public class ChannelContext {
   private AsynchronousSocketChannel channel;
   private InetSocketAddress address;
   private volatile boolean closed;
-  private volatile CompletableFuture<Void> future;
+  private CompletableFuture<Void> future;
 
   // stat
 

@@ -30,58 +30,6 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 public class ReflectUtils {
 
   /**
-   * 获取class
-   *
-   * @param className 类名
-   * @return 类
-   */
-  public static Class<?> forName(String className) {
-    Class<?> clazz = null;
-    ClassLoader threadContextClassLoader = Thread.currentThread().getContextClassLoader();
-    if (threadContextClassLoader != null) {
-      try {
-        clazz = threadContextClassLoader.loadClass(className);
-      } catch (ClassNotFoundException e) {
-        log.warn(e.getMessage(), e);
-      }
-    }
-
-    if (clazz == null) {
-      try {
-        clazz = ReflectUtils.class.getClassLoader().loadClass(className);
-      } catch (ClassNotFoundException e) {
-        log.warn(e.getMessage(), e);
-      }
-    }
-
-    if (clazz == null) {
-      throw Exceptions.fail(String.format(
-          "Failed to load driver class %s in either of DataSourceUtils class loader or Thread context classloader",
-          className));
-    }
-
-    return clazz;
-  }
-
-  /**
-   * 实例化对象
-   *
-   * @param className 类名
-   * @param <T> 泛型类
-   * @return 实例化对象
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T fromName(String className) {
-    Class<?> clazz = forName(className);
-    try {
-      return (T) newInstance(clazz);
-    } catch (Exception e) {
-      throw Exceptions.wrap(e, String.format("Failed to instantiate class %s", className));
-    }
-
-  }
-
-  /**
    * 获取当前Class类实例中所有的Field对象（包括父类的Field）
    *
    * @param clazz Class类实例

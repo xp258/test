@@ -140,10 +140,10 @@ public class IocPlugin implements Plugin {
     Set<Class<?>> beanClasses = ClassScannerPlugin.getTypesAnnotatedWith(Bean.class);
     Map<Class<?>, ClassInfo> iocMap = new HashMap<>(8);
     for (Class<?> clazz : beanClasses) {
-      if (clazz.isInterface()) {
+      Bean bean;
+      if (clazz.isInterface() || (bean = ClassUtils.getAnnotation(clazz, Bean.class)) == null) {
         continue;
       }
-      Bean bean = ClassUtils.getAnnotation(clazz, Bean.class);
       String beanName = bean.value();
       if (beanName.length() == 0) {
         beanName = clazz.getName();
