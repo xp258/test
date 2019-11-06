@@ -26,7 +26,7 @@ import vip.justlive.oxygen.core.util.Strings;
  */
 public class OptionsRouteHandler implements RouteHandler {
 
-  private static final String AllOW = getAllow(Arrays.asList(HttpMethod.values()));
+  private static final String ALLOW = getAllow(Arrays.asList(HttpMethod.values()));
   public static final OptionsRouteHandler INSTANCE = new OptionsRouteHandler();
 
   @Override
@@ -34,7 +34,7 @@ public class OptionsRouteHandler implements RouteHandler {
     Set<HttpMethod> methods = Router.getAllows(ctx.requestPath());
     String allow;
     if (methods.isEmpty()) {
-      allow = AllOW;
+      allow = ALLOW;
     } else {
       methods.add(HttpMethod.OPTIONS);
       allow = getAllow(methods);

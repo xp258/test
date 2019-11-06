@@ -104,11 +104,12 @@ public class LocalCacheImpl implements Cache {
     if (value == null) {
       value = (long) by;
       set(key, value);
+      return by;
     } else {
       value += by;
       replace(key, value);
+      return value;
     }
-    return value;
   }
 
   @Override
