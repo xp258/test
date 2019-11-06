@@ -308,7 +308,7 @@ public class ClassUtils {
     if (actualClass == null) {
       return methods;
     }
-    for (Method method : actualClass.getDeclaredMethods()) {
+    for (Method method : actualClass.getMethods()) {
       if (method.isAnnotationPresent(annotation)) {
         methods.add(method);
       }

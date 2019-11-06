@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.aop;
 
-import vip.justlive.oxygen.aop.annotation.Aspect;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -22,7 +21,6 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
 @Bean
 public class LogService {
 
-  @Aspect
   public void log() {
     System.out.println("log service log.");
   }

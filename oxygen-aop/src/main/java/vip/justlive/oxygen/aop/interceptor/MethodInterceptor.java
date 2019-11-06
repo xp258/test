@@ -16,6 +16,8 @@ package vip.justlive.oxygen.aop.interceptor;
 
 import java.lang.reflect.Method;
 import vip.justlive.oxygen.aop.AopWrapper;
+import vip.justlive.oxygen.core.util.PathMatcher;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * method方法表达式aop拦截
@@ -28,11 +30,13 @@ public class MethodInterceptor extends AbstractInterceptor {
 
   public MethodInterceptor(String expression, AopWrapper aopWrapper) {
     super(aopWrapper);
-    this.expression = expression;
+    this.expression = expression.replace(Strings.DOT, Strings.SLASH);
   }
 
   @Override
   public boolean match(Method method) {
-    return false;
+    String path = method.getDeclaringClass().getName().replace(Strings.DOT, Strings.SLASH)
+        .concat(Strings.SLASH).concat(method.getName());
+    return PathMatcher.match(expression, path);
   }
 }
