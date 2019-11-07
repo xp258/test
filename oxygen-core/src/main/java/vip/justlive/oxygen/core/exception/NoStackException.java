@@ -22,11 +22,15 @@ public class NoStackException extends CodedException {
 
   private static final long serialVersionUID = 1L;
 
-  NoStackException(ErrorCode errorCode, Object[] args) {
+  public NoStackException(ErrorCode errorCode) {
+    super(errorCode);
+  }
+
+  public NoStackException(ErrorCode errorCode, Object[] args) {
     super(errorCode, args);
   }
 
-  NoStackException(ErrorCode errorCode, Object[] args, Object data) {
+  public NoStackException(ErrorCode errorCode, Object[] args, Object data) {
     super(errorCode, args, data);
   }
 

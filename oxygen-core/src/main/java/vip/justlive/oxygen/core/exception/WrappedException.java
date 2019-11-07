@@ -33,7 +33,7 @@ public class WrappedException extends CodedException {
   }
 
   public WrappedException(Exception exception, ErrorCode errorCode) {
-    super(errorCode, null);
+    super(errorCode);
     this.exception = exception;
   }
 
