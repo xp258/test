@@ -90,7 +90,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
     TemplateSpec(String template) throws ScriptException {
       parsed = String.format("var func = function(){%s};func();",
           SCRIPT_PARSER.parse(template, text -> VARS_PARSER.parse(text, a -> {
-            data.add(a.trim());
+            data.add(a);
             return String.format("$out.write($data[%s]);", data.size() - 1);
           }, b -> String.format("$out.write(''+(%s));", b)), Function.identity()));
       if (COMPILABLE != null) {

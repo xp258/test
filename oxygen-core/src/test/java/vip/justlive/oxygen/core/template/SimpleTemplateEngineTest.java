@@ -64,11 +64,11 @@ public class SimpleTemplateEngineTest {
 
     String template = "#{ if(a == 1) { } 1+2${a}x${a}  #{ \\}}";
     String result = engine.render(template, attrs);
-    Assert.assertEquals("1+21x1", result);
+    Assert.assertEquals(" 1+21x1  ", result);
 
-    template = "#{ for(var it in b) { } ${b[it]}  #{ \\}}";
+    template = "#{ for(var it in b) { } ${b[it]} #{ \\}}";
     result = engine.render(template, attrs);
-    Assert.assertEquals("123", result);
+    Assert.assertEquals(" 1  2  3 ", result);
   }
 
 }
