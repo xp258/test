@@ -168,7 +168,16 @@ public class ConfigFactory {
    * @param bean 对象
    */
   public static void load(Object bean) {
-    load(bean, null);
+    if (bean == null) {
+      return;
+    }
+    ValueConfig config = ClassUtils
+        .getAnnotation(ClassUtils.getCglibActualClass(bean.getClass()), ValueConfig.class);
+    if (config == null) {
+      load(bean, null);
+    } else {
+      load(bean, config.value());
+    }
   }
 
   /**
