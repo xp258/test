@@ -29,7 +29,6 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
 import vip.justlive.oxygen.core.io.PropertySource;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.ReflectUtils;
 import vip.justlive.oxygen.core.util.Strings;
 
 /**
@@ -234,13 +233,13 @@ public class ConfigFactory {
 
   protected static Object parse(Object obj, String prefix) {
     Class<?> clazz = obj.getClass();
-    Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
+    Field[] fields = ClassUtils.getAllDeclaredFields(clazz);
     for (Field field : fields) {
       if (field.isAnnotationPresent(Value.class)) {
         Value val = field.getAnnotation(Value.class);
         Object value = getProperty(val.value(), field.getType());
         if (value != null) {
-          ReflectUtils.setValue(obj, field, value);
+          ClassUtils.setValue(obj, field, value);
         }
       } else if (prefix != null) {
         StringBuilder name = new StringBuilder(prefix);
@@ -250,7 +249,7 @@ public class ConfigFactory {
         name.append(field.getName());
         Object value = getProperty(name.toString(), field.getType(), false);
         if (value != null) {
-          ReflectUtils.setValue(obj, field, value);
+          ClassUtils.setValue(obj, field, value);
         }
       }
     }
