@@ -19,6 +19,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.config.CoreConf;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * @author wubo
@@ -71,4 +72,10 @@ public class SimpleTemplateEngineTest {
     Assert.assertEquals(" 1  2  3 ", result);
   }
 
+  @Test
+  public void test2() {
+    String template = Templates.template("classpath:template/tpl.txt");
+    String value = engine.render(template, MoreObjects.mapOf("a", 1, "b", new int[]{5, 9, 7}));
+    System.out.println(value);
+  }
 }
