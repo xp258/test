@@ -34,11 +34,11 @@ public class SimpleTemplateEngineTest {
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
     CoreConf conf = new CoreConf();
-    conf.setBaseTempDir("/aaa");
+    conf.setConfigOverridePath("/aaa");
     attrs.put("c", conf);
     attrs.put("b", Arrays.asList(1, 2, 3));
 
-    String template = "<i>${a + 1}</i><i>${1+3}</i><i>${c.baseTempDir}</i>";
+    String template = "<i>${a + 1}</i><i>${1+3}</i><i>${c.configOverridePath}</i>";
 
     String result = engine.render(template, attrs);
     Assert.assertEquals("<i>2</i><i>4</i><i>/aaa</i>", result);
@@ -59,7 +59,6 @@ public class SimpleTemplateEngineTest {
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
     CoreConf conf = new CoreConf();
-    conf.setBaseTempDir("/aaa");
     attrs.put("c", conf);
     attrs.put("b", Arrays.asList(1, 2, 3));
 

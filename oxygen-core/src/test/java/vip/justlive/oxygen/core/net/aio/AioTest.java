@@ -36,7 +36,7 @@ import vip.justlive.oxygen.core.util.ThreadUtils;
 @Slf4j
 public class AioTest {
 
-  @Test
+//  @Test
   public void c1000k() throws Exception {
 
     InetSocketAddress address = new InetSocketAddress("localhost", 10086);
