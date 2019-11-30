@@ -14,9 +14,7 @@
 package vip.justlive.oxygen.web.http;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import java.nio.charset.Charset;
-import java.util.Map;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
@@ -40,10 +38,6 @@ public class JsonBodyParser implements Parser {
     }
 
     String body = new String(request.body, Charset.forName(request.getEncoding()));
-    JSONObject jsonObject = JSON.parseObject(body);
-    Map<String, String[]> map = request.getParams();
-    for (String key : jsonObject.keySet()) {
-      margeParam(map, key, jsonObject.getString(key));
-    }
+    request.getBodyParams().putAll(JSON.parseObject(body));
   }
 }
