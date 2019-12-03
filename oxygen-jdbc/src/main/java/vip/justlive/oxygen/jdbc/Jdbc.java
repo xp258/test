@@ -94,6 +94,15 @@ public class Jdbc {
   }
 
   /**
+   * 当前线程使用的数据源
+   *
+   * @return dataSourceName
+   */
+  public static String currentUse() {
+    return CURRENT_DATASOURCE.get();
+  }
+
+  /**
    * 还原当前线程为默认数据源
    */
   public static void clear() {

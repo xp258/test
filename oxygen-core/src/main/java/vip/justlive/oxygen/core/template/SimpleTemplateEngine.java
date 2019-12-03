@@ -54,8 +54,8 @@ public class SimpleTemplateEngine implements TemplateEngine {
     } else {
       COMPILABLE = null;
     }
-    CACHE = ExpiringMap.<String, TemplateSpec>builder().name("simple-template")
-        .expiration(10, TimeUnit.MINUTES).expiringPolicy(ExpiringPolicy.ACCESSED).build();
+    CACHE = ExpiringMap.<String, TemplateSpec>builder().name("Simple-Template")
+        .expiration(30, TimeUnit.MINUTES).expiringPolicy(ExpiringPolicy.ACCESSED).build();
   }
 
   @Override
