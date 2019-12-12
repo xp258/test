@@ -123,6 +123,11 @@ public class Jdbc {
   public static void shutdown() {
     clearAll();
     JDBC_INTERCEPTORS.clear();
+    DATA_SOURCE_MAP.values().forEach(ds -> {
+      if (ds instanceof AutoCloseable) {
+        close((AutoCloseable) ds);
+      }
+    });
     DATA_SOURCE_MAP.clear();
   }
 
