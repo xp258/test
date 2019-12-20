@@ -31,6 +31,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
+import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
@@ -65,7 +66,8 @@ public class StaticRouteHandler implements RouteHandler {
     this.route = route;
     if (this.route.cachingEnabled()) {
       expiringMap = ExpiringMap.<String, StaticSource>builder().name("Static-Source")
-          .expiration(10, TimeUnit.MINUTES).asyncExpiredListeners(this::cleanExpiredFile).build();
+          .expiringPolicy(ExpiringPolicy.ACCESSED).expiration(10, TimeUnit.MINUTES)
+          .asyncExpiredListeners(this::cleanExpiredFile).build();
     }
   }
 

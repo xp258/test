@@ -33,7 +33,8 @@ public class JsonBodyParser implements Parser {
 
   @Override
   public void parse(Request request) {
-    if (!HttpHeaders.APPLICATION_JSON.equalsIgnoreCase(request.getContentType())) {
+    if (request.body == null || request.body.length == 0 || !HttpHeaders.APPLICATION_JSON
+        .equalsIgnoreCase(request.getContentType())) {
       return;
     }
 
