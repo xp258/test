@@ -29,6 +29,7 @@ public class Option {
   @Column(pk = true)
   private Long id;
 
+  @Column
   private String st;
 
   private Integer it;
