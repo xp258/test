@@ -17,8 +17,6 @@ package vip.justlive.oxygen.core.net.aio.core;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 抽象worker
@@ -32,7 +30,7 @@ public abstract class AbstractWorker<T> implements Runnable {
   final ChannelContext channelContext;
   LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
   volatile boolean stopped;
-  private Lock lock = new ReentrantLock(true);
+  private volatile boolean running;
 
   AbstractWorker(ChannelContext channelContext) {
     this.channelContext = channelContext;
@@ -51,16 +49,13 @@ public abstract class AbstractWorker<T> implements Runnable {
   /**
    * 执行任务
    */
-  public void execute() {
+  public synchronized void execute() {
     if (stopped) {
       return;
     }
-    if (lock.tryLock()) {
-      try {
-        channelContext.getGroupContext().getWorkerExecutor().execute(this);
-      } finally {
-        lock.unlock();
-      }
+    if (!running) {
+      running = true;
+      channelContext.getGroupContext().getWorkerExecutor().execute(this);
     }
   }
 
@@ -88,13 +83,12 @@ public abstract class AbstractWorker<T> implements Runnable {
 
   @Override
   public void run() {
-    lock.lock();
     try {
       for (int i = 0; i < MAX_LOOP; i++) {
         loopRun();
       }
     } finally {
-      lock.unlock();
+      running = false;
     }
     if (!queue.isEmpty()) {
       execute();

@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.Getter;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.Strings;
@@ -32,6 +33,7 @@ import vip.justlive.oxygen.core.util.Strings;
  *
  * @author wubo
  */
+@Getter
 public class HttpRequest {
 
   private final String url;

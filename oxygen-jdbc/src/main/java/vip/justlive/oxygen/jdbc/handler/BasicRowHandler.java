@@ -37,6 +37,8 @@ public class BasicRowHandler implements RowHandler {
   private static final int PROPERTY_NOT_FOUND = -1;
   private static final Iterable<ColumnHandler> COLUMN_HANDLERS = ServiceLoader
       .load(ColumnHandler.class);
+  private static final Iterable<PropertyHandler> PROPERTY_HANDLERS = ServiceLoader
+      .load(PropertyHandler.class);
 
   /**
    * 获取单例
@@ -143,6 +145,19 @@ public class BasicRowHandler implements RowHandler {
     Method setter = prop.getWriteMethod();
     if (setter == null || setter.getParameterTypes().length != 1) {
       return;
+    }
+
+    Class<?> type = setter.getParameterTypes()[0];
+    if (type == null || type.isInstance(value)) {
+      setter.invoke(target, value);
+      return;
+    }
+
+    for (PropertyHandler handler : PROPERTY_HANDLERS) {
+      if (handler.supported(type, value)) {
+        value = handler.cast(type, value);
+        break;
+      }
     }
     setter.invoke(target, value);
   }
