@@ -127,7 +127,7 @@ public class AioTest {
       client.write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
     }
 
-    ThreadUtils.sleep(5000);
+    ThreadUtils.sleep(3000);
 
     System.out.printf("last %s ,duration %s \n", current, current.get() - now);
   }
