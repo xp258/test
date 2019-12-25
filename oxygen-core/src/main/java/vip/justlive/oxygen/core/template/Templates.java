@@ -27,7 +27,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.FileUtils;
-import vip.justlive.oxygen.core.util.IOUtils;
+import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 
 /**
@@ -55,7 +55,7 @@ public class Templates {
   public static String template(String path) {
     SourceResource sourceResource = new SimpleResourceLoader(path);
     try (InputStream is = sourceResource.getInputStream()) {
-      return IOUtils.toString(is, StandardCharsets.UTF_8);
+      return IoUtils.toString(is, StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }

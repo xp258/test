@@ -21,7 +21,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.util.IOUtils;
+import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -67,7 +67,7 @@ public class GeneralParser implements Parser {
       try {
         ServletInputStream in = req.getInputStream();
         if (in != null) {
-          request.body = IOUtils.toBytes(req.getInputStream());
+          request.body = IoUtils.toBytes(req.getInputStream());
         }
       } catch (IOException e) {
         throw Exceptions.wrap(e);

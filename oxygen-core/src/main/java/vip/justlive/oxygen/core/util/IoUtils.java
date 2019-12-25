@@ -27,7 +27,7 @@ import lombok.experimental.UtilityClass;
  * @author wubo
  */
 @UtilityClass
-public class IOUtils {
+public class IoUtils {
 
   public static final int BUFFER_SIZE = 4096;
 
