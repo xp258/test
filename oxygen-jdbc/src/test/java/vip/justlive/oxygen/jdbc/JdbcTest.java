@@ -72,6 +72,7 @@ public class JdbcTest {
     Record.insert(option);
 
     Assert.assertEquals(2, Record.count(new Option()));
+    Assert.assertEquals(1, Record.find(option).size());
     Assert.assertEquals(2, Record.findAll(Option.class).size());
 
     Record.deleteById(Option.class, 123);

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.io.SimpleResourceLoader;
+import vip.justlive.oxygen.core.io.FirstResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.IoUtils;
@@ -53,7 +53,10 @@ public class Templates {
    * @return template
    */
   public static String template(String path) {
-    SourceResource sourceResource = new SimpleResourceLoader(path);
+    SourceResource sourceResource = new FirstResourceLoader(path).getResource();
+    if (sourceResource == null) {
+      throw Exceptions.fail(String.format("template [%s] not found", path));
+    }
     try (InputStream is = sourceResource.getInputStream()) {
       return IoUtils.toString(is, StandardCharsets.UTF_8);
     } catch (IOException e) {

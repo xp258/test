@@ -34,16 +34,14 @@ public final class Record {
   private static final Map<Class<?>, Model> CACHED = new ConcurrentHashMap<>(4);
   private static final String SEAT = " ? ";
   private static final String PARAM_STR = " %s = ? ";
-  private static final String QUERY_FIELD_STR = " %s as %s ";
   private static final String COMMA = ",";
   private static final String AND = " and ";
   private static final String SET = " set ";
   private static final String INSERT = " insert into %s (%s) values (%s) ";
-  private static final String SELECT = " select ";
   private static final String UPDATE = " update ";
-  private static final String FROM = " from ";
   private static final String WHERE = " where 1 = 1 ";
   private static final String DELETE = "delete from ";
+  private static final String SELECT = " select * from %s" + WHERE;
   private static final String COUNT = "select count(*) from ";
 
   Record() {
@@ -59,7 +57,7 @@ public final class Record {
    */
   public static <T> T findById(Class<T> clazz, Object id) {
     Model model = parseClass(clazz);
-    String sql = model.getBaseQuery() + AND + String.format(PARAM_STR, model.primary.name);
+    String sql = model.baseQuery + AND + String.format(PARAM_STR, model.primary.name);
     return Jdbc.query(sql, clazz, id);
   }
 
@@ -82,7 +80,7 @@ public final class Record {
    * @return list
    */
   public static <T> List<T> findAll(Class<T> clazz) {
-    return Jdbc.queryForList(parseClass(clazz).getBaseQuery(), clazz);
+    return Jdbc.queryForList(parseClass(clazz).baseQuery, clazz);
   }
 
   /**
@@ -97,7 +95,7 @@ public final class Record {
     @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) obj.getClass();
     Model model = parseClass(clazz);
     List<Object> params = new LinkedList<>();
-    StringBuilder sb = new StringBuilder(model.getBaseQuery());
+    StringBuilder sb = new StringBuilder(model.baseQuery);
     margeWhere(model, obj, sb, params);
     if (page != null) {
       params.add(page);
@@ -270,6 +268,7 @@ public final class Record {
     if (model.properties.isEmpty()) {
       throw new IllegalArgumentException(String.format("No @Column is found in class [%s]", clazz));
     }
+    model.baseQuery = String.format(SELECT, model.table);
     CACHED.putIfAbsent(clazz, model);
     return CACHED.get(clazz);
   }
@@ -302,20 +301,6 @@ public final class Record {
     Property primary;
     List<Property> properties;
     String baseQuery;
-
-    String getBaseQuery() {
-      if (baseQuery != null) {
-        return baseQuery;
-      }
-      StringBuilder sb = new StringBuilder(SELECT);
-      for (Property property : properties) {
-        sb.append(String.format(QUERY_FIELD_STR, property.name, property.field.getName()))
-            .append(COMMA);
-      }
-      sb.deleteCharAt(sb.length() - 1).append(FROM).append(table).append(WHERE);
-      baseQuery = sb.toString();
-      return baseQuery;
-    }
 
   }
 
