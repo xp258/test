@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.jdbc.record;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public final class Record {
   private static final Map<Class<?>, Model> CACHED = new ConcurrentHashMap<>(4);
   private static final String SEAT = " ? ";
   private static final String PARAM_STR = " %s = ? ";
+  private static final String IN_PARAM_STR = "%s in (%s) ";
   private static final String COMMA = ",";
   private static final String AND = " and ";
   private static final String SET = " set ";
@@ -51,7 +53,7 @@ public final class Record {
    * 根据主键获取record
    *
    * @param clazz 类
-   * @param id 注解
+   * @param id 主键
    * @param <T> 泛型
    * @return 记录
    */
@@ -59,6 +61,23 @@ public final class Record {
     Model model = parseClass(clazz);
     String sql = model.baseQuery + AND + String.format(PARAM_STR, model.primary.name);
     return Jdbc.query(sql, clazz, id);
+  }
+
+  /**
+   * 根据主键获取records
+   *
+   * @param clazz 类
+   * @param ids 主键
+   * @param <T> 泛型
+   * @return 记录
+   */
+  public static <T> List<T> findByIds(Class<T> clazz, List<Object> ids) {
+    Model model = parseClass(clazz);
+    List<String> list = new ArrayList<>(ids.size());
+    ids.forEach(id -> list.add(SEAT));
+    String sql = model.baseQuery + AND + String
+        .format(IN_PARAM_STR, model.primary.name, String.join(COMMA, list));
+    return Jdbc.queryForList(sql, clazz, ids);
   }
 
   /**
@@ -70,6 +89,37 @@ public final class Record {
    */
   public static <T> List<T> find(T obj) {
     return page(obj, null);
+  }
+
+  /**
+   * 根据record属性值获取一个值
+   *
+   * @param obj record
+   * @param <T> 泛型
+   * @return list
+   */
+  public static <T> T findOne(T obj) {
+    return findOne(obj, true);
+  }
+
+  /**
+   * 根据record属性值获取一个值
+   *
+   * @param obj record
+   * @param <T> 泛型
+   * @return list
+   */
+  public static <T> T findOne(T obj, boolean throwEx) {
+    List<T> list = find(obj);
+    int size = list.size();
+    if (size == 0) {
+      return null;
+    } else {
+      if (size > 1 && throwEx) {
+        throw new JdbcException("expect one but found " + size);
+      }
+      return list.get(0);
+    }
   }
 
   /**

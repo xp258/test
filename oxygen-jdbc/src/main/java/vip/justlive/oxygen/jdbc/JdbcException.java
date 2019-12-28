@@ -26,6 +26,10 @@ public class JdbcException extends RuntimeException {
     super(e);
   }
 
+  public JdbcException(String msg) {
+    super(msg);
+  }
+
   /**
    * 封装异常
    *
