@@ -71,13 +71,14 @@ public final class Record {
    * @param <T> 泛型
    * @return 记录
    */
-  public static <T> List<T> findByIds(Class<T> clazz, List<Object> ids) {
+  @SuppressWarnings("unchecked")
+  public static <T> List<T> findByIds(Class<T> clazz, List<?> ids) {
     Model model = parseClass(clazz);
     List<String> list = new ArrayList<>(ids.size());
     ids.forEach(id -> list.add(SEAT));
     String sql = model.baseQuery + AND + String
         .format(IN_PARAM_STR, model.primary.name, String.join(COMMA, list));
-    return Jdbc.queryForList(sql, clazz, ids);
+    return Jdbc.queryForList(sql, clazz, (List<Object>) ids);
   }
 
   /**

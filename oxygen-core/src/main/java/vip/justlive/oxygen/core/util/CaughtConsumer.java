@@ -15,8 +15,10 @@
 package vip.justlive.oxygen.core.util;
 
 import java.util.function.Consumer;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * 捕获异常的consumer
@@ -25,22 +27,31 @@ import lombok.extern.slf4j.Slf4j;
  * @author wubo
  */
 @Slf4j
+@Getter
 @RequiredArgsConstructor
 public class CaughtConsumer<T> implements Consumer<T> {
 
   private final Consumer<T> consumer;
+  private final boolean thrown;
+
+  public CaughtConsumer(Consumer<T> consumer) {
+    this(consumer, false);
+  }
 
   @Override
   public void accept(T t) {
     try {
       consumer.accept(t);
     } catch (Exception e) {
+      if (thrown) {
+        throw Exceptions.wrap(e);
+      }
       log.error("consumer error", e);
     }
   }
 
   @Override
   public CaughtConsumer<T> andThen(Consumer<? super T> after) {
-    return new CaughtConsumer<>(Consumer.super.andThen(after));
+    return new CaughtConsumer<>(Consumer.super.andThen(after), thrown);
   }
 }

@@ -45,6 +45,7 @@ public class HttpRequest {
   private Map<String, String> headers = new HashMap<>(4);
   private Object queryParam;
   private Object body;
+  private Multipart multipart;
   private Function<Object, byte[]> func;
 
   private HttpRequest(String url) {
@@ -186,6 +187,30 @@ public class HttpRequest {
   }
 
   /**
+   * multipart body
+   *
+   * @return multipart
+   */
+  public Multipart multipart() {
+    return multipart(null);
+  }
+
+  /**
+   * multipart body
+   *
+   * @param body 请求体
+   * @return multipart
+   */
+  public Multipart multipart(Object body) {
+    this.multipart = new Multipart();
+    this.headers.put(HttpHeaders.CONTENT_TYPE,
+        HttpHeaders.MULTIPART_FORM_DATA_BOUNDARY + this.multipart.getBoundary());
+    this.body = body;
+    this.func = this::multipartConvert;
+    return multipart;
+  }
+
+  /**
    * 增加自定义请求体
    *
    * @param body 请求体
@@ -228,7 +253,7 @@ public class HttpRequest {
     setContentType();
     // add headers
     headers.forEach(connection::addRequestProperty);
-    if (body == null || this.method == HttpMethod.GET) {
+    if (this.method == HttpMethod.GET) {
       connection.setDoOutput(false);
       connection.connect();
     } else {
@@ -263,5 +288,12 @@ public class HttpRequest {
       return new byte[0];
     }
     return json.toString().getBytes(charset);
+  }
+
+  private byte[] multipartConvert(Object body) {
+    if (body != null) {
+      MoreObjects.beanToMap(body).forEach((k, v) -> multipart.add(k, v.toString()));
+    }
+    return multipart.toBytes(charset);
   }
 }

@@ -23,7 +23,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +33,7 @@ import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.http.Request;
@@ -48,14 +48,8 @@ import vip.justlive.oxygen.web.http.Response;
 public class StaticRouteHandler implements RouteHandler {
 
   private static final File TEMP_DIR;
-  private static final Properties MIME_TYPES = new Properties();
 
   static {
-    try {
-      MIME_TYPES.load(StaticRouteHandler.class.getResourceAsStream("/mime-types.properties"));
-    } catch (IOException e) {
-      log.warn("mime types initial failed ", e);
-    }
     TEMP_DIR = FileUtils.createTempDir("static");
   }
 
@@ -176,9 +170,8 @@ public class StaticRouteHandler implements RouteHandler {
     StaticSource(File file, String requestPath, boolean temp) {
       this.path = file.toPath();
       this.requestPath = requestPath;
-      this.contentType = MIME_TYPES
-          .getProperty(requestPath.substring(requestPath.lastIndexOf(Strings.DOT) + 1),
-              HttpHeaders.APPLICATION_OCTET_STREAM);
+      this.contentType = MoreObjects
+          .firstNonNull(FileUtils.parseMimeType(requestPath), HttpHeaders.APPLICATION_OCTET_STREAM);
       this.temp = temp;
     }
 
