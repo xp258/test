@@ -89,10 +89,19 @@ public class AioTest {
   @Test
   public void test() throws IOException {
 
-    System.setProperty("aio.write.future", "true");
     LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
     ctx.getLogger("root").setLevel(Level.INFO);
 
+    log.info("no use future...");
+    System.setProperty("aio.write.future", "false");
+    run();
+
+    log.info("use future...");
+    System.setProperty("aio.write.future", "true");
+    run();
+  }
+
+  private void run() throws IOException {
     int port = SystemUtils.findAvailablePort();
     InetSocketAddress address = new InetSocketAddress(port);
     AtomicLong current = new AtomicLong();
@@ -118,6 +127,9 @@ public class AioTest {
     for (int i = 0; i < 5; i++) {
       a(max, client, current);
     }
+
+    client.close();
+    server.stop();
   }
 
   private void a(int max, Client client, AtomicLong current) {

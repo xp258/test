@@ -44,7 +44,7 @@ public class WriteWorker extends AbstractWorker<Object> {
       writeFuture = CompletableFuture.completedFuture(null);
       semaphore = null;
     } else {
-      semaphore = new Semaphore(1);
+      semaphore = new Semaphore(1, true);
     }
   }
 
@@ -86,14 +86,7 @@ public class WriteWorker extends AbstractWorker<Object> {
   }
 
   private void write0(ByteBuffer buffer, List<Object> data) {
-    try {
-      semaphore.acquire();
-    } catch (InterruptedException e) {
-      complete(e, data);
-      Thread.currentThread().interrupt();
-      return;
-    }
-
+    semaphore.acquireUninterruptibly();
     if (channelContext.isClosed()) {
       semaphore.release();
       return;
