@@ -92,6 +92,15 @@ public class Binder {
       Object value = getProperty(key, field.getType(), wrap);
       if (value != null) {
         ClassUtils.setValue(obj, field, value);
+      } else if (source.containPrefix(key + Strings.DOT) && !ClassUtils
+          .isJavaInternalType(field.getType())) {
+        value = ClassUtils.getValue(obj, field);
+        if (value == null) {
+          value = bind(field.getType(), key);
+        } else {
+          bind(value, key);
+        }
+        ClassUtils.setValue(obj, field, value);
       }
     }
     return obj;

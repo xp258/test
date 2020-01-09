@@ -34,7 +34,10 @@ public class BinderTest {
     prop.setProperty("lc.f2", "5");
 
     prop.setProperty("rp.f1", "6");
-    prop.setProperty("pr.f2", "7");
+    prop.setProperty("rp.f2", "7");
+    prop.setProperty("rp.f3.f1", "7");
+    prop.setProperty("rp.f3.f2", "7");
+
     return prop;
   }
 
@@ -61,6 +64,9 @@ public class BinderTest {
     Obj1 obj1 = binder.bind(Obj1.class, "rp");
     Assert.assertEquals("6", obj1.f1);
     Assert.assertEquals("3", obj1.f2);
+    Assert.assertNotNull(obj1.f3);
+    Assert.assertEquals("7", obj1.f3.f1);
+    Assert.assertEquals("3", obj1.f3.f2);
   }
 
   @Test
@@ -97,5 +103,7 @@ public class BinderTest {
     private String f1;
     @Value("${12}")
     private String f2;
+
+    private Obj f3;
   }
 }

@@ -69,4 +69,20 @@ public interface PropertySource {
   default String getPlaceholderProperty(String placeholder) {
     return PlaceHolderHelper.DEFAULT_HELPER.replacePlaceholders(placeholder, props());
   }
+
+  /**
+   * 是否包含该前缀属性
+   *
+   * @param prefix 前缀
+   * @return true包含
+   */
+  default boolean containPrefix(String prefix) {
+    Properties properties = props();
+    for (Object key : properties.keySet()) {
+      if (key.toString().startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

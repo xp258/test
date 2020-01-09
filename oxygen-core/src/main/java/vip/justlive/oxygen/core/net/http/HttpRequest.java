@@ -253,7 +253,8 @@ public class HttpRequest {
     setContentType();
     // add headers
     headers.forEach(connection::addRequestProperty);
-    if (this.method == HttpMethod.GET) {
+    boolean nonOutput = this.method == HttpMethod.GET || (body == null && multipart == null);
+    if (nonOutput) {
       connection.setDoOutput(false);
       connection.connect();
     } else {
