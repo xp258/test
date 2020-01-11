@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,28 +12,29 @@
  * the License.
  */
 
-package vip.justlive.oxygen.core.net.aio.core;
+package vip.justlive.oxygen.core.util;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * 抽象worker
+ * 使用queue异步化任务执行器
  *
  * @author wubo
  */
-public abstract class AbstractWorker<T> implements Runnable {
+public abstract class AbstractQueueWorker<T> implements Runnable {
 
   private static final int MAX_LOOP = 10;
 
-  final ChannelContext channelContext;
-  LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
-  volatile boolean stopped;
+  protected final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
+  protected final Executor executor;
+  protected volatile boolean stopped;
   private volatile boolean running;
 
-  AbstractWorker(ChannelContext channelContext) {
-    this.channelContext = channelContext;
+  protected AbstractQueueWorker(Executor executor) {
+    this.executor = executor;
   }
 
   /**
@@ -42,8 +43,22 @@ public abstract class AbstractWorker<T> implements Runnable {
    * @param data 数据
    * @return 是否添加成功
    */
-  protected boolean add(T data) {
+  public boolean add(T data) {
+    if (stopped) {
+      return false;
+    }
     return queue.offer(data);
+  }
+
+  /**
+   * 添加数据并触发任务
+   *
+   * @param data 数据
+   */
+  public void addThenExecute(T data) {
+    if (add(data)) {
+      execute();
+    }
   }
 
   /**
@@ -55,7 +70,7 @@ public abstract class AbstractWorker<T> implements Runnable {
     }
     if (!running) {
       running = true;
-      channelContext.getGroupContext().getWorkerExecutor().execute(this);
+      executor.execute(this);
     }
   }
 
@@ -93,6 +108,10 @@ public abstract class AbstractWorker<T> implements Runnable {
     if (!queue.isEmpty()) {
       execute();
     }
+  }
+
+  public void clear() {
+    queue.clear();
   }
 
   private void loopRun() {

@@ -105,7 +105,7 @@ public class AioTest {
     int port = SystemUtils.findAvailablePort();
     InetSocketAddress address = new InetSocketAddress(port);
     AtomicLong current = new AtomicLong();
-    int max = 1000000;
+    int max = 10000;
     GroupContext group = new GroupContext(new LengthFrameHandler() {
       @Override
       public void handle(Object data, ChannelContext channelContext) {
