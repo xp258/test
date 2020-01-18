@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * the License.
  */
 
-package vip.justlive.oxygen.cache.store;
+package vip.justlive.oxygen.core.cache;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +21,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * cache store
@@ -40,7 +41,7 @@ class CacheStore {
    */
   static Cache createCache(String name) {
     CoreConf config = ConfigFactory.load(CoreConf.class);
-    if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
+    if (Strings.hasText(config.getCacheImplClass())) {
       try {
         Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
         return (Cache) clazz.getConstructor(String.class).newInstance(name);

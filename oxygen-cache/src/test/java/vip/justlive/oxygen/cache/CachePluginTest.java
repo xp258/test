@@ -16,7 +16,7 @@ package vip.justlive.oxygen.cache;
 import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.cache.store.Cache;
+import vip.justlive.oxygen.core.cache.Cache;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
