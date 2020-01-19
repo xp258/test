@@ -16,12 +16,9 @@ package vip.justlive.oxygen.core.cache;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * cache store
@@ -29,9 +26,11 @@ import vip.justlive.oxygen.core.util.Strings;
  * @author wubo
  */
 @UtilityClass
-class CacheStore {
+public class CacheStore {
 
   static final Map<String, Cache> CACHES = new ConcurrentHashMap<>(4, 1);
+  private static final AtomicReference<CacheFactory> CACHE_FACTORY = new AtomicReference<>(
+      new ClassCacheFactory());
 
   /**
    * 创建cache
@@ -40,16 +39,19 @@ class CacheStore {
    * @return cache
    */
   static Cache createCache(String name) {
-    CoreConf config = ConfigFactory.load(CoreConf.class);
-    if (Strings.hasText(config.getCacheImplClass())) {
-      try {
-        Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
-        return (Cache) clazz.getConstructor(String.class).newInstance(name);
-      } catch (Exception e) {
-        throw Exceptions.wrap(e);
-      }
-    } else {
-      return new LocalCacheImpl(name);
+    return CACHE_FACTORY.get().create(name);
+  }
+
+  /**
+   * 设置缓存工厂
+   *
+   * @param cacheFactory 缓存工厂
+   */
+  public static void setCacheFactory(CacheFactory cacheFactory) {
+    MoreObjects.notNull(cacheFactory, "cache factory can not be null");
+    if (CACHE_FACTORY.get() != cacheFactory) {
+      CACHES.clear();
     }
+    CACHE_FACTORY.set(cacheFactory);
   }
 }
