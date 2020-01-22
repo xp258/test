@@ -14,18 +14,30 @@
 
 package vip.justlive.oxygen.core.util.json.codec;
 
+import vip.justlive.oxygen.core.Order;
+
 /**
  * 序列化
  *
  * @author wubo
  */
-public interface Serializer {
+public interface Serializer extends Order {
+
+  /**
+   * 是否支持
+   *
+   * @param type 类型
+   * @param value 值
+   * @return true为支持
+   */
+  boolean supported(Class<?> type, Object value);
 
   /**
    * 序列化
    *
    * @param value 值
-   * @return string
+   * @param buf buffer
    */
-  String serialize(Object value);
+  void serialize(Object value, StringBuilder buf);
+
 }

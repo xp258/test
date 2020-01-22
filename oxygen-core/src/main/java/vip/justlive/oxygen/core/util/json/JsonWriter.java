@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.util.json;
 
 import java.util.ArrayList;
 import java.util.List;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.json.codec.Serializer;
 
 /**
@@ -27,6 +28,11 @@ public class JsonWriter {
 
   private final List<Serializer> serializers = new ArrayList<>();
 
+  public JsonWriter() {
+    serializers.addAll(ServiceLoaderUtils.loadServices(Serializer.class));
+    serializers.sort(null);
+  }
+
   /**
    * 添加序列化
    *
@@ -37,21 +43,37 @@ public class JsonWriter {
       return;
     }
     serializers.add(serializer);
+    serializers.sort(null);
   }
 
+  /**
+   * to json
+   *
+   * @param value 对象
+   * @return json
+   */
   public String toJson(Object value) {
-    String json = serializer(value);
-    if (json != null) {
-      return json;
+    StringBuilder buf = new StringBuilder();
+    Serializer serializer = getSerializer(value);
+    if (serializer != null) {
+      serializer.serialize(value, buf);
+      return buf.toString();
     }
-    return null;
+
+    if (value instanceof List) {
+
+    }
+    return buf.toString();
   }
 
-  private String serializer(Object value) {
+  private Serializer getSerializer(Object value) {
+    Class<?> type = null;
+    if (value != null) {
+      type = value.getClass();
+    }
     for (Serializer serializer : serializers) {
-      String rt = serializer.serialize(value);
-      if (rt != null) {
-        return rt;
+      if (serializer.supported(type, value)) {
+        return serializer;
       }
     }
     return null;

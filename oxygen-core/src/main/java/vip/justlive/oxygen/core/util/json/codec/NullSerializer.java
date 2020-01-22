@@ -15,17 +15,19 @@
 package vip.justlive.oxygen.core.util.json.codec;
 
 /**
- * null serializer
+ * Null 序列化
  *
  * @author wubo
  */
 public class NullSerializer implements Serializer {
 
   @Override
-  public String serialize(Object value) {
-    if (value == null) {
-      return "null";
-    }
-    return null;
+  public boolean supported(Class<?> type, Object value) {
+    return value == null;
+  }
+
+  @Override
+  public void serialize(Object value, StringBuilder buf) {
+    buf.append("null");
   }
 }
