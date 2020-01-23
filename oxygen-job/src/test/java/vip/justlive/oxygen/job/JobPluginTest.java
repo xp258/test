@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.job;
 
 
+import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 
@@ -25,5 +26,6 @@ public class JobPluginTest {
   @Test
   public void test() {
     Bootstrap.start();
+    Assert.assertEquals(4, JobPlugin.currentJobSize());
   }
 }

@@ -26,8 +26,8 @@ import java.util.Deque;
  */
 public class Closer implements Closeable {
 
-  private Throwable thrown;
   private final Deque<Closeable> stack = new ArrayDeque<>(4);
+  private Throwable thrown;
 
   /**
    * 注册需要关闭的资源

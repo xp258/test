@@ -34,13 +34,8 @@ public class NoStackException extends CodedException {
     super(errorCode, args, data);
   }
 
-  /**
-   * 覆盖该方法，以提高服务层异常Runtime时的执行效率
-   * <br>
-   * 不需要声明方法为父类的synchronized
-   */
   @Override
-  public Throwable fillInStackTrace() {
+  public synchronized Throwable fillInStackTrace() {
     return this;
   }
 }

@@ -21,7 +21,7 @@ import lombok.Getter;
  *
  * @author wubo
  */
-public class WrappedException extends NoStackException {
+public class WrappedException extends CodedException {
 
   private static final long serialVersionUID = 3109011947026387897L;
 
@@ -40,5 +40,10 @@ public class WrappedException extends NoStackException {
   @Override
   public String getMessage() {
     return String.format("Wrapper of [%s]", exception);
+  }
+
+  @Override
+  public synchronized Throwable fillInStackTrace() {
+    return this;
   }
 }
