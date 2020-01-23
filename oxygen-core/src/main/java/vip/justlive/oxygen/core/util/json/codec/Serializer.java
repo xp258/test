@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.core.util.json.codec;
 
+import java.util.List;
 import vip.justlive.oxygen.core.Order;
 
 /**
@@ -40,4 +41,23 @@ public interface Serializer extends Order {
    */
   void serialize(Object value, StringBuilder buf);
 
+  /**
+   * 寻找可用的序列化
+   *
+   * @param serializers 序列化集合
+   * @param value 要序列化的值
+   * @return Serializer
+   */
+  static Serializer lookup(List<Serializer> serializers, Object value) {
+    Class<?> type = null;
+    if (value != null) {
+      type = value.getClass();
+    }
+    for (Serializer serializer : serializers) {
+      if (serializer.supported(type, value)) {
+        return serializer;
+      }
+    }
+    return null;
+  }
 }

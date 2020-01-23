@@ -15,8 +15,14 @@
 package vip.justlive.oxygen.core.util.json;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.core.util.json.codec.ArraySerializer;
+import vip.justlive.oxygen.core.util.json.codec.BeanSerializer;
+import vip.justlive.oxygen.core.util.json.codec.IterableSerializer;
+import vip.justlive.oxygen.core.util.json.codec.MapSerializer;
 import vip.justlive.oxygen.core.util.json.codec.Serializer;
 
 /**
@@ -24,13 +30,18 @@ import vip.justlive.oxygen.core.util.json.codec.Serializer;
  *
  * @author wubo
  */
+@Slf4j
 public class JsonWriter {
 
   private final List<Serializer> serializers = new ArrayList<>();
 
   public JsonWriter() {
     serializers.addAll(ServiceLoaderUtils.loadServices(Serializer.class));
-    serializers.sort(null);
+    serializers.add(new BeanSerializer(serializers));
+    serializers.add(new MapSerializer(serializers));
+    serializers.add(new IterableSerializer(serializers));
+    serializers.add(new ArraySerializer(serializers));
+    Collections.sort(serializers);
   }
 
   /**
@@ -43,7 +54,7 @@ public class JsonWriter {
       return;
     }
     serializers.add(serializer);
-    serializers.sort(null);
+    Collections.sort(serializers);
   }
 
   /**
@@ -54,28 +65,13 @@ public class JsonWriter {
    */
   public String toJson(Object value) {
     StringBuilder buf = new StringBuilder();
-    Serializer serializer = getSerializer(value);
+    Serializer serializer = Serializer.lookup(serializers, value);
     if (serializer != null) {
       serializer.serialize(value, buf);
       return buf.toString();
     }
-
-    if (value instanceof List) {
-
-    }
+    log.warn("value {} can not serialize to json", value);
     return buf.toString();
   }
 
-  private Serializer getSerializer(Object value) {
-    Class<?> type = null;
-    if (value != null) {
-      type = value.getClass();
-    }
-    for (Serializer serializer : serializers) {
-      if (serializer.supported(type, value)) {
-        return serializer;
-      }
-    }
-    return null;
-  }
 }
