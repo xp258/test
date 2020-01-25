@@ -9,12 +9,12 @@ public class StringSerializer implements Serializer {
 
   @Override
   public boolean supported(Class<?> type, Object value) {
-    return type == String.class;
+    return CharSequence.class.isAssignableFrom(type);
   }
 
   @Override
   public void serialize(Object value, StringBuilder buf) {
-    String string = (String) value;
+    String string = value.toString();
     buf.append('"');
     for (int i = 0, len = string.length(); i < len; i++) {
       char c = string.charAt(i);

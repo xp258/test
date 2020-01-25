@@ -20,9 +20,11 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.json.codec.ArraySerializer;
+import vip.justlive.oxygen.core.util.json.codec.AtomicArraySerializer;
 import vip.justlive.oxygen.core.util.json.codec.BeanSerializer;
 import vip.justlive.oxygen.core.util.json.codec.IterableSerializer;
 import vip.justlive.oxygen.core.util.json.codec.MapSerializer;
+import vip.justlive.oxygen.core.util.json.codec.ReferenceSerializer;
 import vip.justlive.oxygen.core.util.json.codec.Serializer;
 
 /**
@@ -41,6 +43,8 @@ public class JsonWriter {
     serializers.add(new MapSerializer(serializers));
     serializers.add(new IterableSerializer(serializers));
     serializers.add(new ArraySerializer(serializers));
+    serializers.add(new AtomicArraySerializer(serializers));
+    serializers.add(new ReferenceSerializer(serializers));
     Collections.sort(serializers);
   }
 

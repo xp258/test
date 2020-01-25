@@ -1,10 +1,14 @@
 package vip.justlive.oxygen.core.util.json;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,6 +54,12 @@ public class JsonWriterTest {
 
     int[] array = new int[]{3, 4, 5};
     Assert.assertEquals("[3,4,5]", writer.toJson(array));
+
+    Assert.assertEquals("\"UTF-8\"", writer.toJson(StandardCharsets.UTF_8));
+    Assert.assertEquals("\"Asia/Shanghai\"", writer.toJson(ZoneId.of("Asia/Shanghai")));
+    Assert.assertEquals("1", writer.toJson(new AtomicReference<>(1)));
+    Assert.assertEquals("[1,2]", writer.toJson(new AtomicIntegerArray(new int[]{1, 2})));
+
   }
 
   @Data
