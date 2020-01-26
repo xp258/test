@@ -18,6 +18,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import lombok.Getter;
 
 /**
  * 收集多个可关闭资源，在close时全部关闭
@@ -27,6 +28,7 @@ import java.util.Deque;
 public class Closer implements Closeable {
 
   private final Deque<Closeable> stack = new ArrayDeque<>(4);
+  @Getter
   private Throwable thrown;
 
   /**
@@ -38,7 +40,7 @@ public class Closer implements Closeable {
    */
   public <T extends Closeable> T register(T closeable) {
     if (closeable != null) {
-      stack.add(closeable);
+      stack.addFirst(closeable);
     }
     return closeable;
   }
@@ -54,6 +56,19 @@ public class Closer implements Closeable {
 
   @Override
   public void close() throws IOException {
+    closeUnchecked();
+    if (thrown instanceof IOException) {
+      throw (IOException) thrown;
+    }
+    if (thrown != null) {
+      throw new IOException(thrown);
+    }
+  }
+
+  /**
+   * 关闭
+   */
+  public void closeUnchecked() {
     while (!stack.isEmpty()) {
       try {
         stack.pop().close();
@@ -64,12 +79,6 @@ public class Closer implements Closeable {
           thrown.addSuppressed(e);
         }
       }
-    }
-    if (thrown instanceof IOException) {
-      throw (IOException) thrown;
-    }
-    if (thrown != null) {
-      throw new IOException(thrown);
     }
   }
 }
