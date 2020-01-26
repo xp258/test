@@ -21,20 +21,19 @@ public class JsonWriterTest {
 
   @Test
   public void toJson() {
-    JsonWriter writer = new JsonWriter();
 
     // Primitive
-    Assert.assertEquals("1", writer.toJson(1));
-    Assert.assertEquals("23.3", writer.toJson(23.3f));
-    Assert.assertEquals("9024512353132414", writer.toJson(9024512353132414L));
-    Assert.assertEquals("true", writer.toJson(true));
+    Assert.assertEquals("1", Json.toJson(1));
+    Assert.assertEquals("23.3", Json.toJson(23.3f));
+    Assert.assertEquals("9024512353132414", Json.toJson(9024512353132414L));
+    Assert.assertEquals("true", Json.toJson(true));
 
-    Assert.assertEquals("null", writer.toJson(null));
+    Assert.assertEquals("null", Json.toJson(null));
 
     Date date = new Date();
-    Assert.assertEquals(Long.toString(date.getTime()), writer.toJson(date));
+    Assert.assertEquals(Long.toString(date.getTime()), Json.toJson(date));
     LocalDateTime time = LocalDateTime.now();
-    Assert.assertEquals("\"" + time.toString() + "\"", writer.toJson(time));
+    Assert.assertEquals("\"" + time.toString() + "\"", Json.toJson(time));
 
     Bean bean = new Bean();
     bean.a = 1;
@@ -42,23 +41,22 @@ public class JsonWriterTest {
     bean.c = time;
 
     Assert.assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\",\"d\":null}",
-        writer.toJson(bean));
+        Json.toJson(bean));
 
     Map<String, Object> map = MoreObjects.mapOf("a", 1, "b", true, "c", time);
-    Assert
-        .assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\"}", writer.toJson(map));
+    Assert.assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\"}", Json.toJson(map));
 
     List<Object> list = Arrays.asList(1, 2, 3, bean);
     Assert.assertEquals("[1,2,3,{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\",\"d\":null}]",
-        writer.toJson(list));
+        Json.toJson(list));
 
     int[] array = new int[]{3, 4, 5};
-    Assert.assertEquals("[3,4,5]", writer.toJson(array));
+    Assert.assertEquals("[3,4,5]", Json.toJson(array));
 
-    Assert.assertEquals("\"UTF-8\"", writer.toJson(StandardCharsets.UTF_8));
-    Assert.assertEquals("\"Asia/Shanghai\"", writer.toJson(ZoneId.of("Asia/Shanghai")));
-    Assert.assertEquals("1", writer.toJson(new AtomicReference<>(1)));
-    Assert.assertEquals("[1,2]", writer.toJson(new AtomicIntegerArray(new int[]{1, 2})));
+    Assert.assertEquals("\"UTF-8\"", Json.toJson(StandardCharsets.UTF_8));
+    Assert.assertEquals("\"Asia/Shanghai\"", Json.toJson(ZoneId.of("Asia/Shanghai")));
+    Assert.assertEquals("1", Json.toJson(new AtomicReference<>(1)));
+    Assert.assertEquals("[1,2]", Json.toJson(new AtomicIntegerArray(new int[]{1, 2})));
 
   }
 

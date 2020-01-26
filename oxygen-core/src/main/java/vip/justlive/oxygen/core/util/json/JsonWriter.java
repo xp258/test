@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core.util.json;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.json.codec.ArraySerializer;
@@ -35,6 +36,7 @@ import vip.justlive.oxygen.core.util.json.codec.Serializer;
 @Slf4j
 public class JsonWriter {
 
+  @Getter
   private final List<Serializer> serializers = new ArrayList<>();
 
   public JsonWriter() {
