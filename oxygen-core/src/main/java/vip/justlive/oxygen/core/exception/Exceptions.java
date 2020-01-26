@@ -71,7 +71,9 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e, ErrorCode errorCode) {
-
+    if (e instanceof CodedException) {
+      return (CodedException) e;
+    }
     return new WrappedException(e, errorCode);
   }
 
