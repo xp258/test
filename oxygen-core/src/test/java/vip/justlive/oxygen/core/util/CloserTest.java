@@ -22,7 +22,7 @@ public class CloserTest {
     } catch (IllegalArgumentException e) {
       closer.thrown(e);
     } finally {
-      closer.closeUnchecked();
+      closer.closeQuietly();
     }
     Assert.assertEquals(7, count.get());
   }
