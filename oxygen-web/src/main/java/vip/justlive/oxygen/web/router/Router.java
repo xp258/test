@@ -154,7 +154,7 @@ public class Router {
       if (temp.size() < exist.methods().size() + route.methods().size()) {
         throw Exceptions.fail(String.format("path [%s] already exists", route.path()));
       }
-      exist.next(route);
+      exist.next(route.next(exist.next()));
     }
     if (log.isDebugEnabled()) {
       log.debug("build route: {}", route);
