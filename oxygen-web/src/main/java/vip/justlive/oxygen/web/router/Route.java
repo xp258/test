@@ -36,7 +36,7 @@ import vip.justlive.oxygen.core.net.http.HttpMethod;
 public class Route {
 
   public static final String REGEX_PATH_VAR = "\\{\\w+}";
-  public static final String REGEX_PATH_VAR_REPLACE = "(\\\\w+)";
+  public static final String REGEX_PATH_VAR_REPLACE = "([^/?]*)";
 
   /**
    * 方法
