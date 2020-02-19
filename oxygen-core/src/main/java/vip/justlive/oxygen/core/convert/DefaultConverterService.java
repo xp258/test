@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.convert;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
@@ -86,23 +87,26 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
         .containsKey(ConverterTypePair.create(source, target));
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T> T convert(Object source, Class<T> targetType) {
     if (source == null) {
       return null;
     }
     if (source.getClass().equals(targetType)) {
-      return (T) source;
-    }
-    if (targetType.isArray()) {
-      ArrayConverter converter = arrayConverters
-          .get(ConverterTypePair.create(source.getClass(), Array.class));
-      return (T) MoreObjects.notNull(converter).convert(source, source.getClass(), targetType);
+      return targetType.cast(source);
     }
     Converter<Object, Object> converter = converters
         .get(ConverterTypePair.create(source.getClass(), targetType));
-
-    return (T) MoreObjects.notNull(converter).convert(source);
+    if (converter != null) {
+      return targetType.cast(converter.convert(source));
+    }
+    if (targetType.isArray()) {
+      ArrayConverter arrayConverter = arrayConverters
+          .get(ConverterTypePair.create(source.getClass(), Array.class));
+      if (arrayConverter != null) {
+        return targetType.cast(arrayConverter.convert(source, source.getClass(), targetType));
+      }
+    }
+    throw Exceptions.fail(String.format("unsupported convert [%s] to [%s]", source, targetType));
   }
 }
