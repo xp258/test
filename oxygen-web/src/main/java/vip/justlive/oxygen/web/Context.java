@@ -27,6 +27,7 @@ import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.http.Session;
 import vip.justlive.oxygen.web.http.SessionManager;
 import vip.justlive.oxygen.web.result.ResultHandler;
+import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
@@ -119,4 +120,43 @@ public class Context {
     SESSION_MANAGER.restoreSession(request.getSession());
   }
 
+  /**
+   * 处理结果
+   *
+   * @param ctx 上下文
+   */
+  public static void handleResult(RoutingContext ctx) {
+    for (ResultHandler resultHandler : Context.HANDLERS) {
+      if (resultHandler.support(ctx.response().getResult())) {
+        resultHandler.apply(ctx, ctx.response().getResult());
+        break;
+      }
+    }
+  }
+
+  /**
+   * dispatch
+   *
+   * @param ctx 上下文
+   */
+  public static void dispatch(RoutingContext ctx) {
+    try {
+      Context.parseRequest(ctx.request());
+      RouteHandler handler = ctx.request().getRouteHandler();
+      if (handler == null) {
+        RouteHandler.notFound(ctx);
+        return;
+      }
+      if (!Context.invokeBefore(ctx)) {
+        return;
+      }
+      handler.handle(ctx);
+      Context.invokeAfter(ctx);
+    } catch (Exception e) {
+      RouteHandler.exception(ctx, e);
+    } finally {
+      Context.invokeFinished(ctx);
+      Context.restoreSession(ctx.request(), ctx.response());
+    }
+  }
 }

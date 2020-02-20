@@ -26,7 +26,6 @@ import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.result.JspViewResultHandler;
-import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -61,49 +60,37 @@ public class DispatcherServlet extends HttpServlet {
     response.local();
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
-      Context.parseRequest(request);
-      RouteHandler handler = request.getRouteHandler();
-      if (handler == null) {
-        RouteHandler.notFound(ctx);
-        return;
-      }
-      if (Context.invokeBefore(ctx)) {
-        handler.handle(ctx);
-        handleResult(ctx, response.getResult(), resp);
-        Context.invokeAfter(ctx);
-      }
+      Context.dispatch(ctx);
+      handleResult(ctx, resp);
     } catch (Exception e) {
       RouteHandler.error(ctx, e);
     } finally {
-      Context.invokeFinished(ctx);
-      copyResponse(request, response, resp);
-      copyStream(response, resp);
       Request.clear();
       Response.clear();
+      copyResponse(response, resp);
+      copyStream(response, resp);
     }
   }
 
-  private void handleResult(RoutingContext ctx, Result result, HttpServletResponse resp) {
+  private void handleResult(RoutingContext ctx, HttpServletResponse resp) {
     for (ResultHandler handler : Context.HANDLERS) {
-      if (handler.support(result)) {
+      if (handler.support(ctx.response().getResult())) {
         if (handler instanceof JspViewResultHandler) {
-          copyResponse(ctx.request(), ctx.response(), resp);
+          copyResponse(ctx.response(), resp);
         }
-        handler.apply(ctx, result);
+        handler.apply(ctx, ctx.response().getResult());
         break;
       }
     }
   }
 
-  private void copyResponse(Request request, Response response, HttpServletResponse resp) {
+  private void copyResponse(Response response, HttpServletResponse resp) {
     if (response.getContentType() != null) {
       resp.setContentType(response.getContentType());
     }
     resp.setStatus(response.getStatus());
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
-
-    Context.restoreSession(request, response);
 
     for (Cookie cookie : response.getCookies().values()) {
       javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),

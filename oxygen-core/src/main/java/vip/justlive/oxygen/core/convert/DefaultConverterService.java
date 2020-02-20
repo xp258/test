@@ -87,24 +87,25 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
         .containsKey(ConverterTypePair.create(source, target));
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> T convert(Object source, Class<T> targetType) {
     if (source == null) {
       return null;
     }
     if (source.getClass().equals(targetType)) {
-      return targetType.cast(source);
+      return (T) source;
     }
     Converter<Object, Object> converter = converters
         .get(ConverterTypePair.create(source.getClass(), targetType));
     if (converter != null) {
-      return targetType.cast(converter.convert(source));
+      return (T) converter.convert(source);
     }
     if (targetType.isArray()) {
       ArrayConverter arrayConverter = arrayConverters
           .get(ConverterTypePair.create(source.getClass(), Array.class));
       if (arrayConverter != null) {
-        return targetType.cast(arrayConverter.convert(source, source.getClass(), targetType));
+        return (T) arrayConverter.convert(source, source.getClass(), targetType);
       }
     }
     throw Exceptions.fail(String.format("unsupported convert [%s] to [%s]", source, targetType));
