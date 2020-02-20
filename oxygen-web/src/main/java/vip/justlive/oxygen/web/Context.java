@@ -39,9 +39,9 @@ import vip.justlive.oxygen.web.router.RoutingContext;
 public class Context {
 
   public static final SessionManager SESSION_MANAGER = new SessionManager();
+  static final List<ResultHandler> HANDLERS = new LinkedList<>();
   static final List<ParamBinder> BINDERS = new LinkedList<>();
   static final List<WebHook> HOOKS = new LinkedList<>();
-  public static final List<ResultHandler> HANDLERS = new LinkedList<>();
   static final List<Parser> PARSERS = new LinkedList<>();
 
 
@@ -157,6 +157,7 @@ public class Context {
     } finally {
       Context.invokeFinished(ctx);
       Context.restoreSession(ctx.request(), ctx.response());
+      Context.handleResult(ctx);
     }
   }
 }

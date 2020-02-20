@@ -25,8 +25,6 @@ import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
-import vip.justlive.oxygen.web.result.JspViewResultHandler;
-import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.RoutingContext;
 import vip.justlive.oxygen.web.router.RoutingContextImpl;
@@ -40,6 +38,29 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
 public class DispatcherServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
+
+  public static void copyResponse(Response response, HttpServletResponse resp) {
+    if (response.getContentType() != null) {
+      resp.setContentType(response.getContentType());
+    }
+    resp.setStatus(response.getStatus());
+    resp.setCharacterEncoding(response.getEncoding());
+    response.getHeaders().forEach(resp::addHeader);
+
+    for (Cookie cookie : response.getCookies().values()) {
+      javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),
+          cookie.getValue());
+      jCookie.setPath(cookie.getPath());
+      jCookie.setSecure(cookie.isSecure());
+      if (cookie.getMaxAge() != null) {
+        jCookie.setMaxAge(cookie.getMaxAge());
+      }
+      if (cookie.getDomain() != null) {
+        jCookie.setDomain(cookie.getDomain());
+      }
+      resp.addCookie(jCookie);
+    }
+  }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp, HttpMethod httpMethod) {
     if (log.isDebugEnabled()) {
@@ -61,7 +82,6 @@ public class DispatcherServlet extends HttpServlet {
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
       Context.dispatch(ctx);
-      handleResult(ctx, resp);
     } catch (Exception e) {
       RouteHandler.error(ctx, e);
     } finally {
@@ -69,41 +89,6 @@ public class DispatcherServlet extends HttpServlet {
       Response.clear();
       copyResponse(response, resp);
       copyStream(response, resp);
-    }
-  }
-
-  private void handleResult(RoutingContext ctx, HttpServletResponse resp) {
-    for (ResultHandler handler : Context.HANDLERS) {
-      if (handler.support(ctx.response().getResult())) {
-        if (handler instanceof JspViewResultHandler) {
-          copyResponse(ctx.response(), resp);
-        }
-        handler.apply(ctx, ctx.response().getResult());
-        break;
-      }
-    }
-  }
-
-  private void copyResponse(Response response, HttpServletResponse resp) {
-    if (response.getContentType() != null) {
-      resp.setContentType(response.getContentType());
-    }
-    resp.setStatus(response.getStatus());
-    resp.setCharacterEncoding(response.getEncoding());
-    response.getHeaders().forEach(resp::addHeader);
-
-    for (Cookie cookie : response.getCookies().values()) {
-      javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),
-          cookie.getValue());
-      jCookie.setPath(cookie.getPath());
-      jCookie.setSecure(cookie.isSecure());
-      if (cookie.getMaxAge() != null) {
-        jCookie.setMaxAge(cookie.getMaxAge());
-      }
-      if (cookie.getDomain() != null) {
-        jCookie.setDomain(cookie.getDomain());
-      }
-      resp.addCookie(jCookie);
     }
   }
 

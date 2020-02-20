@@ -137,7 +137,6 @@ public class HttpServerAioHandler implements AioHandler {
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
       Context.dispatch(ctx);
-      Context.handleResult(ctx);
     } catch (Exception e) {
       RouteHandler.error(ctx, e);
     } finally {
