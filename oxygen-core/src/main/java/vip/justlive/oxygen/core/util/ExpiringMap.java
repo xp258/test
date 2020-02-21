@@ -857,7 +857,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     }
 
     @Override
-    protected boolean removeEldestEntry(Entry<K, ExpiringValue<V>> eldest) {
+    protected boolean removeEldestEntry(Map.Entry<K, ExpiringValue<V>> eldest) {
       boolean b = maxSize > 0 && maxSize < super.size();
       if (b && listeners != null) {
         for (ExpiredListener<K, V> listener : listeners) {
