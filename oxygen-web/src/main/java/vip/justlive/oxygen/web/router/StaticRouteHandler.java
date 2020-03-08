@@ -138,7 +138,8 @@ public class StaticRouteHandler implements RouteHandler {
       }
       // cache files in jar
       try (InputStream is = sourceResource.getInputStream()) {
-        File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
+        File savedFile = new File(TEMP_DIR,
+            SnowflakeIdWorker.defaultNextId() + Strings.DOT + FileUtils.extension(path));
         Files.copy(is, savedFile.toPath());
         return new StaticSource(savedFile, path, true);
       }
