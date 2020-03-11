@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import vip.justlive.oxygen.core.util.Bytes;
+import vip.justlive.oxygen.core.util.FileCleaner;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
@@ -46,21 +47,24 @@ class MultipartStream {
   private final byte[] boundary;
   private final byte[] endOfBoundary;
   private final Charset charset;
+  private final FileCleaner cleaner;
   Map<String, String> formData;
   List<MultipartItem> items = new LinkedList<>();
   private WrapByteArrayOutputStream current = new WrapByteArrayOutputStream();
 
-  MultipartStream(InputStream inputStream, byte[] boundary, String encoding) throws IOException {
+  MultipartStream(InputStream inputStream, Multipart multipart, String encoding)
+      throws IOException {
     this.inputStream = inputStream;
     this.charset = Charset.forName(encoding);
-    current.reset();
-    current.write(STREAM_TERMINATOR);
-    current.write(boundary);
+    this.current.reset();
+    this.current.write(STREAM_TERMINATOR);
+    this.current.write(multipart.getBoundary());
     this.boundary = current.toByteArray();
-    current.write(STREAM_TERMINATOR);
+    this.current.write(STREAM_TERMINATOR);
     this.endOfBoundary = current.toByteArray();
-    current.reset();
-    formData = new HashMap<>(4);
+    this.current.reset();
+    this.formData = new HashMap<>(4);
+    this.cleaner = multipart.getCleaner();
   }
 
   void readMultipartItem() throws IOException {
@@ -148,6 +152,7 @@ class MultipartStream {
   private void readFile(byte[] line, MultipartItem item) throws IOException {
     Path path = new File(FileUtils.createTempDir(MultipartItem.class.getSimpleName()),
         String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
+    cleaner.track(path);
     item.setPath(path);
     while (true) {
       Files.write(path, line, StandardOpenOption.CREATE, StandardOpenOption.APPEND);

@@ -130,8 +130,7 @@ public class GeneralParser implements Parser {
   private class ServletParser {
 
     void parse(Request request) {
-      HttpServletRequest req = (HttpServletRequest) request
-          .getAttribute(Request.ORIGINAL_REQUEST);
+      HttpServletRequest req = (HttpServletRequest) request.getAttribute(Request.ORIGINAL_REQUEST);
       request.contextPath = req.getContextPath();
       request.secure = req.isSecure();
       request.remoteAddress = req.getRemoteAddr();
