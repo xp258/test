@@ -80,7 +80,7 @@ public class Client {
     channelContext = new ChannelContext(groupContext, channel, false);
     channel.connect(remote, channelContext, ConnectHandler.INSTANCE);
 
-    channelContext.getFuture().join();
+    channelContext.join();
 
     if (groupContext.getAioHandler().beat(channelContext) != null) {
       groupContext.getScheduledExecutor()

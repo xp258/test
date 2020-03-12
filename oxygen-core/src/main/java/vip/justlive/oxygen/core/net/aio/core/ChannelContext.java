@@ -104,17 +104,6 @@ public class ChannelContext {
     writeWorker.addThenExecute(data);
   }
 
-  void read(ByteBuffer buffer) {
-    if (closed) {
-      return;
-    }
-    ByteBuffer ret = ByteBuffer.allocate(buffer.limit() - buffer.position());
-    ret.put(buffer);
-    ret.flip();
-
-    readWorker.addThenExecute(ret);
-  }
-
   /**
    * 启动
    */
@@ -190,5 +179,34 @@ public class ChannelContext {
   @Override
   public String toString() {
     return String.format("[%s:%s]", id, address);
+  }
+
+  void complete() {
+    if (future != null) {
+      future.complete(null);
+    }
+  }
+
+  void completeExceptionally(Throwable ex) {
+    if (future != null) {
+      future.completeExceptionally(ex);
+    }
+  }
+
+  void join() {
+    if (future != null) {
+      future.join();
+    }
+  }
+
+  void read(ByteBuffer buffer) {
+    if (closed) {
+      return;
+    }
+    ByteBuffer ret = ByteBuffer.allocate(buffer.limit() - buffer.position());
+    ret.put(buffer);
+    ret.flip();
+
+    readWorker.addThenExecute(ret);
   }
 }
