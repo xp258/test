@@ -56,6 +56,7 @@ public class SensitiveUtils {
    * 如果银行卡位数小于16位，则使用缺省脱敏方式。
    *
    * @param data 待部分隐藏处理的银行卡号。
+   * @return 返回银行卡部分展示字符串
    */
   public static String bankCardNoHide(String data) {
     if (!Strings.hasText(data)) {
