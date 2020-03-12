@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ class MultipartStream {
 
   private static final byte[] LINE_SEPARATOR = {Bytes.CR, Bytes.LF};
   private static final byte[] STREAM_TERMINATOR = {Bytes.DASH, Bytes.DASH};
+  private static final File BASE_DIR;
 
   private final InputStream inputStream;
   private final byte[] boundary;
@@ -51,6 +53,10 @@ class MultipartStream {
   Map<String, String> formData;
   List<MultipartItem> items = new LinkedList<>();
   private WrapByteArrayOutputStream current = new WrapByteArrayOutputStream();
+
+  static {
+    BASE_DIR = FileUtils.createTempDir("multipart");
+  }
 
   MultipartStream(InputStream inputStream, Multipart multipart, String encoding)
       throws IOException {
@@ -150,8 +156,7 @@ class MultipartStream {
   }
 
   private void readFile(byte[] line, MultipartItem item) throws IOException {
-    Path path = new File(FileUtils.createTempDir(MultipartItem.class.getSimpleName()),
-        String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
+    Path path = Paths.get(BASE_DIR.getPath(), String.valueOf(SnowflakeIdWorker.defaultNextId()));
     cleaner.track(path);
     item.setPath(path);
     while (true) {
