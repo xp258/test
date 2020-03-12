@@ -389,6 +389,7 @@ public class ClassUtils {
    * @param annotation 注解
    * @return Constructor
    */
+  @SuppressWarnings("squid:S1452")
   public static Constructor<?> getConstructorAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     return getConstructorAnnotatedWith(clazz.getConstructors(), annotation);
@@ -401,6 +402,7 @@ public class ClassUtils {
    * @param annotation 注解
    * @return Constructor
    */
+  @SuppressWarnings("squid:S1452")
   public static Constructor<?> getConstructorAnnotatedWith(Constructor<?>[] constructors,
       Class<? extends Annotation> annotation) {
     for (Constructor<?> constructor : constructors) {
