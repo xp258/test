@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,18 +43,18 @@ public final class Bootstrap {
       .newThread(Bootstrap::doClose);
   private static final String VERSION;
 
-  Bootstrap() {
-  }
-
   static {
     String version;
-    try {
-      version = IoUtils
-          .toString(Bootstrap.class.getResourceAsStream("/vip/justlive/oxygen/core/Version"));
+    try (InputStream in = Bootstrap.class
+        .getResourceAsStream("/vip/justlive/oxygen/core/Version")) {
+      version = IoUtils.toString(in);
     } catch (Exception e) {
       version = "oxygen/unknown";
     }
     VERSION = version;
+  }
+
+  Bootstrap() {
   }
 
   /**
