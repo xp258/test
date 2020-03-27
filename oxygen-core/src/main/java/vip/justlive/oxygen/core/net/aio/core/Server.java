@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class Server {
 
   private final GroupContext groupContext;
+  private InetSocketAddress serverAddress;
   private AsynchronousServerSocketChannel serverChannel;
 
   /**
@@ -57,7 +58,7 @@ public class Server {
     AsynchronousChannelGroup channelGroup = AsynchronousChannelGroup
         .withThreadPool(groupContext.getGroupExecutor());
     groupContext.setChannelGroup(channelGroup);
-    groupContext.setServerAddress(address);
+    serverAddress = address;
     serverChannel = AsynchronousServerSocketChannel.open(channelGroup)
         .setOption(StandardSocketOptions.SO_REUSEADDR, true).bind(address);
     serverChannel.accept(this, new AcceptHandler());

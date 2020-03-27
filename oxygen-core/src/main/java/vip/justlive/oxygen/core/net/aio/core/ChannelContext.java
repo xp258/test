@@ -47,6 +47,7 @@ public class ChannelContext {
 
   private AsynchronousSocketChannel channel;
   private InetSocketAddress address;
+  private InetSocketAddress serverAddress;
   private volatile boolean closed;
   private CompletableFuture<Void> future;
 
@@ -147,6 +148,16 @@ public class ChannelContext {
   }
 
   /**
+   * 获取属性
+   *
+   * @param key 建
+   * @return 值
+   */
+  public Object getAttr(String key) {
+    return attrs.get(key);
+  }
+
+  /**
    * 删除属性
    *
    * @param key 键
@@ -181,6 +192,12 @@ public class ChannelContext {
     return String.format("[%s:%s]", id, address);
   }
 
+  public void join() {
+    if (future != null) {
+      future.join();
+    }
+  }
+
   void complete() {
     if (future != null) {
       future.complete(null);
@@ -193,11 +210,6 @@ public class ChannelContext {
     }
   }
 
-  void join() {
-    if (future != null) {
-      future.join();
-    }
-  }
 
   void read(ByteBuffer buffer) {
     if (closed) {
