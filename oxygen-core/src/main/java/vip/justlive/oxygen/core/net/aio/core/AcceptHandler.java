@@ -45,6 +45,7 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
 
       ChannelContext channelContext = new ChannelContext(server.getGroupContext(), channel);
       channelContext.start();
+      channelContext.setServerAddress(server.getServerAddress());
 
       ByteBuffer buffer = ByteBuffer.allocate(server.getGroupContext().getBufferCapacity());
       buffer.order(ByteOrder.BIG_ENDIAN);

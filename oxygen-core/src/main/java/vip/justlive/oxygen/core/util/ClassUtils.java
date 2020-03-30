@@ -334,8 +334,10 @@ public class ClassUtils {
     try {
       method.setAccessible(true);
       return method.invoke(bean, args);
-    } catch (IllegalAccessException | InvocationTargetException e) {
+    } catch (IllegalAccessException e) {
       throw Exceptions.wrap(e);
+    } catch (InvocationTargetException e) {
+      throw Exceptions.wrap(e.getTargetException());
     }
   }
 
@@ -531,7 +533,7 @@ public class ClassUtils {
         field.setAccessible(true);
       }
       return field.get(object);
-    } catch (Exception e) {
+    } catch (IllegalAccessException e) {
       throw Exceptions.wrap(e);
     }
   }

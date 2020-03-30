@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
@@ -198,6 +199,9 @@ public final class Bootstrap {
   }
 
   private static void exceptionHandle(Thread thread, Throwable throwable) {
+    if (throwable instanceof WrappedException) {
+      throwable = ((WrappedException) throwable).getException();
+    }
     log.error("thread [{}] uncaught exception", thread.getName(), throwable);
   }
 }

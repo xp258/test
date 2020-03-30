@@ -81,6 +81,9 @@ public class Binder {
       prefix = null;
     }
     for (Field field : ClassUtils.getAllDeclaredFields(obj.getClass())) {
+      if (field.isAnnotationPresent(Ignore.class)) {
+        continue;
+      }
       String key = field.getName();
       boolean wrap = false;
       if (field.isAnnotationPresent(Value.class)) {
