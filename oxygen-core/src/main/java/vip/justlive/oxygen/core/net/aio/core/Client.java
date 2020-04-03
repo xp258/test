@@ -110,9 +110,6 @@ public class Client {
   public void close(ChannelContext channelContext) {
     channels.remove(channelContext.getId());
     channelContext.close();
-    if (channels.isEmpty()) {
-      close();
-    }
   }
 
   /**

@@ -40,8 +40,10 @@ public class RetryProcessor implements Runnable {
     try {
       client.getChannels().values().forEach(this::handle);
     } finally {
-      client.getGroupContext().getScheduledExecutor()
-          .schedule(this, client.getGroupContext().getRetryInterval(), TimeUnit.MILLISECONDS);
+      if (!client.getChannels().isEmpty()) {
+        client.getGroupContext().getScheduledExecutor()
+            .schedule(this, client.getGroupContext().getRetryInterval(), TimeUnit.MILLISECONDS);
+      }
     }
   }
 
