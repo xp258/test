@@ -23,7 +23,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Hex {
 
-  private static final char[] HEX_CHAR = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a',
+  private final char[] HEX_CHAR = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a',
       'b', 'c', 'd', 'e', 'f'};
 
   /**
@@ -32,16 +32,16 @@ public class Hex {
    * @param bytes 字节数组
    * @return 字符数组
    */
-  public static char[] encode(byte[] bytes) {
+  public char[] encode(byte[] bytes) {
     final int nBytes = bytes.length;
     char[] result = new char[2 * nBytes];
 
     int j = 0;
-    for (int i = 0; i < nBytes; i++) {
+    for (byte aByte : bytes) {
       // Char for top 4 bits
-      result[j++] = HEX_CHAR[(0xF0 & bytes[i]) >>> 4];
+      result[j++] = HEX_CHAR[(0xF0 & aByte) >>> 4];
       // Bottom 4
-      result[j++] = HEX_CHAR[(0x0F & bytes[i])];
+      result[j++] = HEX_CHAR[(0x0F & aByte)];
     }
 
     return result;
@@ -53,7 +53,7 @@ public class Hex {
    * @param bytes 字节数组
    * @return 字符串
    */
-  public static String encodeToString(byte[] bytes) {
+  public String encodeToString(byte[] bytes) {
     return new String(encode(bytes));
   }
 
@@ -63,7 +63,7 @@ public class Hex {
    * @param s 字符
    * @return 字节数组
    */
-  public static byte[] decode(CharSequence s) {
+  public byte[] decode(CharSequence s) {
     int nChars = s.length();
 
     if (nChars % 2 != 0) {

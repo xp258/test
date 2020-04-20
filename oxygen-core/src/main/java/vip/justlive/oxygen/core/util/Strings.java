@@ -18,37 +18,37 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @UtilityClass
 public class Strings {
 
-  public static final String AND = "&";
-  public static final String ANY = "*";
-  public static final String ANY_PATH = "/*";
-  public static final String AT = "@";
-  public static final String CLOSE_BRACE = "}";
-  public static final String CLOSE_BRACKET = "]";
-  public static final String CLOSE_PAREN = ")";
-  public static final String COLON = ":";
-  public static final String COMMA = ",";
-  public static final String DASH = "-";
-  public static final String DOLLAR = "$";
-  public static final String DOT = ".";
-  public static final String DOUBLE_DOLLAR = "$$";
-  public static final String DOUBLE_QUOTATION_MARK = "\"";
-  public static final String EMPTY = "";
-  public static final String EQUAL = "=";
-  public static final String OCTOTHORP = "#";
-  public static final String OPEN_BRACE = "{";
-  public static final String OPEN_BRACKET = "[";
-  public static final String OPEN_PAREN = "(";
-  public static final String PLUS = "+";
-  public static final String QUESTION_MARK = "?";
-  public static final String SEMICOLON = ";";
-  public static final String SLASH = "/";
-  public static final String BACKSLASH = "\\";
-  public static final String UNDERSCORE = "_";
-  public static final String UNKNOWN = "unknown";
-  public static final String FILE_PREFIX = "file:";
-  public static final String ALL_CLASSPATH_PREFIX = "classpath*:";
-  public static final String CLASSPATH_PREFIX = "classpath:";
-  public static final String[] EMPTY_ARRAY = new String[0];
+  public final String AND = "&";
+  public final String ANY = "*";
+  public final String ANY_PATH = "/*";
+  public final String AT = "@";
+  public final String CLOSE_BRACE = "}";
+  public final String CLOSE_BRACKET = "]";
+  public final String CLOSE_PAREN = ")";
+  public final String COLON = ":";
+  public final String COMMA = ",";
+  public final String DASH = "-";
+  public final String DOLLAR = "$";
+  public final String DOT = ".";
+  public final String DOUBLE_DOLLAR = "$$";
+  public final String DOUBLE_QUOTATION_MARK = "\"";
+  public final String EMPTY = "";
+  public final String EQUAL = "=";
+  public final String OCTOTHORP = "#";
+  public final String OPEN_BRACE = "{";
+  public final String OPEN_BRACKET = "[";
+  public final String OPEN_PAREN = "(";
+  public final String PLUS = "+";
+  public final String QUESTION_MARK = "?";
+  public final String SEMICOLON = ";";
+  public final String SLASH = "/";
+  public final String BACKSLASH = "\\";
+  public final String UNDERSCORE = "_";
+  public final String UNKNOWN = "unknown";
+  public final String FILE_PREFIX = "file:";
+  public final String ALL_CLASSPATH_PREFIX = "classpath*:";
+  public final String CLASSPATH_PREFIX = "classpath:";
+  public final String[] EMPTY_ARRAY = new String[0];
 
   /**
    * 字符串是否有值
@@ -56,7 +56,7 @@ public class Strings {
    * @param text 字符串
    * @return true为有值
    */
-  public static boolean hasText(String text) {
+  public boolean hasText(String text) {
     return text != null && text.trim().length() > 0;
   }
 
@@ -68,7 +68,7 @@ public class Strings {
    * @param others other values
    * @return nonEmpty
    */
-  public static String firstNonNull(String first, String second, String... others) {
+  public String firstNonNull(String first, String second, String... others) {
     String str = firstOrNull(first, second, others);
     if (str != null) {
       return str;
@@ -85,7 +85,7 @@ public class Strings {
    * @param others other values
    * @return nonEmpty
    */
-  public static String firstOrNull(String first, String second, String... others) {
+  public String firstOrNull(String first, String second, String... others) {
     if (hasText(first)) {
       return first;
     }
@@ -109,7 +109,7 @@ public class Strings {
    * @param b 第二个比对字符串
    * @return float
    */
-  public static float jaccard(String a, String b) {
+  public float jaccard(String a, String b) {
     if (a == null && b == null) {
       return 1f;
     }
@@ -135,7 +135,7 @@ public class Strings {
    * @param b 第二个比对字符串
    * @return float
    */
-  public static float sorensenDice(String a, String b) {
+  public float sorensenDice(String a, String b) {
     if (a == null && b == null) {
       return 1f;
     }
@@ -162,7 +162,7 @@ public class Strings {
    * @param b 第二个比对字符串
    * @return float
    */
-  public static float levenshtein(String a, String b) {
+  public float levenshtein(String a, String b) {
     if (a == null && b == null) {
       return 1f;
     }
@@ -182,7 +182,7 @@ public class Strings {
    * @param b 第二个比对字符串
    * @return float
    */
-  public static float hanming(String a, String b) {
+  public float hanming(String a, String b) {
     if (a == null || b == null) {
       return 0f;
     }
@@ -206,7 +206,7 @@ public class Strings {
    * @param b 第二个比对字符串
    * @return float
    */
-  public static float cos(String a, String b) {
+  public float cos(String a, String b) {
     if (a == null || b == null) {
       return 0f;
     }
@@ -252,7 +252,7 @@ public class Strings {
     return ((float) p1) / (p2 * (float) Math.sqrt(p3));
   }
 
-  private static int editDis(String a, String b) {
+  private int editDis(String a, String b) {
     int aLen = a.length();
     int bLen = b.length();
     if (aLen == 0 || bLen == 0) {

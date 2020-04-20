@@ -32,10 +32,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ThreadUtils {
 
-  private static final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal
+  private final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal
       .withInitial(ConcurrentHashMap::new);
 
-  private static final ThreadPoolExecutor CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+  private final ThreadPoolExecutor CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
       60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
       new ThreadFactoryBuilder().setDaemon(true).setNameFormat("cached-pool-%d").build());
 
@@ -46,7 +46,7 @@ public class ThreadUtils {
    * @param key 键
    * @param value 值
    */
-  public static void putVal(String key, Object value) {
+  public void putVal(String key, Object value) {
     LOCAL.get().put(key, value);
   }
 
@@ -58,14 +58,14 @@ public class ThreadUtils {
    * @return 值
    */
   @SuppressWarnings("unchecked")
-  public static <T> T getVal(String key) {
+  public <T> T getVal(String key) {
     return (T) LOCAL.get().get(key);
   }
 
   /**
    * 清除线程存储值
    */
-  public static void clear() {
+  public void clear() {
     LOCAL.remove();
   }
 
@@ -79,7 +79,7 @@ public class ThreadUtils {
    * @param nameFormat 线程名称format
    * @return 线程池
    */
-  public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
         true);
@@ -96,7 +96,7 @@ public class ThreadUtils {
    * @param daemon 是否为守护线程
    * @return 线程池
    */
-  public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat, boolean daemon) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
         new ThreadPoolExecutor.AbortPolicy(), daemon);
@@ -113,7 +113,7 @@ public class ThreadUtils {
    * @param handler 拒绝策略
    * @return 线程池
    */
-  public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat,
       RejectedExecutionHandler handler) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
@@ -132,7 +132,7 @@ public class ThreadUtils {
    * @param daemon 是否为守护线程
    * @return 线程池
    */
-  public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat,
       RejectedExecutionHandler handler, boolean daemon) {
     return new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds, TimeUnit.SECONDS,
@@ -147,7 +147,7 @@ public class ThreadUtils {
    * @param nameFormat 线程名称format
    * @return 任务池
    */
-  public static ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat) {
+  public ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat) {
     return newScheduledExecutor(corePoolSize, nameFormat, new ThreadPoolExecutor.AbortPolicy());
   }
 
@@ -159,7 +159,7 @@ public class ThreadUtils {
    * @param handler 拒绝策略
    * @return 任务池
    */
-  public static ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat,
+  public ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat,
       RejectedExecutionHandler handler) {
     return new ScheduledThreadPoolExecutor(corePoolSize,
         new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(true).build(), handler);
@@ -170,7 +170,7 @@ public class ThreadUtils {
    *
    * @param millis 毫秒值
    */
-  public static void sleep(long millis) {
+  public void sleep(long millis) {
     sleep(millis, TimeUnit.MILLISECONDS);
   }
 
@@ -180,7 +180,7 @@ public class ThreadUtils {
    * @param time 时间
    * @param unit 单位
    */
-  public static void sleep(long time, TimeUnit unit) {
+  public void sleep(long time, TimeUnit unit) {
     try {
       unit.sleep(time);
     } catch (InterruptedException e) {
@@ -193,7 +193,7 @@ public class ThreadUtils {
    *
    * @return pool
    */
-  public static ThreadPoolExecutor cachedPool() {
+  public ThreadPoolExecutor cachedPool() {
     return CACHED_POOL;
   }
 
