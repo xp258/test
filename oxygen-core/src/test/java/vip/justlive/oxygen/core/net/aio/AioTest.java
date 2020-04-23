@@ -101,6 +101,47 @@ public class AioTest {
     run();
   }
 
+  @Test
+  public void tx() throws IOException {
+    new Thread(() -> {
+      InetSocketAddress address = new InetSocketAddress(10841);
+      GroupContext group1 = new GroupContext(new LengthFrameHandler());
+      Server server = new Server(group1);
+      try {
+        server.start(address);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      ThreadUtils.sleep(4000);
+      server.stop();
+
+    }).start();
+
+    ThreadUtils.sleep(2000);
+
+    List<Client> clients = new ArrayList<>();
+    clients.add(ad());
+    clients.add(ad());
+    clients.add(ad());
+
+    ThreadUtils.sleep(4000);
+
+    clients.forEach(client -> System.out.println(client.getGroupContext().getChannels()));
+  }
+
+  private Client ad() throws IOException {
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    Client client = new Client(group);
+
+    for (int i = 0; i < 2; i++) {
+      ChannelContext channel = client.connect(new InetSocketAddress("localhost", 10841));
+      channel.join();
+    }
+
+    return client;
+  }
+
   private void run() throws IOException {
     int port = SystemUtils.findAvailablePort();
     InetSocketAddress address = new InetSocketAddress(port);
@@ -122,7 +163,7 @@ public class AioTest {
 
     group = new GroupContext(new LengthFrameHandler());
     Client client = new Client(group);
-    client.connect(new InetSocketAddress("localhost", port));
+    client.connect(new InetSocketAddress("localhost", port)).join();
 
     for (int i = 0; i < 5; i++) {
       a(max, client, current);
@@ -136,7 +177,7 @@ public class AioTest {
     long now = System.currentTimeMillis();
 
     for (int i = 0; i < max; i++) {
-      client.getChannels().values().iterator().next()
+      client.getGroupContext().getChannels().values().iterator().next()
           .write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
     }
 

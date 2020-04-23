@@ -38,9 +38,9 @@ public class RetryProcessor implements Runnable {
     }
 
     try {
-      client.getChannels().values().forEach(this::handle);
+      client.getGroupContext().getChannels().values().forEach(this::handle);
     } finally {
-      if (!client.getChannels().isEmpty()) {
+      if (!client.getGroupContext().getChannels().isEmpty()) {
         client.getGroupContext().getScheduledExecutor()
             .schedule(this, client.getGroupContext().getRetryInterval(), TimeUnit.MILLISECONDS);
       }
@@ -60,7 +60,7 @@ public class RetryProcessor implements Runnable {
           .getGroupContext().getRetryMaxAttempts()) {
         log.error("{} client try to connect to {} reached the max attempts [{}]", channelContext,
             channelContext.getServerAddress(), client.getGroupContext().getRetryMaxAttempts());
-        client.close(channelContext);
+        channelContext.close();
         return;
       }
 

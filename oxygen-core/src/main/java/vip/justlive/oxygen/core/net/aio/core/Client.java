@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.SystemUtils;
@@ -36,8 +34,6 @@ public class Client {
   private final BeatProcessor beatProcessor;
   private final RetryProcessor retryProcessor;
   private volatile boolean started;
-  @Getter
-  private Map<Long, ChannelContext> channels = new ConcurrentHashMap<>(4);
 
   public Client(GroupContext groupContext) {
     this.groupContext = groupContext;
@@ -86,7 +82,6 @@ public class Client {
     channelContext.setServerAddress(remote);
     channel.connect(remote, channelContext, ConnectHandler.INSTANCE);
 
-    channels.put(channelContext.getId(), channelContext);
     if (started) {
       return channelContext;
     }
@@ -103,23 +98,9 @@ public class Client {
   }
 
   /**
-   * 关闭单个channel
-   *
-   * @param channelContext channel
-   */
-  public void close(ChannelContext channelContext) {
-    channels.remove(channelContext.getId());
-    channelContext.close();
-  }
-
-  /**
    * 关闭客户端
    */
   public void close() {
-    for (ChannelContext channelContext : channels.values()) {
-      channelContext.close();
-    }
-    channels.clear();
     groupContext.close();
   }
 

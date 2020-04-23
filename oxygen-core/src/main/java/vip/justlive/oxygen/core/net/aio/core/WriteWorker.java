@@ -36,7 +36,7 @@ public class WriteWorker extends AbstractQueueWorker<Object> {
   private final Semaphore semaphore;
   private final ChannelContext channelContext;
   private CompletableFuture<Void> writeFuture;
-  private boolean useFuture;
+  private final boolean useFuture;
 
   WriteWorker(ChannelContext channelContext) {
     super(channelContext.getGroupContext().getWorkerExecutor());

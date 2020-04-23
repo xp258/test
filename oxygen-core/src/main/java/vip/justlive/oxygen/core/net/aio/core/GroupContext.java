@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import vip.justlive.oxygen.core.util.CaughtConsumer;
 import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
@@ -107,7 +108,7 @@ public class GroupContext {
    */
   public void close() {
     stopped = true;
-    channels.clear();
+    channels.values().forEach(new CaughtConsumer<>(ChannelContext::close));
     if (channelGroup != null) {
       channelGroup.shutdown();
     }

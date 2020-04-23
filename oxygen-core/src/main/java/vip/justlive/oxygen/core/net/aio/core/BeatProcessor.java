@@ -33,7 +33,7 @@ public class BeatProcessor implements Runnable {
       return;
     }
     try {
-      client.getChannels().values().forEach(this::handle);
+      client.getGroupContext().getChannels().values().forEach(this::handle);
     } finally {
       client.getGroupContext().getScheduledExecutor()
           .schedule(this, client.getGroupContext().getBeatInterval(), TimeUnit.MILLISECONDS);
