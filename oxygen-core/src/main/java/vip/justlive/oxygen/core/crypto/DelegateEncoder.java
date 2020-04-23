@@ -33,6 +33,8 @@ public class DelegateEncoder extends BaseEncoder {
   static {
     ENCODERS.put("NoOp", new NoOpEncoder());
     ENCODERS.put("MD5", new Md5Encoder());
+    ENCODERS.put("SHA-1", new MessageDigestEncoder("SHA-1"));
+    ENCODERS.put("SHA-256", new MessageDigestEncoder("SHA-256"));
   }
 
   private final String id;

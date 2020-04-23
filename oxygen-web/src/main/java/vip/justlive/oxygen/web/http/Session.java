@@ -35,7 +35,8 @@ public class Session implements Serializable {
   private String id;
   @Setter
   private long expired;
-  private HashMap<String, Object> data = new HashMap<>(4);
+  @SuppressWarnings("squid:S1948")
+  private final HashMap<String, Object> data = new HashMap<>(4);
   private transient boolean change;
   private transient SessionManager manager;
 

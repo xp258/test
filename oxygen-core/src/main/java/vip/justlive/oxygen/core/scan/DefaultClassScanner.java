@@ -46,7 +46,7 @@ public class DefaultClassScanner implements ClassScanner {
   /**
    * 扫描包路径
    */
-  private ClassLoader loader;
+  private final ClassLoader loader;
 
   public DefaultClassScanner() {
     this(ClassUtils.getDefaultClassLoader());

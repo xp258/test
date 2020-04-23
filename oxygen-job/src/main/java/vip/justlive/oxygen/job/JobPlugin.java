@@ -85,6 +85,9 @@ public class JobPlugin implements Plugin {
     }
     Scheduled scheduled = method.getAnnotation(Scheduled.class);
     check(scheduled);
+    if (scheduled.onApplicationStart()) {
+      addOnApplicationStartJob(job, scheduled.async());
+    }
     if (scheduled.fixedDelay().length() > 0) {
       addFixedDelayJob(job, scheduled.fixedDelay(), scheduled.initialDelay());
     }
@@ -93,9 +96,6 @@ public class JobPlugin implements Plugin {
     }
     if (scheduled.cron().length() > 0) {
       addCronJob(job, scheduled.cron());
-    }
-    if (scheduled.onApplicationStart()) {
-      addOnApplicationStartJob(job, scheduled.async());
     }
     if (log.isDebugEnabled()) {
       log.debug("add a job [{}]", job);
@@ -144,8 +144,7 @@ public class JobPlugin implements Plugin {
   }
 
   private void addCronJob(Job job, String cron) {
-    job.configCron(ConfigFactory.getPlaceholderProperty(cron));
-    job.scheduleCron();
+    job.configCron(ConfigFactory.getPlaceholderProperty(cron)).scheduleCron();
     SCHEDULED_JOBS.add(job);
   }
 

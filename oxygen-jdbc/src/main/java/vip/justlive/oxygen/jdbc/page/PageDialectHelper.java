@@ -35,19 +35,19 @@ import vip.justlive.oxygen.jdbc.JdbcException;
 @UtilityClass
 public class PageDialectHelper {
 
-  private static final Map<String, PageDialect> CACHE = new HashMap<>(4);
-  private static final List<PageDialect> DIALECTS = new ArrayList<>(4);
+  private final Map<String, PageDialect> CACHE = new HashMap<>(4);
+  private final List<PageDialect> DIALECTS = new ArrayList<>(4);
 
-  public static void clear() {
+  public void clear() {
     CACHE.clear();
     DIALECTS.clear();
   }
 
-  public static PageDialect get() {
+  public PageDialect get() {
     return CACHE.getOrDefault(Jdbc.currentUse(), UnknownPageDialect.DIALECT);
   }
 
-  public static PageDialect guess(String name, DataSource dataSource) {
+  public PageDialect guess(String name, DataSource dataSource) {
     if (DIALECTS.isEmpty()) {
       for (PageDialect dialect : ServiceLoader.load(PageDialect.class)) {
         DIALECTS.add(dialect);
@@ -62,7 +62,7 @@ public class PageDialectHelper {
     return dialect;
   }
 
-  public static PageDialect guess(DataSource dataSource) {
+  public PageDialect guess(DataSource dataSource) {
     try (Connection connection = dataSource.getConnection()) {
       return guess(connection);
     } catch (Exception e) {
@@ -70,7 +70,7 @@ public class PageDialectHelper {
     }
   }
 
-  public static PageDialect guess(Connection connection) {
+  public PageDialect guess(Connection connection) {
     try {
       return guess(connection.getMetaData());
     } catch (Exception e) {
@@ -78,7 +78,7 @@ public class PageDialectHelper {
     }
   }
 
-  public static PageDialect guess(DatabaseMetaData meta) {
+  public PageDialect guess(DatabaseMetaData meta) {
     for (PageDialect dialect : DIALECTS) {
       try {
         if (dialect.supported(meta)) {

@@ -34,8 +34,8 @@ public class SnowflakeIdWorker {
       SEQUENCE_BITS + WORKER_ID_BITS + DATA_CENTER_ID_BITS;
   private static final long SEQUENCE_MASK = ~(-1L << SEQUENCE_BITS);
 
-  private long workerId;
-  private long dataCenterId;
+  private final long workerId;
+  private final long dataCenterId;
   private long sequence = 0L;
   private long lastTimestamp = -1L;
 

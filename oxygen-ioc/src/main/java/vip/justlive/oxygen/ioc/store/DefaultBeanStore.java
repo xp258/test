@@ -34,9 +34,9 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 public class DefaultBeanStore implements BeanStore {
 
-  private Set<Object> beans = new HashSet<>(32);
-  private ConcurrentMap<Class<?>, List<BeanInfo>> beanClassMap = new ConcurrentHashMap<>(32);
-  private ConcurrentMap<String, Object> beanNameMap = new ConcurrentHashMap<>(32);
+  private final Set<Object> beans = new HashSet<>(32);
+  private final ConcurrentMap<Class<?>, List<BeanInfo>> beanClassMap = new ConcurrentHashMap<>(32);
+  private final ConcurrentMap<String, Object> beanNameMap = new ConcurrentHashMap<>(32);
 
   @Override
   public void addBean(String name, Object bean, int order) {

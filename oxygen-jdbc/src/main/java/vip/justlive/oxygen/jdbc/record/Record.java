@@ -250,9 +250,8 @@ public final class Record {
    */
   public static <T> int deleteById(Class<T> clazz, Object id) {
     Model model = parseClass(clazz);
-    StringBuilder sb = new StringBuilder(DELETE).append(model.table).append(WHERE).append(AND)
-        .append(String.format(PARAM_STR, model.primary.name));
-    return Jdbc.update(sb.toString(), id);
+    String sql = DELETE + model.table + WHERE + AND + String.format(PARAM_STR, model.primary.name);
+    return Jdbc.update(sql, id);
   }
 
   /**

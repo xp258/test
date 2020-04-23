@@ -101,10 +101,11 @@ public class AioTest {
     run();
   }
 
-  @Test
+//  @Test
   public void tx() throws IOException {
+    int port = SystemUtils.findAvailablePort();
     new Thread(() -> {
-      InetSocketAddress address = new InetSocketAddress(10841);
+      InetSocketAddress address = new InetSocketAddress(port);
       GroupContext group1 = new GroupContext(new LengthFrameHandler());
       Server server = new Server(group1);
       try {
@@ -121,21 +122,21 @@ public class AioTest {
     ThreadUtils.sleep(2000);
 
     List<Client> clients = new ArrayList<>();
-    clients.add(ad());
-    clients.add(ad());
-    clients.add(ad());
+    clients.add(ad(port));
+    clients.add(ad(port));
+    clients.add(ad(port));
 
     ThreadUtils.sleep(4000);
 
     clients.forEach(client -> System.out.println(client.getGroupContext().getChannels()));
   }
 
-  private Client ad() throws IOException {
+  private Client ad(int port) throws IOException {
     GroupContext group = new GroupContext(new LengthFrameHandler());
     Client client = new Client(group);
 
     for (int i = 0; i < 2; i++) {
-      ChannelContext channel = client.connect(new InetSocketAddress("localhost", 10841));
+      ChannelContext channel = client.connect(new InetSocketAddress("localhost", port));
       channel.join();
     }
 

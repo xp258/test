@@ -20,7 +20,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.ThreadUtils;
 import vip.justlive.oxygen.core.util.retry.RetryBuilder;
 import vip.justlive.oxygen.core.util.retry.Retryer;
 
@@ -32,12 +31,14 @@ public class RetryerTest {
   @Test
   public void test01() {
     AtomicInteger ato = new AtomicInteger(0);
-    RetryBuilder.newBuilder().retryIfException().withMaxAttempt(3).build().call(() -> {
-      ato.incrementAndGet();
-      int i = 0;
-      System.out.println(10 / i);
-      return ato.get();
-    });
+    Integer value = RetryBuilder.<Integer>newBuilder().retryIfException().withMaxAttempt(3).build()
+        .call(() -> {
+          ato.incrementAndGet();
+          int i = 0;
+          System.out.println(10 / i);
+          return ato.get();
+        });
+    Assert.assertNull(value);
     Assert.assertEquals(3, ato.get());
   }
 

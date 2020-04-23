@@ -47,15 +47,15 @@ public class RetryBuilder<T> {
   /**
    * 重试监听
    */
-  private List<Consumer<Attempt<T>>> retryListeners = new LinkedList<>();
+  private final List<Consumer<Attempt<T>>> retryListeners = new LinkedList<>();
   /**
    * 失败监听
    */
-  private List<Consumer<Attempt<T>>> failListeners = new LinkedList<>();
+  private final List<Consumer<Attempt<T>>> failListeners = new LinkedList<>();
   /**
    * 成功监听
    */
-  private List<Consumer<Attempt<T>>> successListeners = new LinkedList<>();
+  private final List<Consumer<Attempt<T>>> successListeners = new LinkedList<>();
   /**
    * 等待时间
    */

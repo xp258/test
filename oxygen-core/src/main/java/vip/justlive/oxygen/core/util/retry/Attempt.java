@@ -27,33 +27,35 @@ public class Attempt<T> {
   /**
    * 尝试次数
    */
-  private long attemptNumber;
+  private final long attemptNumber;
 
   /**
    * 结果
    */
-  private T result;
+  private final T result;
 
   /**
    * 距离第一次尝试时间
    */
-  private long millsAfterFirstAttempt;
+  private final long millsAfterFirstAttempt;
 
   /**
    * 异常
    */
-  private Exception exception;
+  private final Exception exception;
 
   public Attempt(long attemptNumber, T result, long millsAfterFirstAttempt) {
     this.attemptNumber = attemptNumber;
     this.result = result;
     this.millsAfterFirstAttempt = millsAfterFirstAttempt;
+    this.exception = null;
   }
 
   public Attempt(long attemptNumber, Exception exception, long millsAfterFirstAttempt) {
     this.attemptNumber = attemptNumber;
     this.exception = exception;
     this.millsAfterFirstAttempt = millsAfterFirstAttempt;
+    this.result = null;
   }
 
   /**

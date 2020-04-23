@@ -29,7 +29,7 @@ import vip.justlive.oxygen.core.util.Urls;
  */
 public class FileSystemResource implements SourceResource {
 
-  private File file;
+  private final File file;
   private String filePath;
   private Path path;
 

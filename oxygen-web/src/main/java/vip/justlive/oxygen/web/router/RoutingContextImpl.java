@@ -89,9 +89,9 @@ public class RoutingContextImpl implements RoutingContext {
       return clazz.cast(map);
     }
     // 判断非java内置类
-    if (!ClassUtils.isJavaInternalType(clazz)) {
-      return new JSONObject(map).toJavaObject(clazz);
+    if (ClassUtils.isJavaInternalType(clazz)) {
+      return null;
     }
-    return null;
+    return new JSONObject(map).toJavaObject(clazz);
   }
 }

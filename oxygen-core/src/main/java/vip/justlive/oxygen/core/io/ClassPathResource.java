@@ -30,7 +30,7 @@ import vip.justlive.oxygen.core.util.Urls;
  */
 public class ClassPathResource implements SourceResource {
 
-  private String path;
+  private final String path;
   private ClassLoader classLoader;
   private Class<?> clazz;
 

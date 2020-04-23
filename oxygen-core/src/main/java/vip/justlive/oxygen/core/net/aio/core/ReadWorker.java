@@ -83,7 +83,7 @@ public class ReadWorker extends AbstractQueueWorker<ByteBuffer> {
     Throwable e = null;
     try {
       aioHandler.handle(data, channelContext);
-    } catch (Throwable exc) {
+    } catch (@SuppressWarnings("squid:S1181") Throwable exc) {
       e = exc;
     } finally {
       this.afterHandled(data, e);

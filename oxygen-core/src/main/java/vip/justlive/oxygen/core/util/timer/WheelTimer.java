@@ -1,0 +1,157 @@
+/*
+ * Copyright (C) 2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package vip.justlive.oxygen.core.util.timer;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.util.RepeatRunnable;
+import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
+
+/**
+ * 时间轮
+ *
+ * @author wubo
+ */
+@Slf4j
+public class WheelTimer {
+
+  private static final int STATE_INIT = 0;
+  private static final int STATE_STARTED = 1;
+  private static final int STATE_SHUTDOWN = 2;
+  private static final ThreadFactory FACTORY;
+
+  static {
+    FACTORY = new ThreadFactoryBuilder().setDaemon(true).setPriority(Thread.NORM_PRIORITY)
+        .setNameFormat("wheel-task-%d").build();
+  }
+
+  private final long duration;
+  private final int wheelSize;
+  private final ThreadPoolExecutor executor;
+
+  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer", this::doWork);
+  private final AtomicInteger state = new AtomicInteger(STATE_INIT);
+  private final DelayQueue<Slot> delayQueue = new DelayQueue<>();
+  private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+  private Wheel wheel;
+
+  public WheelTimer(long duration, int wheelSize) {
+    this(duration, wheelSize, 1);
+  }
+
+  public WheelTimer(long duration, int wheelSize, int taskPoolSize) {
+    if (taskPoolSize < 1) {
+      throw new IllegalArgumentException("taskPoolSize must be greater than 0: " + taskPoolSize);
+    }
+    this.duration = duration;
+    this.wheelSize = wheelSize;
+    this.executor = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 0, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<>(), FACTORY);
+  }
+
+  /**
+   * 添加任务
+   *
+   * @param callable 任务
+   * @param delay 延迟
+   * @param unit 单位
+   * @param <T> 泛型
+   * @return Future
+   */
+  public <T> Future<T> addTask(Callable<T> callable, long delay, TimeUnit unit) {
+    start();
+    long deadline = System.currentTimeMillis() + unit.toMillis(delay);
+    if (delay > 0 && deadline < 0) {
+      deadline = Long.MAX_VALUE;
+    }
+    Task<T> task = new Task<>(deadline, callable);
+    readWriteLock.readLock().lock();
+    try {
+      addTask(task);
+    } finally {
+      readWriteLock.readLock().unlock();
+    }
+    return task;
+  }
+
+  public void start() {
+    int stateValue = state.get();
+    if (stateValue != STATE_INIT && stateValue != STATE_STARTED) {
+      throw new IllegalStateException("WheelTimer.state is illegal");
+    }
+    if (!state.compareAndSet(STATE_INIT, STATE_STARTED)) {
+      return;
+    }
+    FACTORY.newThread(worker).start();
+    worker.awaitRunning();
+    wheel = new Wheel(duration, wheelSize, System.currentTimeMillis(), delayQueue);
+    log.info("WheelTimer started");
+  }
+
+  public void stop() {
+    if (!state.compareAndSet(STATE_STARTED, STATE_SHUTDOWN) && !state
+        .compareAndSet(STATE_INIT, STATE_SHUTDOWN) && state.get() != STATE_SHUTDOWN) {
+      throw new IllegalStateException("WheelTimer.state is illegal");
+    }
+    executor.shutdown();
+    worker.shutdown();
+    log.info("WheelTimer stopped");
+  }
+
+  private void doWork() {
+    Slot slot = null;
+    try {
+      slot = delayQueue.poll(100, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    if (slot == null) {
+      return;
+    }
+    readWriteLock.writeLock().lock();
+    try {
+      while (slot != null) {
+        wheel.advanceClock(slot.getDeadline());
+        Task<?> task = slot.head;
+        while (task != null) {
+          Task<?> next = slot.remove(task);
+          if (!task.isCancelled()) {
+            addTask(task);
+          }
+          task = next;
+        }
+        slot = delayQueue.poll();
+      }
+    } finally {
+      readWriteLock.writeLock().unlock();
+    }
+  }
+
+  private void addTask(Task<?> task) {
+    if (!wheel.add(task) && !task.isCancelled()) {
+      executor.execute(task);
+    }
+  }
+
+}

@@ -38,8 +38,7 @@ public class ViewResult implements Result {
 
   public ViewResult() {
     Request request = Request.current();
-    addAttribute("ctx", request.getContextPath());
-    addAttribute("request", request);
+    addAttribute("ctx", request.getContextPath()).addAttribute("request", request);
   }
 
   /**

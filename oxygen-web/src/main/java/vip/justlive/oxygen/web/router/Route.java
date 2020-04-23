@@ -42,7 +42,7 @@ public class Route {
   /**
    * 方法
    */
-  private Set<HttpMethod> methods = new HashSet<>(1, 1f);
+  private final Set<HttpMethod> methods = new HashSet<>(1, 1f);
   /**
    * 请求路径
    */
@@ -57,7 +57,7 @@ public class Route {
   @Setter
   private RouteHandler handler;
 
-  private List<String> pathVars = new LinkedList<>();
+  private final List<String> pathVars = new LinkedList<>();
 
   @Setter
   private Route next;

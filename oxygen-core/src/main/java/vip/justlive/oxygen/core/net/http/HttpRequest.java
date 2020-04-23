@@ -47,7 +47,7 @@ public class HttpRequest {
   private boolean followRedirects = true;
   private HttpMethod method;
   private Charset charset = StandardCharsets.UTF_8;
-  private Map<String, String> headers = new HashMap<>(4);
+  private final Map<String, String> headers = new HashMap<>(4);
   private Object queryParam;
   private Object body;
   private Multipart multipart;

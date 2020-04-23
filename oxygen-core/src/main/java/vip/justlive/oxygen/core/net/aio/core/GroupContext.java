@@ -109,6 +109,7 @@ public class GroupContext {
   public void close() {
     stopped = true;
     channels.values().forEach(new CaughtConsumer<>(ChannelContext::close));
+    channels.clear();
     if (channelGroup != null) {
       channelGroup.shutdown();
     }

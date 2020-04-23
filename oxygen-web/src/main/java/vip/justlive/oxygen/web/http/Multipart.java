@@ -39,8 +39,8 @@ public class Multipart implements Serializable {
    * boundary
    */
   private final byte[] boundary;
-  private final FileCleaner cleaner = new FileCleaner();
-  private transient Map<String, MultipartItem> data;
+  private final transient FileCleaner cleaner = new FileCleaner();
+  private final transient Map<String, MultipartItem> data;
 
   public Multipart(String boundary, String encoding) {
     try {

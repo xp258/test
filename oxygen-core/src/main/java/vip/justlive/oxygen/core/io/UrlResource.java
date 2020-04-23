@@ -32,7 +32,7 @@ import vip.justlive.oxygen.core.util.Urls;
  */
 public class UrlResource implements SourceResource {
 
-  private URL url;
+  private final URL url;
 
   /**
    * 使用{@code URL}创建{@code UrlResource}

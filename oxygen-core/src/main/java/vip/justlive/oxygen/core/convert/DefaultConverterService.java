@@ -31,13 +31,13 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
   /**
    * 转换器集合
    */
-  private Map<ConverterTypePair, Converter<Object, Object>> converters = new HashMap<>(8, 1);
-  private Map<ConverterTypePair, ArrayConverter> arrayConverters = new HashMap<>(8, 1);
+  private final Map<ConverterTypePair, Converter<Object, Object>> converters = new HashMap<>(8, 1);
+  private final Map<ConverterTypePair, ArrayConverter> arrayConverters = new HashMap<>(8, 1);
 
   public DefaultConverterService() {
-    addConverter(new StringToBooleanConverter()).addConverter(new StringToCharacterConverter())
-        .addConverterFactory(new StringToNumberConverterFactory())
-        .addArrayConverter(new StringToArrayConverter(this));
+    addConverter(new StringToBooleanConverter()).addArrayConverter(new StringToArrayConverter(this))
+        .addConverter(new StringToCharacterConverter())
+        .addConverterFactory(new StringToNumberConverterFactory());
   }
 
   /**

@@ -33,6 +33,7 @@ public class Page<T> implements Serializable {
 
   private boolean searchCount = true;
   private Long totalNumber;
+  @SuppressWarnings("squid:S1948")
   private List<T> items;
 
   private boolean hasPaged;

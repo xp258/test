@@ -24,5 +24,16 @@ public class MessageDigestEncoderTest {
 
     DelegateEncoder e = new DelegateEncoder("MD5");
     assertTrue(e.match(source, "{MD5}96e79218965eb72c92a549dd5a330112"));
+
+    e = new DelegateEncoder("SHA-1");
+    System.out.println(e.encode(source));
+    assertTrue(e.match(source, "{SHA-1}3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d"));
+
+
+    e = new DelegateEncoder("SHA-256");
+    System.out.println(e.encode(source));
+    assertTrue(e.match(source, "{SHA-256}bcb15f821479b4d5772bd0ca866c00ad5f926e3580720659cc80d39c9d09802a"));
+
+
   }
 }

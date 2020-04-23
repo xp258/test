@@ -29,11 +29,11 @@ public class ConverterTypePair {
   /**
    * 源类型
    */
-  private Class<?> sourceType;
+  private final Class<?> sourceType;
   /**
    * 目标类型
    */
-  private Class<?> targetType;
+  private final Class<?> targetType;
 
   private ConverterTypePair(Class<?> sourceType, Class<?> targetType) {
     this.sourceType = sourceType;

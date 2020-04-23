@@ -39,8 +39,7 @@ public class MacEncoder extends BaseEncoder {
   private boolean useBase64 = false;
 
   public MacEncoder(String algorithm, String secret) {
-    this.algorithm = MoreObjects.notNull(algorithm);
-    this.secret = MoreObjects.notNull(secret).getBytes(StandardCharsets.UTF_8);
+    this(algorithm, MoreObjects.notNull(secret).getBytes(StandardCharsets.UTF_8));
   }
 
   public MacEncoder(String algorithm, byte[] secret) {

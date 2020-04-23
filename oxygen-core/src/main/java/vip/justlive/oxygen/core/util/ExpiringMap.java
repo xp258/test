@@ -76,51 +76,52 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 失效监听
    */
-  private transient List<ExpiredListener<K, V>> asyncExpiredListeners;
+  private final transient List<ExpiredListener<K, V>> asyncExpiredListeners;
   /**
    * 名称
    */
   @Getter
-  private String name;
+  private final String name;
   /**
    * 最大数量
    */
   @Getter
-  private int maxSize;
+  private final int maxSize;
   /**
    * 有效期
    */
   @Getter
-  private long duration;
+  private final long duration;
   /**
    * 有效期单位
    */
   @Getter
-  private TimeUnit timeUnit;
+  private final TimeUnit timeUnit;
   /**
    * 失效策略
    */
   @Getter
-  private ExpiringPolicy expiringPolicy;
+  private final ExpiringPolicy expiringPolicy;
   /**
    * 失效清除策略
    */
   @Getter
-  private CleanPolicy cleanPolicy;
+  private final CleanPolicy cleanPolicy;
   /**
    * 定时清理延迟
    */
   @Getter
-  private int scheduleDelay;
+  private final int scheduleDelay;
   /**
    * 累积阈值
    */
   @Getter
-  private int accumulateThreshold;
+  private final int accumulateThreshold;
   /**
    * 实际数据
    */
-  private LruMap<K, V> data;
+  @SuppressWarnings("squid:S1948")
+  private final LruMap<K, V> data;
 
   /**
    * 构造函数
@@ -134,9 +135,10 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     timeUnit = builder.timeUnit;
     cleanPolicy = builder.cleanPolicy;
     expiringPolicy = builder.expiringPolicy;
-    scheduleDelay = builder.scheduleDelay;
-    if (scheduleDelay <= 0) {
+    if (builder.scheduleDelay <= 0) {
       scheduleDelay = Math.max((int) timeUnit.toSeconds(duration) / 4, 60);
+    } else {
+      scheduleDelay = builder.scheduleDelay;
     }
     accumulateThreshold = builder.accumulateThreshold;
     int index = INS.getAndIncrement();
@@ -384,14 +386,15 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean remove(Object key, Object value) {
     writeLock.lock();
     try {
-      ExpiringValue<V> wrapValue = data.get(key);
+      @SuppressWarnings("unchecked")
+      K k = (K) key;
+      ExpiringValue<V> wrapValue = data.get(k);
       if (wrapValue != null && !wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
-        notifyListener((K) key, wrapValue.value, RemovalCause.EXPLICIT);
-        data.remove(key);
+        notifyListener(k, wrapValue.value, RemovalCause.EXPLICIT);
+        data.remove(k);
         return true;
       }
       return false;

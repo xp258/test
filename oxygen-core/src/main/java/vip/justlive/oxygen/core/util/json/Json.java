@@ -10,7 +10,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Json {
 
-  private static final JsonWriter WRITER = new JsonWriter();
+  private final JsonWriter WRITER = new JsonWriter();
 
   /**
    * object to string
@@ -18,7 +18,7 @@ public class Json {
    * @param value object
    * @return string
    */
-  public static String toJson(Object value) {
+  public String toJson(Object value) {
     return WRITER.toJson(value);
   }
 

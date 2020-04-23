@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutorPool<V> extends ExecutorCompletionService<V> {
 
-  private AtomicInteger count = new AtomicInteger(0);
+  private final AtomicInteger count = new AtomicInteger(0);
 
   /**
    * 使用cached pool构造

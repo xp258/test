@@ -35,9 +35,9 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
   /**
    * 配置路径
    */
-  private String[] locations;
+  private final String[] locations;
 
-  private Properties props = new Properties();
+  private final Properties props = new Properties();
 
   /**
    * 使用路径创建{@code PropertiesLoader}
