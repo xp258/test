@@ -16,7 +16,6 @@ package vip.justlive.oxygen.web.server.aio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
@@ -44,7 +43,7 @@ public class AioWebServer implements WebServer {
     WebConf webConf = ConfigFactory.load(WebConf.class);
     GroupContext groupContext = new GroupContext(
         new HttpServerAioHandler(webConf.getContextPath()));
-    groupContext.setAioListener(new HttpServerAioListener());
+    groupContext.setAioListener(new HttpServerAioListener(serverConf));
     groupContext.setAcceptThreads(serverConf.getAcceptThreads());
     groupContext.setAcceptMaxWaiter(serverConf.getAcceptMaxWaiter());
     groupContext.setWorkerThreads(serverConf.getWorkerThreads());
@@ -57,11 +56,6 @@ public class AioWebServer implements WebServer {
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }
-    groupContext.getScheduledExecutor().scheduleWithFixedDelay(
-        new ConnectionTimeoutUpdater(groupContext, serverConf.getAioIdleTimeout(),
-            serverConf.getAioRequestTimeout()), serverConf.getAioIdleTimeout(),
-        serverConf.getAioIdleTimeout(), TimeUnit.MILLISECONDS);
-
     log.info("aio-web-server started and listened on port [{}] with context path [{}]", this.port,
         webConf.getContextPath());
   }

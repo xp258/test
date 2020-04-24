@@ -23,7 +23,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.LongUnaryOperator;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.RepeatRunnable;
 import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
 
@@ -38,14 +40,18 @@ public class WheelTimer {
   private static final int STATE_INIT = 0;
   private static final int STATE_STARTED = 1;
   private static final int STATE_SHUTDOWN = 2;
+  private static final long POLL_TIMEOUT;
   private static final ThreadFactory FACTORY;
-  private static final WheelTimer SECOND_TIMER;
+  private static final WheelTimer GLOBAL_TIMER;
 
   static {
+    POLL_TIMEOUT = Long.parseLong(ConfigFactory.getProperty("wheel_timer.poll.timeout", "100"));
     FACTORY = new ThreadFactoryBuilder().setDaemon(true).setPriority(Thread.NORM_PRIORITY)
         .setNameFormat("wheel-task-%d").build();
-    SECOND_TIMER = new WheelTimer(1000, Integer.getInteger("wheel_timer.second.wheel_size", 60),
-        Integer.getInteger("wheel_timer.second.pool_size", 10));
+    GLOBAL_TIMER = new WheelTimer(
+        Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.duration", "1000")),
+        Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.wheel_size", "60")),
+        Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.pool_size", "10")));
   }
 
   private final long duration;
@@ -74,12 +80,18 @@ public class WheelTimer {
   }
 
   /**
-   * 秒级时间轮
+   * 全局时间轮，通过以下参数可进行配置，默认为秒级时间轮
+   *
+   * wheel_timer.global.duration=1000
+   * <br>
+   * wheel_timer.global.wheel_size=60
+   * <br>
+   * wheel_timer.global.pool_size=10
    *
    * @return WheelTimer
    */
-  public static WheelTimer secondTimer() {
-    return SECOND_TIMER;
+  public static WheelTimer global() {
+    return GLOBAL_TIMER;
   }
 
   /**
@@ -148,10 +160,7 @@ public class WheelTimer {
    */
   public ScheduledFuture<Void> scheduleAtFixedRate(Runnable command, long initialDelay, long period,
       TimeUnit unit) {
-    long deadline = check(initialDelay, unit);
-    PeriodTask task = new PeriodTask(deadline, command, -unit.toMillis(period), this);
-    addTaskInLock(task);
-    return task;
+    return scheduleWithDelay(command, initialDelay, unit, d -> d + unit.toMillis(period));
   }
 
   /**
@@ -165,8 +174,23 @@ public class WheelTimer {
    */
   public ScheduledFuture<Void> scheduleWithFixedDelay(Runnable command, long initialDelay,
       long delay, TimeUnit unit) {
+    return scheduleWithDelay(command, initialDelay, unit,
+        d -> System.currentTimeMillis() + unit.toMillis(delay));
+  }
+
+  /**
+   * 自定义周期任务
+   *
+   * @param command 任务
+   * @param initialDelay 初始延迟
+   * @param unit 时间周期
+   * @param operator 获取周期函数, 返回Long.MIN_VALUE可终止任务
+   * @return ScheduledFuture
+   */
+  public ScheduledFuture<Void> scheduleWithDelay(Runnable command, long initialDelay, TimeUnit unit,
+      LongUnaryOperator operator) {
     long deadline = check(initialDelay, unit);
-    PeriodTask task = new PeriodTask(deadline, command, unit.toMillis(delay), this);
+    PeriodTask task = new PeriodTask(deadline, command, operator, this);
     addTaskInLock(task);
     return task;
   }
@@ -180,7 +204,7 @@ public class WheelTimer {
   private void doWork() {
     Slot slot = null;
     try {
-      slot = delayQueue.poll(100, TimeUnit.MILLISECONDS);
+      slot = delayQueue.poll(POLL_TIMEOUT, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }

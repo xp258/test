@@ -63,8 +63,7 @@ public class SystemUtils {
     if (!isValidPort(port)) {
       return false;
     }
-    try (ServerSocket ignored = ServerSocketFactory.getDefault()
-        .createServerSocket(port, 1, InetAddress.getLocalHost())) {
+    try (ServerSocket ignored = ServerSocketFactory.getDefault().createServerSocket(port)) {
       return true;
     } catch (Exception e) {
       return false;

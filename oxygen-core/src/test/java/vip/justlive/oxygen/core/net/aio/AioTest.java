@@ -101,7 +101,58 @@ public class AioTest {
     run();
   }
 
-//  @Test
+  @Test
+  public void test1() throws IOException {
+    int port = SystemUtils.findAvailablePort();
+    InetSocketAddress address = new InetSocketAddress("localhost", port);
+
+    server(address);
+
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    group.setRetryEnabled(true).setRetryInterval(1000L).setRetryMaxAttempts(10).setBeatInterval(1000);
+    Client client = new Client(group);
+    client.connect(address);
+
+    ThreadUtils.sleep(5000);
+
+    server(address);
+
+    ThreadUtils.sleep(5000);
+
+  }
+
+  @Test
+  public void test2() throws IOException {
+    int port = SystemUtils.findAvailablePort();
+    InetSocketAddress address = new InetSocketAddress("localhost", port);
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    Server server = new Server(group);
+    server.start(address);
+
+    group = new GroupContext(new LengthFrameHandler());
+    group.setBeatInterval(3000);
+    Client client = new Client(group);
+    ChannelContext channel = client.connect(address);
+
+    ThreadUtils.sleep(4500);
+    channel.write(new LengthFrame().setBody("asdfg".getBytes()));
+
+    ThreadUtils.sleep(8000);
+  }
+
+  private void server(InetSocketAddress address) throws IOException {
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    Server server = new Server(group);
+    server.start(address);
+
+    new Thread(() -> {
+      ThreadUtils.sleep(2000);
+      server.stop();
+    }).start();
+
+  }
+
+  //  @Test
   public void tx() throws IOException {
     int port = SystemUtils.findAvailablePort();
     new Thread(() -> {
@@ -145,6 +196,7 @@ public class AioTest {
 
   private void run() throws IOException {
     int port = SystemUtils.findAvailablePort();
+    ThreadUtils.sleep(500);
     InetSocketAddress address = new InetSocketAddress(port);
     AtomicLong current = new AtomicLong();
     int max = 10000;

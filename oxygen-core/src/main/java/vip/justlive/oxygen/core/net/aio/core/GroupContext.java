@@ -17,7 +17,6 @@ package vip.justlive.oxygen.core.net.aio.core;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +93,6 @@ public class GroupContext {
 
   private ThreadPoolExecutor groupExecutor;
   private ThreadPoolExecutor workerExecutor;
-  private ScheduledExecutorService scheduledExecutor;
 
   private AsynchronousChannelGroup channelGroup;
 
@@ -117,9 +115,6 @@ public class GroupContext {
     if (workerExecutor != null) {
       workerExecutor.shutdown();
     }
-    if (scheduledExecutor != null) {
-      scheduledExecutor.shutdown();
-    }
   }
 
   public ThreadPoolExecutor getGroupExecutor() {
@@ -139,13 +134,6 @@ public class GroupContext {
       workerExecutor.prestartCoreThread();
     }
     return workerExecutor;
-  }
-
-  public ScheduledExecutorService getScheduledExecutor() {
-    if (scheduledExecutor == null) {
-      scheduledExecutor = ThreadUtils.newScheduledExecutor(5, "aio-scheduled-%d");
-    }
-    return scheduledExecutor;
   }
 
   /**

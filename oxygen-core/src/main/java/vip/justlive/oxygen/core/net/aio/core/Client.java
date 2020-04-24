@@ -21,6 +21,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.SystemUtils;
+import vip.justlive.oxygen.core.util.timer.WheelTimer;
 
 /**
  * aio 客户端
@@ -31,14 +32,9 @@ public class Client {
 
   @Getter
   private final GroupContext groupContext;
-  private final BeatProcessor beatProcessor;
-  private final RetryProcessor retryProcessor;
-  private volatile boolean started;
 
   public Client(GroupContext groupContext) {
     this.groupContext = groupContext;
-    this.beatProcessor = new BeatProcessor(this);
-    this.retryProcessor = new RetryProcessor(this);
   }
 
   /**
@@ -78,22 +74,16 @@ public class Client {
         .withThreadPool(groupContext.getGroupExecutor());
     groupContext.setChannelGroup(channelGroup);
     AsynchronousSocketChannel channel = Utils.create(groupContext, bind);
+    groupContext.setAioListener(new ComposeAioListener().add(ClientAioListener.INSTANCE)
+        .add(groupContext.getAioListener()));
+
     ChannelContext channelContext = new ChannelContext(groupContext, channel, false);
     channelContext.setServerAddress(remote);
     channel.connect(remote, channelContext, ConnectHandler.INSTANCE);
 
-    if (started) {
-      return channelContext;
-    }
-    started = true;
-    if (groupContext.getAioHandler().beat(channelContext) != null) {
-      groupContext.getScheduledExecutor()
-          .schedule(beatProcessor, groupContext.getBeatInterval(), TimeUnit.MILLISECONDS);
-    }
-    if (groupContext.isRetryEnabled()) {
-      groupContext.getScheduledExecutor()
-          .schedule(retryProcessor, groupContext.getRetryInterval(), TimeUnit.MILLISECONDS);
-    }
+    BeatProcessor beat = new BeatProcessor(channelContext);
+    WheelTimer.global()
+        .scheduleWithDelay(beat, groupContext.getBeatInterval(), TimeUnit.MILLISECONDS, beat);
     return channelContext;
   }
 

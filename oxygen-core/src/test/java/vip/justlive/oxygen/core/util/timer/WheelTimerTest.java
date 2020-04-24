@@ -68,7 +68,7 @@ public class WheelTimerTest {
 
   @Test
   public void test1() {
-    WheelTimer timer = WheelTimer.secondTimer();
+    WheelTimer timer = WheelTimer.global();
 
     AtomicInteger count = new AtomicInteger();
     ScheduledFuture<Void> rate = timer

@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.core.util.timer;
 
+import java.util.function.LongUnaryOperator;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -24,12 +25,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PeriodTask extends Task<Void> {
 
-  final long period;
   final WheelTimer timer;
+  final LongUnaryOperator operator;
 
-  PeriodTask(long deadline, Runnable runnable, long period, WheelTimer timer) {
+  PeriodTask(long deadline, Runnable runnable, LongUnaryOperator operator, WheelTimer timer) {
     super(deadline, runnable);
-    this.period = period;
+    this.operator = operator;
     this.timer = timer;
   }
 
@@ -38,11 +39,10 @@ public class PeriodTask extends Task<Void> {
     if (!runAndReset()) {
       return;
     }
-    if (period > 0) {
-      deadline = System.currentTimeMillis() + period;
-    } else {
-      deadline -= period;
+    long value = operator.applyAsLong(deadline);
+    if (value != Long.MIN_VALUE) {
+      deadline = value;
+      timer.addTask(this);
     }
-    timer.addTask(this);
   }
 }
