@@ -15,69 +15,40 @@
 package vip.justlive.oxygen.core.util.timer;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * 任务
  *
  * @author wubo
  */
-public class Task<T> implements RunnableFuture<T> {
+public class Task<T> extends FutureTask<T> implements ScheduledFuture<T> {
 
-  private final Callable<T> callable;
-  private final CompletableFuture<T> future;
-  final long deadline;
+  long deadline;
 
   Task<?> next;
   Task<?> prev;
 
   Task(long deadline, Callable<T> callable) {
+    super(callable);
     this.deadline = deadline;
-    this.callable = callable;
-    this.future = new CompletableFuture<>();
+  }
+
+  Task(long deadline, Runnable runnable) {
+    super(runnable, null);
+    this.deadline = deadline;
   }
 
   @Override
-  public boolean cancel(boolean mayInterruptIfRunning) {
-    return future.cancel(mayInterruptIfRunning);
+  public long getDelay(TimeUnit unit) {
+    return unit.convert(deadline - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public boolean isCancelled() {
-    return future.isCancelled();
+  public int compareTo(Delayed o) {
+    return Long.compare(deadline, ((Task<?>) o).deadline);
   }
-
-  @Override
-  public boolean isDone() {
-    return future.isDone();
-  }
-
-  @Override
-  public T get() throws InterruptedException, ExecutionException {
-    return future.get();
-  }
-
-  @Override
-  public T get(long timeout, TimeUnit unit)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    return future.get(timeout, unit);
-  }
-
-  @Override
-  public void run() {
-    if (future.isCancelled()) {
-      return;
-    }
-
-    try {
-      future.complete(callable.call());
-    } catch (@SuppressWarnings("squid:S1181") Throwable e) {
-      future.completeExceptionally(e);
-    }
-  }
-
 }

@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core.util.timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
@@ -43,9 +44,9 @@ public class WheelTimerTest {
       return c;
     };
 
-    timer.addTask(callable, 2, TimeUnit.SECONDS);
-    timer.addTask(callable, 3, TimeUnit.SECONDS);
-    Future<Integer> future = timer.addTask(callable, 7, TimeUnit.SECONDS);
+    timer.schedule(callable, 2, TimeUnit.SECONDS);
+    timer.schedule(callable, 3, TimeUnit.SECONDS);
+    Future<Integer> future = timer.schedule(callable, 7, TimeUnit.SECONDS);
 
     Assert.assertEquals(0, count.get());
 
@@ -60,29 +61,36 @@ public class WheelTimerTest {
 
     System.out.println(future.get());
 
-    timer.stop();
+    timer.shutdown();
+
+    Assert.assertTrue(timer.isShutdown());
   }
 
+  @Test
   public void test1() {
-    WheelTimer timer = new WheelTimer(1000, 60, 2);
-    timer.start();
+    WheelTimer timer = WheelTimer.secondTimer();
 
-    timer.addTask(() -> call(2), 2, TimeUnit.MILLISECONDS);
-    timer.addTask(() -> call(5), 5, TimeUnit.MILLISECONDS);
-    timer.addTask(() -> call(3), 3, TimeUnit.SECONDS);
-    timer.addTask(() -> call(6), 6, TimeUnit.SECONDS);
-    for (int i = 0; i < 1000; i++) {
-      final int a = 1000 - i;
-      timer.addTask(() -> call(a), a, TimeUnit.SECONDS);
-    }
+    AtomicInteger count = new AtomicInteger();
+    ScheduledFuture<Void> rate = timer
+        .scheduleAtFixedRate(() -> call(count), 1, 2, TimeUnit.SECONDS);
+    ScheduledFuture<Void> delay = timer
+        .scheduleWithFixedDelay(() -> call(count), 1, 2, TimeUnit.SECONDS);
 
-    ThreadUtils.sleep(200000);
-    timer.stop();
+    ThreadUtils.sleep(5900);
+    Assert.assertEquals(5, count.get());
+
+    rate.cancel(true);
+
+    ThreadUtils.sleep(4000);
+
+    Assert.assertTrue(rate.isDone());
+    Assert.assertFalse(delay.isDone());
+
   }
 
-  private Integer call(int i) {
-    log.info("call {}", i);
-    return i;
+  private void call(AtomicInteger count) {
+    log.info("call {}", count.getAndIncrement());
+    ThreadUtils.sleep(1000);
   }
 
 }

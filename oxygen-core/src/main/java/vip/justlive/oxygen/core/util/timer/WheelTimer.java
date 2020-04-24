@@ -16,8 +16,8 @@ package vip.justlive.oxygen.core.util.timer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -39,10 +39,13 @@ public class WheelTimer {
   private static final int STATE_STARTED = 1;
   private static final int STATE_SHUTDOWN = 2;
   private static final ThreadFactory FACTORY;
+  private static final WheelTimer SECOND_TIMER;
 
   static {
     FACTORY = new ThreadFactoryBuilder().setDaemon(true).setPriority(Thread.NORM_PRIORITY)
         .setNameFormat("wheel-task-%d").build();
+    SECOND_TIMER = new WheelTimer(1000, Integer.getInteger("wheel_timer.second.wheel_size", 60),
+        Integer.getInteger("wheel_timer.second.pool_size", 10));
   }
 
   private final long duration;
@@ -71,30 +74,17 @@ public class WheelTimer {
   }
 
   /**
-   * 添加任务
+   * 秒级时间轮
    *
-   * @param callable 任务
-   * @param delay 延迟
-   * @param unit 单位
-   * @param <T> 泛型
-   * @return Future
+   * @return WheelTimer
    */
-  public <T> Future<T> addTask(Callable<T> callable, long delay, TimeUnit unit) {
-    start();
-    long deadline = System.currentTimeMillis() + unit.toMillis(delay);
-    if (delay > 0 && deadline < 0) {
-      deadline = Long.MAX_VALUE;
-    }
-    Task<T> task = new Task<>(deadline, callable);
-    readWriteLock.readLock().lock();
-    try {
-      addTask(task);
-    } finally {
-      readWriteLock.readLock().unlock();
-    }
-    return task;
+  public static WheelTimer secondTimer() {
+    return SECOND_TIMER;
   }
 
+  /**
+   * 启动时间轮，添加任务时会自动执行
+   */
   public void start() {
     int stateValue = state.get();
     if (stateValue != STATE_INIT && stateValue != STATE_STARTED) {
@@ -109,14 +99,82 @@ public class WheelTimer {
     log.info("WheelTimer started");
   }
 
-  public void stop() {
+  /**
+   * 关闭时间轮
+   */
+  public void shutdown() {
     if (!state.compareAndSet(STATE_STARTED, STATE_SHUTDOWN) && !state
         .compareAndSet(STATE_INIT, STATE_SHUTDOWN) && state.get() != STATE_SHUTDOWN) {
       throw new IllegalStateException("WheelTimer.state is illegal");
     }
     executor.shutdown();
     worker.shutdown();
-    log.info("WheelTimer stopped");
+    log.info("WheelTimer shutdown");
+  }
+
+  /**
+   * 是否关闭
+   *
+   * @return true为关闭
+   */
+  public boolean isShutdown() {
+    return state.get() == STATE_SHUTDOWN;
+  }
+
+  /**
+   * 延迟任务
+   *
+   * @param callable 任务
+   * @param delay 延迟
+   * @param unit 时间单位
+   * @param <T> 泛型
+   * @return ScheduledFuture
+   */
+  public <T> ScheduledFuture<T> schedule(Callable<T> callable, long delay, TimeUnit unit) {
+    long deadline = check(delay, unit);
+    Task<T> task = new Task<>(deadline, callable);
+    addTaskInLock(task);
+    return task;
+  }
+
+  /**
+   * 固定周期任务
+   *
+   * @param command 任务
+   * @param initialDelay 初始延迟
+   * @param period 周期
+   * @param unit 时间单位
+   * @return ScheduledFuture
+   */
+  public ScheduledFuture<Void> scheduleAtFixedRate(Runnable command, long initialDelay, long period,
+      TimeUnit unit) {
+    long deadline = check(initialDelay, unit);
+    PeriodTask task = new PeriodTask(deadline, command, -unit.toMillis(period), this);
+    addTaskInLock(task);
+    return task;
+  }
+
+  /**
+   * 固定延迟任务
+   *
+   * @param command 任务
+   * @param initialDelay 初始延迟
+   * @param delay 延迟
+   * @param unit 时间单位
+   * @return ScheduledFuture
+   */
+  public ScheduledFuture<Void> scheduleWithFixedDelay(Runnable command, long initialDelay,
+      long delay, TimeUnit unit) {
+    long deadline = check(initialDelay, unit);
+    PeriodTask task = new PeriodTask(deadline, command, unit.toMillis(delay), this);
+    addTaskInLock(task);
+    return task;
+  }
+
+  void addTask(Task<?> task) {
+    if (!wheel.add(task) && !task.isCancelled()) {
+      executor.execute(task);
+    }
   }
 
   private void doWork() {
@@ -148,10 +206,22 @@ public class WheelTimer {
     }
   }
 
-  private void addTask(Task<?> task) {
-    if (!wheel.add(task) && !task.isCancelled()) {
-      executor.execute(task);
+  private void addTaskInLock(Task<?> task) {
+    readWriteLock.readLock().lock();
+    try {
+      addTask(task);
+    } finally {
+      readWriteLock.readLock().unlock();
     }
+  }
+
+  private long check(long delay, TimeUnit unit) {
+    start();
+    long deadline = System.currentTimeMillis() + unit.toMillis(delay);
+    if (delay > 0 && deadline < 0) {
+      deadline = Long.MAX_VALUE;
+    }
+    return deadline;
   }
 
 }
