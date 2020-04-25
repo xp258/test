@@ -27,6 +27,8 @@ import java.util.function.LongUnaryOperator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.CronExpression;
 import vip.justlive.oxygen.core.util.RepeatRunnable;
 import vip.justlive.oxygen.core.util.SecurityChecker;
 import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
@@ -67,13 +69,17 @@ public class WheelTimer {
   }
 
   public WheelTimer(long duration, int wheelSize, int taskPoolSize) {
+    this(duration, wheelSize, taskPoolSize, FACTORY);
+  }
+
+  public WheelTimer(long duration, int wheelSize, int taskPoolSize, ThreadFactory factory) {
     if (taskPoolSize < 1) {
       throw new IllegalArgumentException("taskPoolSize must be greater than 0: " + taskPoolSize);
     }
     this.duration = duration;
     this.wheelSize = wheelSize;
     this.executor = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 120, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(), FACTORY);
+        new LinkedBlockingQueue<>(), factory);
   }
 
   /**
@@ -140,6 +146,21 @@ public class WheelTimer {
   }
 
   /**
+   * 延迟任务
+   *
+   * @param command 任务
+   * @param delay 延迟
+   * @param unit 时间单位
+   * @return ScheduledFuture
+   */
+  public ScheduledFuture<Void> schedule(Runnable command, long delay, TimeUnit unit) {
+    long deadline = check(delay, unit);
+    Task<Void> task = new Task<>(deadline, command);
+    addTaskInLock(task);
+    return task;
+  }
+
+  /**
    * 固定周期任务
    *
    * @param command 任务
@@ -180,6 +201,24 @@ public class WheelTimer {
   public ScheduledFuture<Void> scheduleWithDelay(Runnable command, long initialDelay, TimeUnit unit,
       LongUnaryOperator operator) {
     long deadline = check(initialDelay, unit);
+    PeriodTask task = new PeriodTask(deadline, command, operator, this);
+    addTaskInLock(task);
+    return task;
+  }
+
+  /**
+   * cron任务
+   *
+   * @param command 任务
+   * @param cron 表达式
+   * @return ScheduledFuture
+   */
+  public ScheduledFuture<Void> scheduleOnCron(Runnable command, String cron) {
+    LongUnaryOperator operator = new CronExpression(cron).operator();
+    long deadline = operator.applyAsLong(0);
+    if (deadline == Long.MIN_VALUE) {
+      throw Exceptions.fail("cron doesn't have any match in the future");
+    }
     PeriodTask task = new PeriodTask(deadline, command, operator, this);
     addTaskInLock(task);
     return task;

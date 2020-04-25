@@ -110,13 +110,13 @@ public class WheelTimerTest {
     ScheduledFuture<Void> delay = timer
         .scheduleWithFixedDelay(() -> call(count), 1, 2, TimeUnit.SECONDS);
 
-    Callable<Integer> callable = () -> {
-      int c = count.incrementAndGet();
+    Runnable runnable = () -> {
+      int c = count.getAndIncrement();
       log.info("xxx {}", c);
-      return c;
     };
 
-    ScheduledFuture<Integer> f = timer.schedule(callable, 20, TimeUnit.SECONDS);
+    ScheduledFuture<Void> f = timer.schedule(runnable, 20, TimeUnit.SECONDS);
+    timer.schedule(runnable, 7, TimeUnit.SECONDS);
 
     ThreadUtils.sleep(5900);
     Assert.assertEquals(5, count.get());

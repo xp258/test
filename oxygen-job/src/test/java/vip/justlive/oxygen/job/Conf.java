@@ -25,7 +25,7 @@ public class Conf {
   @Scheduled(fixedDelay = "500")
   public void run1() throws InterruptedException {
     System.out.println(Thread.currentThread() + "|fixedDelay|" + System.currentTimeMillis());
-    TimeUnit.MILLISECONDS.sleep(340);
+    TimeUnit.MILLISECONDS.sleep(300);
   }
 
   @Scheduled(fixedRate = "${job.run2:500}")
@@ -33,7 +33,7 @@ public class Conf {
     System.out.println(Thread.currentThread() + "|fixedRate|" + System.currentTimeMillis());
   }
 
-  @Scheduled(onApplicationStart = true, cron = "0/5 * * * * ?", async = true)
+  @Scheduled(onApplicationStart = true, cron = "0/3 * * * * ?", async = true)
   public void run4() {
     System.out.println(Thread.currentThread() + "|cron|" + System.currentTimeMillis());
   }
