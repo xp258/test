@@ -104,6 +104,13 @@ public class WheelTimer {
     }
     executor.shutdown();
     worker.shutdown();
+    delayQueue.forEach(slot -> {
+      Task<?> task = slot.head;
+      while (task != null) {
+        task = slot.remove(task);
+      }
+    });
+    delayQueue.clear();
     log.info("WheelTimer shutdown");
   }
 
