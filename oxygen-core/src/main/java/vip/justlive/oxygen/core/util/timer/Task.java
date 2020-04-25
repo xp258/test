@@ -31,6 +31,7 @@ public class Task<T> extends FutureTask<T> implements ScheduledFuture<T> {
 
   Task<?> next;
   Task<?> prev;
+  Slot slot;
 
   Task(long deadline, Callable<T> callable) {
     super(callable);
@@ -40,6 +41,14 @@ public class Task<T> extends FutureTask<T> implements ScheduledFuture<T> {
   Task(long deadline, Runnable runnable) {
     super(runnable, null);
     this.deadline = deadline;
+  }
+
+  @Override
+  public boolean cancel(boolean mayInterruptIfRunning) {
+    if (slot != null) {
+      slot.remove(this);
+    }
+    return super.cancel(mayInterruptIfRunning);
   }
 
   @Override

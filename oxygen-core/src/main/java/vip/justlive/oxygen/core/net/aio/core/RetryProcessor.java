@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.LongUnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.util.timer.WheelTimer;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * 客户端重连任务
@@ -62,7 +62,7 @@ public class RetryProcessor implements Runnable, LongUnaryOperator {
       channelContext.join();
 
       BeatProcessor beat = new BeatProcessor(channelContext);
-      WheelTimer.global()
+      ThreadUtils.globalTimer()
           .scheduleWithDelay(beat, channelContext.getGroupContext().getBeatInterval(),
               TimeUnit.MILLISECONDS, beat);
     } catch (Exception e) {
@@ -73,9 +73,11 @@ public class RetryProcessor implements Runnable, LongUnaryOperator {
 
   @Override
   public long applyAsLong(long operand) {
-    if (!channelContext.isClosed() || (channelContext.getGroupContext().getRetryMaxAttempts() > 0
-        && channelContext.getRetryAttempts() > channelContext.getGroupContext()
-        .getRetryMaxAttempts())) {
+    boolean stop =
+        !channelContext.isClosed() || (channelContext.getGroupContext().getRetryMaxAttempts() > 0
+            && channelContext.getRetryAttempts() > channelContext.getGroupContext()
+            .getRetryMaxAttempts());
+    if (stop) {
       return Long.MIN_VALUE;
     }
     return System.currentTimeMillis() + channelContext.getGroupContext().getRetryInterval();

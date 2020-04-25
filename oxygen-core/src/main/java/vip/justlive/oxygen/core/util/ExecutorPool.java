@@ -41,7 +41,7 @@ public class ExecutorPool<V> extends ExecutorCompletionService<V> {
    * 使用cached pool构造
    */
   public ExecutorPool() {
-    this(ThreadUtils.cachedPool());
+    this(ThreadUtils.globalPool());
   }
 
 

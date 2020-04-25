@@ -15,7 +15,7 @@
 package vip.justlive.oxygen.core.net.aio.core;
 
 import java.util.concurrent.TimeUnit;
-import vip.justlive.oxygen.core.util.timer.WheelTimer;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * 客户端监听
@@ -24,13 +24,13 @@ import vip.justlive.oxygen.core.util.timer.WheelTimer;
  */
 public class ClientAioListener implements AioListener {
 
-  static ClientAioListener INSTANCE = new ClientAioListener();
+  static final ClientAioListener INSTANCE = new ClientAioListener();
 
   @Override
   public void onClosed(ChannelContext channelContext) {
     if (channelContext.getGroupContext().isRetryEnabled()) {
       RetryProcessor retry = new RetryProcessor(channelContext);
-      WheelTimer.global()
+      ThreadUtils.globalTimer()
           .scheduleWithDelay(retry, channelContext.getGroupContext().getRetryInterval(),
               TimeUnit.MILLISECONDS, retry);
     }

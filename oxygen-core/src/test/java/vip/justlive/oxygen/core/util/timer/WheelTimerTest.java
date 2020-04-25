@@ -66,9 +66,9 @@ public class WheelTimerTest {
     Assert.assertTrue(timer.isShutdown());
   }
 
-  @Test
+  @Test(expected = IllegalStateException.class)
   public void test1() {
-    WheelTimer timer = WheelTimer.global();
+    WheelTimer timer = ThreadUtils.globalTimer();
 
     AtomicInteger count = new AtomicInteger();
     ScheduledFuture<Void> rate = timer
@@ -76,15 +76,60 @@ public class WheelTimerTest {
     ScheduledFuture<Void> delay = timer
         .scheduleWithFixedDelay(() -> call(count), 1, 2, TimeUnit.SECONDS);
 
+    Callable<Integer> callable = () -> {
+      int c = count.incrementAndGet();
+      log.info("xxx {}", c);
+      return c;
+    };
+
+    timer.schedule(callable, 52, TimeUnit.MINUTES);
+    timer.schedule(callable, 52, TimeUnit.HOURS);
+    timer.schedule(callable, 365 * 400, TimeUnit.DAYS);
+
     ThreadUtils.sleep(5900);
     Assert.assertEquals(5, count.get());
 
     rate.cancel(true);
 
-    ThreadUtils.sleep(4000);
+    ThreadUtils.sleep(8000);
 
     Assert.assertTrue(rate.isDone());
     Assert.assertFalse(delay.isDone());
+
+    timer.shutdown();
+
+  }
+
+  @Test
+  public void test2() {
+    WheelTimer timer = new WheelTimer(1000, 20, 2);
+
+    AtomicInteger count = new AtomicInteger();
+    ScheduledFuture<Void> rate = timer
+        .scheduleAtFixedRate(() -> call(count), 1, 2, TimeUnit.SECONDS);
+    ScheduledFuture<Void> delay = timer
+        .scheduleWithFixedDelay(() -> call(count), 1, 2, TimeUnit.SECONDS);
+
+    Callable<Integer> callable = () -> {
+      int c = count.incrementAndGet();
+      log.info("xxx {}", c);
+      return c;
+    };
+
+    ScheduledFuture<Integer> f = timer.schedule(callable, 20, TimeUnit.SECONDS);
+
+    ThreadUtils.sleep(5900);
+    Assert.assertEquals(5, count.get());
+
+    rate.cancel(true);
+    f.cancel(true);
+
+    ThreadUtils.sleep(8000);
+
+    Assert.assertTrue(rate.isDone());
+    Assert.assertFalse(delay.isDone());
+
+    timer.shutdown();
 
   }
 

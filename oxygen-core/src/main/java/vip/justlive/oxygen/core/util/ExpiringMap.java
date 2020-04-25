@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,14 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  private static final ScheduledExecutorService SCHEDULED;
   private static final AtomicInteger INS = new AtomicInteger(0);
-
-  static {
-    int poolSize = Integer.getInteger("expiringMap.poolSize", 2);
-    SCHEDULED = ThreadUtils.newScheduledExecutor(poolSize, "ExpiringMap-%d");
-  }
 
   private final transient ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private final transient Lock readLock = readWriteLock.readLock();
@@ -143,8 +135,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     accumulateThreshold = builder.accumulateThreshold;
     int index = INS.getAndIncrement();
     name = MoreObjects.firstNonNull(builder.name, String.format("Unnamed-%d", index));
-    SCHEDULED.scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
-        TimeUnit.SECONDS);
+    ThreadUtils.globalTimer()
+        .scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
+            TimeUnit.SECONDS);
     data = new LruMap<K, V>().maxSize(maxSize).listeners(asyncExpiredListeners);
   }
 
@@ -389,8 +382,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   public boolean remove(Object key, Object value) {
     writeLock.lock();
     try {
-      @SuppressWarnings("unchecked")
-      K k = (K) key;
+      @SuppressWarnings("unchecked") K k = (K) key;
       ExpiringValue<V> wrapValue = data.get(k);
       if (wrapValue != null && !wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
         notifyListener(k, wrapValue.value, RemovalCause.EXPLICIT);
@@ -546,7 +538,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     if (log.isDebugEnabled() && size > 0) {
       log.debug("accumulate clean [{}] and now realSize is [{}]", this.name, size);
     }
-    SCHEDULED.execute(this::expiredClean);
+    ThreadUtils.globalPool().execute(this::expiredClean);
   }
 
   /**

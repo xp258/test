@@ -43,7 +43,7 @@ public class Slot implements Delayed {
     return sts;
   }
 
-  void addTask(Task<?> task) {
+  synchronized void addTask(Task<?> task) {
     if (head == null) {
       head = tail = task;
     } else {
@@ -51,10 +51,11 @@ public class Slot implements Delayed {
       task.prev = tail;
       tail = task;
     }
+    task.slot = this;
   }
 
   @SuppressWarnings("squid:S1452")
-  Task<?> remove(Task<?> task) {
+  synchronized Task<?> remove(Task<?> task) {
     Task<?> next = task.next;
     if (task.prev != null) {
       task.prev.next = next;
@@ -74,6 +75,7 @@ public class Slot implements Delayed {
     }
     task.prev = null;
     task.next = null;
+    task.slot = null;
     return next;
   }
 

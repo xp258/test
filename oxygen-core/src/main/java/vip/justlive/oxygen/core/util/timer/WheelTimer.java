@@ -24,9 +24,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.LongUnaryOperator;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.RepeatRunnable;
+import vip.justlive.oxygen.core.util.SecurityChecker;
 import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
 
 /**
@@ -42,28 +44,23 @@ public class WheelTimer {
   private static final int STATE_SHUTDOWN = 2;
   private static final long POLL_TIMEOUT;
   private static final ThreadFactory FACTORY;
-  private static final WheelTimer GLOBAL_TIMER;
 
   static {
     POLL_TIMEOUT = Long.parseLong(ConfigFactory.getProperty("wheel_timer.poll.timeout", "100"));
     FACTORY = new ThreadFactoryBuilder().setDaemon(true).setPriority(Thread.NORM_PRIORITY)
         .setNameFormat("wheel-task-%d").build();
-    GLOBAL_TIMER = new WheelTimer(
-        Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.duration", "1000")),
-        Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.wheel_size", "60")),
-        Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.pool_size", "10")));
   }
 
   private final long duration;
   private final int wheelSize;
   private final ThreadPoolExecutor executor;
-
-  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer", this::doWork);
+  @Getter
+  private final SecurityChecker securityChecker = new SecurityChecker();
   private final AtomicInteger state = new AtomicInteger(STATE_INIT);
   private final DelayQueue<Slot> delayQueue = new DelayQueue<>();
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-
   private Wheel wheel;
+  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer", this::doWork);
 
   public WheelTimer(long duration, int wheelSize) {
     this(duration, wheelSize, 1);
@@ -75,23 +72,8 @@ public class WheelTimer {
     }
     this.duration = duration;
     this.wheelSize = wheelSize;
-    this.executor = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 0, TimeUnit.MILLISECONDS,
+    this.executor = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 120, TimeUnit.SECONDS,
         new LinkedBlockingQueue<>(), FACTORY);
-  }
-
-  /**
-   * 全局时间轮，通过以下参数可进行配置，默认为秒级时间轮
-   *
-   * wheel_timer.global.duration=1000
-   * <br>
-   * wheel_timer.global.wheel_size=60
-   * <br>
-   * wheel_timer.global.pool_size=10
-   *
-   * @return WheelTimer
-   */
-  public static WheelTimer global() {
-    return GLOBAL_TIMER;
   }
 
   /**
@@ -115,6 +97,7 @@ public class WheelTimer {
    * 关闭时间轮
    */
   public void shutdown() {
+    securityChecker.checkPermission();
     if (!state.compareAndSet(STATE_STARTED, STATE_SHUTDOWN) && !state
         .compareAndSet(STATE_INIT, STATE_SHUTDOWN) && state.get() != STATE_SHUTDOWN) {
       throw new IllegalStateException("WheelTimer.state is illegal");

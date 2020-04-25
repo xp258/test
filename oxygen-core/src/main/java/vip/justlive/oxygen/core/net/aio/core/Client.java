@@ -21,7 +21,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.SystemUtils;
-import vip.justlive.oxygen.core.util.timer.WheelTimer;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * aio 客户端
@@ -82,7 +82,7 @@ public class Client {
     channel.connect(remote, channelContext, ConnectHandler.INSTANCE);
 
     BeatProcessor beat = new BeatProcessor(channelContext);
-    WheelTimer.global()
+    ThreadUtils.globalTimer()
         .scheduleWithDelay(beat, groupContext.getBeatInterval(), TimeUnit.MILLISECONDS, beat);
     return channelContext;
   }

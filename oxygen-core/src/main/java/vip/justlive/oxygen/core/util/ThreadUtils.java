@@ -19,10 +19,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.util.timer.WheelTimer;
 
 /**
  * 线程工具类
@@ -35,10 +37,9 @@ public class ThreadUtils {
   private final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal
       .withInitial(ConcurrentHashMap::new);
 
-  private final ThreadPoolExecutor CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-      60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
-      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("cached-pool-%d").build());
-
+  private ThreadFactory threadFactory;
+  private SecurityThreadPoolExecutor globalPool;
+  private WheelTimer globalTimer;
 
   /**
    * 线程存储键值
@@ -79,7 +80,7 @@ public class ThreadUtils {
    * @param nameFormat 线程名称format
    * @return 线程池
    */
-  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
         true);
@@ -96,7 +97,7 @@ public class ThreadUtils {
    * @param daemon 是否为守护线程
    * @return 线程池
    */
-  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat, boolean daemon) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
         new ThreadPoolExecutor.AbortPolicy(), daemon);
@@ -113,7 +114,7 @@ public class ThreadUtils {
    * @param handler 拒绝策略
    * @return 线程池
    */
-  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+  public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat,
       RejectedExecutionHandler handler) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
@@ -132,11 +133,11 @@ public class ThreadUtils {
    * @param daemon 是否为守护线程
    * @return 线程池
    */
-  public ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
-      int keepAliveSeconds, int queueCapacity, String nameFormat,
-      RejectedExecutionHandler handler, boolean daemon) {
-    return new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(queueCapacity),
+  public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat, RejectedExecutionHandler handler,
+      boolean daemon) {
+    return new SecurityThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds,
+        TimeUnit.SECONDS, new LinkedBlockingQueue<>(queueCapacity),
         new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(daemon).build(), handler);
   }
 
@@ -189,12 +190,72 @@ public class ThreadUtils {
   }
 
   /**
-   * 返回cached pool
+   * 默认全局线程工厂
+   *
+   * @return ThreadFactory
+   */
+  public synchronized ThreadFactory defaultThreadFactory() {
+    if (threadFactory == null) {
+      threadFactory = new ThreadFactoryBuilder().setDaemon(true).setPriority(Thread.NORM_PRIORITY)
+          .setNameFormat("def-pool-%d").build();
+    }
+    return threadFactory;
+  }
+
+  /**
+   * 添加关闭钩子
+   *
+   * @param runnable 任务
+   * @return Thread
+   */
+  public Thread addShutdownHook(Runnable runnable) {
+    Thread thread = defaultThreadFactory().newThread(runnable);
+    Runtime.getRuntime().addShutdownHook(thread);
+    return thread;
+  }
+
+  /**
+   * 全局pool
+   *
+   * thread_pool.global.pool_size=10
+   * <br>
+   * thread_pool.global.queue_size=100000
    *
    * @return pool
    */
-  public ThreadPoolExecutor cachedPool() {
-    return CACHED_POOL;
+  public synchronized SecurityThreadPoolExecutor globalPool() {
+    if (globalPool == null) {
+      int poolSize = Integer
+          .parseInt(ConfigFactory.getProperty("thread_pool.global.pool_size", "10"));
+      int queueSize = Integer
+          .parseInt(ConfigFactory.getProperty("thread_pool.global.queue_size", "100000"));
+      globalPool = newThreadPool(poolSize, poolSize, 120, queueSize, "global-pool-%d");
+      globalPool.setSecurityChecker(
+          new SecurityChecker().ownerThread(addShutdownHook(globalPool::shutdown)));
+    }
+    return globalPool;
   }
 
+  /**
+   * 全局时间轮，通过以下参数可进行配置，默认为毫秒级时间轮
+   *
+   * wheel_timer.global.duration=1
+   * <br>
+   * wheel_timer.global.wheel_size=60
+   * <br>
+   * wheel_timer.global.pool_size=10
+   *
+   * @return WheelTimer
+   */
+  public synchronized WheelTimer globalTimer() {
+    if (globalTimer == null) {
+      globalTimer = new WheelTimer(
+          Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.duration", "1")),
+          Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.wheel_size", "60")),
+          Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.pool_size", "10")));
+      globalTimer.getSecurityChecker()
+          .ownerThread(ThreadUtils.addShutdownHook(globalTimer::shutdown));
+    }
+    return globalTimer;
+  }
 }

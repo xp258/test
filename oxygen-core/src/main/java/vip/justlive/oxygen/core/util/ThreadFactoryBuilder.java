@@ -54,9 +54,8 @@ public class ThreadFactoryBuilder {
     final Boolean daemon = builder.daemon;
     final Integer priority = builder.priority;
     final UncaughtExceptionHandler uncaughtExceptionHandler = builder.uncaughtExceptionHandler;
-    final ThreadFactory backingThreadFactory =
-        (builder.backingThreadFactory != null) ? builder.backingThreadFactory
-            : Executors.defaultThreadFactory();
+    final ThreadFactory backingThreadFactory = MoreObjects
+        .firstNonNull(builder.backingThreadFactory, Executors.defaultThreadFactory());
     final AtomicLong count = (nameFormat != null) ? new AtomicLong(0) : null;
     return runnable -> {
       Thread thread = backingThreadFactory.newThread(runnable);

@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.net.aio.core.AioListener;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.timer.WheelTimer;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 import vip.justlive.oxygen.web.http.Response;
 
 /**
@@ -50,7 +50,7 @@ public class HttpServerAioListener implements AioListener {
     }
     ConnectionTimeout timeout = new ConnectionTimeout(channelContext, conf.getAioIdleTimeout(),
         conf.getAioRequestTimeout());
-    WheelTimer.global()
+    ThreadUtils.globalTimer()
         .scheduleWithDelay(timeout, conf.getAioIdleTimeout(), TimeUnit.MILLISECONDS, timeout);
   }
 
