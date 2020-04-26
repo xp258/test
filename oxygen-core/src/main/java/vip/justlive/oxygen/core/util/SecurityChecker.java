@@ -38,6 +38,7 @@ public class SecurityChecker {
    * 所属线程检查
    *
    * @param owner 所属线程
+   * @return SecurityChecker
    */
   public SecurityChecker ownerThread(Thread owner) {
     return addChecker(new OwnerThreadChecker(owner));
@@ -47,6 +48,7 @@ public class SecurityChecker {
    * 添加检查
    *
    * @param checker 检查
+   * @return SecurityChecker
    */
   public SecurityChecker addChecker(Checker checker) {
     checkers.add(checker);
@@ -64,6 +66,7 @@ public class SecurityChecker {
    * 删除检查
    *
    * @param checker 检查
+   * @return SecurityChecker
    */
   public SecurityChecker delChecker(Checker checker) {
     checkers.remove(checker);

@@ -161,9 +161,10 @@ public class ChannelContext {
    * 删除属性
    *
    * @param key 键
+   * @return deleted value
    */
-  public void removeAttr(String key) {
-    attrs.remove(key);
+  public Object removeAttr(String key) {
+    return attrs.remove(key);
   }
 
   /**
