@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.core.util;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -22,17 +23,42 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * 安全校验的线程池
+ * 增加安全校验的线程池
+ *
+ * 设置addWorkerFirst=true可先创建线程达到maximumPoolSize，而不是等队列满了才创建线程
  *
  * @author wubo
  */
+@Slf4j
+@Accessors(chain = true)
 public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
+
+  private static final Method ADD_WORKER;
+
+  static {
+    Method method = null;
+    try {
+      method = ThreadPoolExecutor.class
+          .getDeclaredMethod("addWorker", Runnable.class, boolean.class);
+      method.setAccessible(true);
+    } catch (NoSuchMethodException e) {
+      log.warn("ThreadPoolExecutor.addWorker cannot found", e);
+    }
+    ADD_WORKER = method;
+  }
 
   @Setter
   @Getter
   private SecurityChecker securityChecker;
+  @Getter
+  @Setter
+  private boolean addWorkerFirst;
+
+  private boolean addWorkerFailed;
 
   public SecurityThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
       TimeUnit unit, BlockingQueue<Runnable> workQueue) {
@@ -55,6 +81,13 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
   }
 
+  @Override
+  public void execute(Runnable command) {
+    if (addWorkerFirst && getCorePoolSize() < getMaximumPoolSize() && addTaskToWorker(command)) {
+      return;
+    }
+    super.execute(command);
+  }
 
   @Override
   public void shutdown() {
@@ -72,4 +105,16 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     return super.shutdownNow();
   }
 
+  private boolean addTaskToWorker(Runnable command) {
+    if (ADD_WORKER == null || addWorkerFailed) {
+      return false;
+    }
+    try {
+      return (boolean) ADD_WORKER.invoke(this, command, false);
+    } catch (@SuppressWarnings("squid:S1181") Throwable throwable) {
+      log.warn("ThreadPoolExecutor.addWorker invoke failed", throwable);
+      addWorkerFailed = true;
+      return false;
+    }
+  }
 }

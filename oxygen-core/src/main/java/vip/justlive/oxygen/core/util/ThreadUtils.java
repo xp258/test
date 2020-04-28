@@ -229,8 +229,8 @@ public class ThreadUtils {
           .parseInt(ConfigFactory.getProperty("thread_pool.global.pool_size", "10"));
       int queueSize = Integer
           .parseInt(ConfigFactory.getProperty("thread_pool.global.queue_size", "100000"));
-      globalPool = newThreadPool(poolSize, poolSize, 120, queueSize, "global-pool-%d");
-      globalPool.setSecurityChecker(
+      globalPool = newThreadPool(1, poolSize, 120, queueSize, "global-pool-%d");
+      globalPool.setAddWorkerFirst(true).setSecurityChecker(
           new SecurityChecker().ownerThread(addShutdownHook(globalPool::shutdown)));
     }
     return globalPool;

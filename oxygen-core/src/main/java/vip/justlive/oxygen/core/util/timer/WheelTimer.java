@@ -31,6 +31,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.CronExpression;
 import vip.justlive.oxygen.core.util.RepeatRunnable;
 import vip.justlive.oxygen.core.util.SecurityChecker;
+import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor;
 import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
 
 /**
@@ -78,8 +79,8 @@ public class WheelTimer {
     }
     this.duration = duration;
     this.wheelSize = wheelSize;
-    this.executor = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 120, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(), factory);
+    this.executor = new SecurityThreadPoolExecutor(1, taskPoolSize, 120, TimeUnit.SECONDS,
+        new LinkedBlockingQueue<>(), factory).setAddWorkerFirst(true);
   }
 
   /**
