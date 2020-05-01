@@ -14,14 +14,17 @@
 
 package vip.justlive.oxygen.core.util;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 增加安全校验的线程池
  *
- * 设置addWorkerFirst=true可先创建线程达到maximumPoolSize，而不是等队列满了才创建线程
+ * 使用PoolQueue可先创建线程达到maximumPoolSize，而不是等队列满了才创建线程
  *
  * @author wubo
  */
@@ -37,28 +40,10 @@ import lombok.extern.slf4j.Slf4j;
 @Accessors(chain = true)
 public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
 
-  private static final Method ADD_WORKER;
-
-  static {
-    Method method = null;
-    try {
-      method = ThreadPoolExecutor.class
-          .getDeclaredMethod("addWorker", Runnable.class, boolean.class);
-      method.setAccessible(true);
-    } catch (NoSuchMethodException e) {
-      log.warn("ThreadPoolExecutor.addWorker cannot found", e);
-    }
-    ADD_WORKER = method;
-  }
-
+  private final AtomicInteger submittedCount = new AtomicInteger(0);
   @Setter
   @Getter
   private SecurityChecker securityChecker;
-  @Getter
-  @Setter
-  private boolean addWorkerFirst;
-
-  private boolean addWorkerFailed;
 
   public SecurityThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
       TimeUnit unit, BlockingQueue<Runnable> workQueue) {
@@ -83,10 +68,16 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
 
   @Override
   public void execute(Runnable command) {
-    if (addWorkerFirst && getCorePoolSize() < getMaximumPoolSize() && addTaskToWorker(command)) {
-      return;
+    submittedCount.incrementAndGet();
+    try {
+      super.execute(command);
+    } catch (RejectedExecutionException e) {
+      if (getQueue() instanceof PoolQueue && getQueue().offer(command)) {
+        return;
+      }
+      submittedCount.decrementAndGet();
+      throw e;
     }
-    super.execute(command);
   }
 
   @Override
@@ -105,16 +96,42 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     return super.shutdownNow();
   }
 
-  private boolean addTaskToWorker(Runnable command) {
-    if (ADD_WORKER == null || addWorkerFailed) {
-      return false;
+  public int getSubmittedCount() {
+    return submittedCount.get();
+  }
+
+  @Override
+  protected void afterExecute(Runnable r, Throwable t) {
+    submittedCount.decrementAndGet();
+  }
+
+  @NoArgsConstructor
+  public static class PoolQueue extends LinkedBlockingQueue<Runnable> {
+
+    @Setter
+    private transient volatile SecurityThreadPoolExecutor pool;
+
+    PoolQueue(int capacity) {
+      super(capacity);
     }
-    try {
-      return (boolean) ADD_WORKER.invoke(this, command, false);
-    } catch (@SuppressWarnings("squid:S1181") Throwable throwable) {
-      log.warn("ThreadPoolExecutor.addWorker invoke failed", throwable);
-      addWorkerFailed = true;
-      return false;
+
+    @Override
+    public boolean offer(Runnable runnable) {
+      if (pool == null) {
+        return super.offer(runnable);
+      }
+      int poolSize = pool.getPoolSize();
+      if (poolSize >= pool.getMaximumPoolSize()) {
+        return super.offer(runnable);
+      }
+      if (pool.getSubmittedCount() <= poolSize) {
+        return super.offer(runnable);
+      }
+      // 当前线程小于最大线程数，触发addWorker方法
+      if (poolSize < pool.getMaximumPoolSize()) {
+        return false;
+      }
+      return super.offer(runnable);
     }
   }
 }

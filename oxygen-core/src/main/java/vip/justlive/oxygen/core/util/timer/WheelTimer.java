@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.util.timer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -32,6 +31,7 @@ import vip.justlive.oxygen.core.util.CronExpression;
 import vip.justlive.oxygen.core.util.RepeatRunnable;
 import vip.justlive.oxygen.core.util.SecurityChecker;
 import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor;
+import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
 
 /**
@@ -79,8 +79,11 @@ public class WheelTimer {
     }
     this.duration = duration;
     this.wheelSize = wheelSize;
-    this.executor = new SecurityThreadPoolExecutor(1, taskPoolSize, 120, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(), factory).setAddWorkerFirst(true);
+    PoolQueue queue = new PoolQueue();
+    SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor(1, taskPoolSize, 120,
+        TimeUnit.SECONDS, queue, factory);
+    queue.setPool(pool);
+    this.executor = pool;
   }
 
   /**

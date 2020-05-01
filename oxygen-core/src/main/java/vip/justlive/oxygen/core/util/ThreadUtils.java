@@ -15,7 +15,6 @@ package vip.justlive.oxygen.core.util;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -24,6 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.timer.WheelTimer;
 
 /**
@@ -136,9 +136,12 @@ public class ThreadUtils {
   public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat, RejectedExecutionHandler handler,
       boolean daemon) {
-    return new SecurityThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds,
-        TimeUnit.SECONDS, new LinkedBlockingQueue<>(queueCapacity),
+    PoolQueue queue = new PoolQueue(queueCapacity);
+    SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor(corePoolSize, maxPoolSize,
+        keepAliveSeconds, TimeUnit.SECONDS, queue,
         new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(daemon).build(), handler);
+    queue.setPool(pool);
+    return pool;
   }
 
   /**
@@ -230,7 +233,7 @@ public class ThreadUtils {
       int queueSize = Integer
           .parseInt(ConfigFactory.getProperty("thread_pool.global.queue_size", "100000"));
       globalPool = newThreadPool(1, poolSize, 120, queueSize, "global-pool-%d");
-      globalPool.setAddWorkerFirst(true).setSecurityChecker(
+      globalPool.setSecurityChecker(
           new SecurityChecker().ownerThread(addShutdownHook(globalPool::shutdown)));
     }
     return globalPool;

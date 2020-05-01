@@ -120,8 +120,7 @@ public class GroupContext {
   public ThreadPoolExecutor getGroupExecutor() {
     if (groupExecutor == null) {
       groupExecutor = ThreadUtils
-          .newThreadPool(1, acceptThreads, 120, acceptMaxWaiter, "aio-server-%d", daemon)
-          .setAddWorkerFirst(true);
+          .newThreadPool(1, acceptThreads, 120, acceptMaxWaiter, "aio-server-%d", daemon);
       groupExecutor.prestartCoreThread();
     }
     return groupExecutor;
@@ -130,8 +129,7 @@ public class GroupContext {
   public ThreadPoolExecutor getWorkerExecutor() {
     if (workerExecutor == null) {
       workerExecutor = ThreadUtils
-          .newThreadPool(1, workerThreads, 120, workerMaxWaiter, "aio-worker-%d")
-          .setAddWorkerFirst(true);
+          .newThreadPool(1, workerThreads, 120, workerMaxWaiter, "aio-worker-%d");
       workerExecutor.prestartCoreThread();
     }
     return workerExecutor;
