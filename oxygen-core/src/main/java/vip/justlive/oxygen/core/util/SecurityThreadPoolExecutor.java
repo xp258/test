@@ -108,6 +108,8 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
   @NoArgsConstructor
   public static class PoolQueue extends LinkedBlockingQueue<Runnable> {
 
+    private static final long serialVersionUID = 5267382526416848275L;
+
     @Setter
     private transient volatile SecurityThreadPoolExecutor pool;
 
