@@ -47,6 +47,7 @@ public class WheelTimer {
   private static final int STATE_SHUTDOWN = 2;
   private static final long POLL_TIMEOUT;
   private static final ThreadFactory FACTORY;
+  private static final AtomicInteger COUNT = new AtomicInteger();
 
   static {
     POLL_TIMEOUT = Long.parseLong(ConfigFactory.getProperty("wheel_timer.poll.timeout", "100"));
@@ -63,7 +64,8 @@ public class WheelTimer {
   private final DelayQueue<Slot> delayQueue = new DelayQueue<>();
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private Wheel wheel;
-  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer", this::doWork);
+  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer-" + COUNT.getAndIncrement(),
+      this::doWork);
 
   public WheelTimer(long duration, int wheelSize) {
     this(duration, wheelSize, 1);
