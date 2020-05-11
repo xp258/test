@@ -111,7 +111,7 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     private static final long serialVersionUID = 5267382526416848275L;
 
     @Setter
-    private transient volatile SecurityThreadPoolExecutor pool;
+    private transient SecurityThreadPoolExecutor pool;
 
     PoolQueue(int capacity) {
       super(capacity);

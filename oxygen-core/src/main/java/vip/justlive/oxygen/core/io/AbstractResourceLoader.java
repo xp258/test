@@ -29,10 +29,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.JarFileInfo;
 import vip.justlive.oxygen.core.util.PathMatcher;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.core.util.Urls;
-import vip.justlive.oxygen.core.util.Urls.JarFileInfo;
 
 /**
  * 抽象资源加载器

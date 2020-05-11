@@ -220,6 +220,7 @@ public class WheelTimer {
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> scheduleOnCron(Runnable command, String cron) {
+    start();
     LongUnaryOperator operator = new CronExpression(cron).operator();
     long deadline = operator.applyAsLong(0);
     if (deadline == Long.MIN_VALUE) {
