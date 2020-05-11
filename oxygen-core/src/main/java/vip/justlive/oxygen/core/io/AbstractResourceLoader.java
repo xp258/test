@@ -154,7 +154,7 @@ public abstract class AbstractResourceLoader {
    */
   private List<SourceResource> resolveAllClassPathResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    if (PathMatcher.isPattern(location)) {
+    if (Strings.isPattern(location)) {
       list.addAll(this.findMatchPath(location, true));
     } else {
       Enumeration<URL> res = loader.getResources(Urls.cutRootPath(location));
@@ -178,7 +178,7 @@ public abstract class AbstractResourceLoader {
    */
   private List<SourceResource> resolveClassPathResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    if (PathMatcher.isPattern(location)) {
+    if (Strings.isPattern(location)) {
       list.addAll(this.findMatchPath(location, false));
     } else {
       list.add(new ClassPathResource(location, loader));
@@ -195,7 +195,7 @@ public abstract class AbstractResourceLoader {
    */
   private List<SourceResource> resolveFileSystemResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    if (PathMatcher.isPattern(location)) {
+    if (Strings.isPattern(location)) {
       list.addAll(this.findMatchPath(location, false));
     } else {
       list.add(new FileSystemResource(location.substring(Strings.FILE_PREFIX.length())));
