@@ -141,38 +141,6 @@ public class AioTest {
     ThreadUtils.sleep(8000);
   }
 
-  @Test
-  public void test3() throws IOException {
-    InetSocketAddress address = new InetSocketAddress("localhost", 25678);
-    GroupContext group = new GroupContext(new LengthFrameHandler());
-    Server server = new Server(group);
-    server.start(address);
-
-    group = new GroupContext(new LengthFrameHandler());
-    Client client = new Client(group);
-
-    InetSocketAddress bind = new InetSocketAddress(24423);
-    List<Integer> list = new ArrayList<>();
-    for (int i = 0; i < 100; i++) {
-      try {
-        ChannelContext channel = client.connect(address, bind);
-        channel.join();
-        channel.close();
-        list.add(i);
-      } catch (Exception e) {
-//        e.printStackTrace();
-      }
-      System.gc();
-      ThreadUtils.sleep(1000);
-    }
-
-    System.gc();
-
-    ThreadUtils.sleep(1000);
-    System.out.println(list);
-    server.stop();
-  }
-
   private void server(InetSocketAddress address) throws IOException {
     GroupContext group = new GroupContext(new LengthFrameHandler());
     Server server = new Server(group);
