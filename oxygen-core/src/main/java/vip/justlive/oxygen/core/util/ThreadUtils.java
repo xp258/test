@@ -13,8 +13,8 @@
  */
 package vip.justlive.oxygen.core.util;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -34,8 +34,7 @@ import vip.justlive.oxygen.core.util.timer.WheelTimer;
 @UtilityClass
 public class ThreadUtils {
 
-  private final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal
-      .withInitial(ConcurrentHashMap::new);
+  private final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal.withInitial(HashMap::new);
 
   private ThreadFactory threadFactory;
   private SecurityThreadPoolExecutor globalPool;
