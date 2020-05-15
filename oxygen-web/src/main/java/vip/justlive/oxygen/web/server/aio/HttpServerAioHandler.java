@@ -107,8 +107,8 @@ public class HttpServerAioHandler implements AioHandler {
       return null;
     }
     if (!builder.requestUri.startsWith(contextPath)) {
-      channelContext.close();
-      throw Exceptions.fail("RequestUri not match contextPath");
+      throw Exceptions.fail(String
+          .format("RequestUri [%s] not match contextPath [%s]", builder.requestUri, contextPath));
     }
     if (parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
       Request request = builder.build(channelContext);
