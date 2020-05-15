@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
  * cache store

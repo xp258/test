@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.ioc.store;
 
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * default bean proxy

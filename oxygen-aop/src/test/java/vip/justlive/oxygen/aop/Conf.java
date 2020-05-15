@@ -31,6 +31,12 @@ public class Conf extends BaseConf {
     super(logService);
   }
 
+  public static void main(String[] args) {
+    for (Method method : Conf.class.getMethods()) {
+      System.out.println(method.getName() + method.getAnnotation(Aspect.class));
+    }
+  }
+
   @Aspect(annotation = Log.class, type = {TYPE.BEFORE, TYPE.AFTER, TYPE.CATCHING}, order = 1)
   public void log() {
     System.out.println("aop all log");
@@ -46,12 +52,5 @@ public class Conf extends BaseConf {
   public void log3(Invocation invocation) {
     System.out.println("aop catching log3 " + invocation.getMethod());
     logService.log();
-  }
-
-
-  public static void main(String[] args) {
-    for (Method method : Conf.class.getMethods()) {
-      System.out.println(method.getName() + method.getAnnotation(Aspect.class));
-    }
   }
 }

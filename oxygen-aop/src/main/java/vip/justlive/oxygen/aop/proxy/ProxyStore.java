@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.aop.interceptor.Interceptor;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * proxy interceptor store

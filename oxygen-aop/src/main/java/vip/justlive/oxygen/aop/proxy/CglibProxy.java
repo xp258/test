@@ -22,7 +22,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import vip.justlive.oxygen.aop.Invocation;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.aop.interceptor.Interceptor;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * cglib代理

@@ -22,11 +22,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import vip.justlive.oxygen.core.io.PropertiesLoader;
-import vip.justlive.oxygen.core.io.PropertySource;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.io.PropertiesLoader;
+import vip.justlive.oxygen.core.util.io.PropertySource;
 
 /**
  * 配置工厂

@@ -26,7 +26,7 @@ import vip.justlive.oxygen.cache.generator.ArgsKeyGenerator;
 import vip.justlive.oxygen.cache.generator.DefaultKeyGenerator;
 import vip.justlive.oxygen.core.cache.Cache;
 import vip.justlive.oxygen.core.cache.LocalCacheImpl;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**

@@ -22,7 +22,7 @@ import vip.justlive.oxygen.aop.interceptor.MethodInterceptor;
 import vip.justlive.oxygen.aop.proxy.ProxyStore;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
 /**

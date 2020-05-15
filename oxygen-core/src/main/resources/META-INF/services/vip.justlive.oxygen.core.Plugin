@@ -1,3 +1,3 @@
 
-vip.justlive.oxygen.core.scan.ClassScannerPlugin
-vip.justlive.oxygen.core.util.ResourceBundle
+vip.justlive.oxygen.core.util.scan.ClassScannerPlugin
+vip.justlive.oxygen.core.util.base.ResourceBundle

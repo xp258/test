@@ -15,7 +15,7 @@ package vip.justlive.oxygen.cache.generator;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**

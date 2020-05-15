@@ -14,10 +14,10 @@
 package vip.justlive.oxygen.web.result;
 
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
-import vip.justlive.oxygen.core.template.TemplateEngine;
-import vip.justlive.oxygen.core.template.Templates;
-import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.template.SimpleTemplateEngine;
+import vip.justlive.oxygen.core.util.template.TemplateEngine;
+import vip.justlive.oxygen.core.util.template.Templates;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Response;
@@ -27,7 +27,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * 使用内置简单模板引擎处理
  *
  * @author wubo
- * @see vip.justlive.oxygen.core.template.SimpleTemplateEngine
+ * @see SimpleTemplateEngine
  */
 @Bean
 public class SimpleViewResultHandler implements ResultHandler {

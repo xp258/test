@@ -16,11 +16,11 @@ package vip.justlive.oxygen.web;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.net.http.HttpRequest;
-import vip.justlive.oxygen.core.net.http.HttpResponse;
-import vip.justlive.oxygen.core.util.SystemUtils;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.base.SystemUtils;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
+import vip.justlive.oxygen.core.util.net.http.HttpRequest;
+import vip.justlive.oxygen.core.util.net.http.HttpResponse;
 import vip.justlive.oxygen.web.router.Router;
 import vip.justlive.oxygen.web.server.Server;
 

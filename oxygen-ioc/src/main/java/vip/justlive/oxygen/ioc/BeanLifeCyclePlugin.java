@@ -17,7 +17,7 @@ package vip.justlive.oxygen.ioc;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.ioc.annotation.PostConstruct;
 import vip.justlive.oxygen.ioc.annotation.PreDestroy;
 

@@ -22,8 +22,8 @@ import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.concurrent.ThreadFactoryBuilder;
 import vip.justlive.oxygen.core.util.timer.WheelTimer;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
