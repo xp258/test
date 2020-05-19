@@ -31,8 +31,7 @@ public class ClassCacheFactory implements CacheFactory {
     String cacheImpl = ConfigFactory.getProperty("cache.impl.class");
     if (Strings.hasText(cacheImpl)) {
       try {
-        Class<?> clazz = ClassUtils.forName(cacheImpl);
-        return (Cache) clazz.getConstructor(String.class).newInstance(name);
+        return (Cache) ClassUtils.forName(cacheImpl).getConstructor(String.class).newInstance(name);
       } catch (Exception e) {
         throw Exceptions.wrap(e);
       }

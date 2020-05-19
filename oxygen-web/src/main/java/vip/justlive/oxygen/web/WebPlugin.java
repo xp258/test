@@ -28,8 +28,6 @@ import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
 import vip.justlive.oxygen.web.bind.ParamBinder;
-import vip.justlive.oxygen.web.exception.ExceptionHandler;
-import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
 import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Parser;
 import vip.justlive.oxygen.web.http.SessionStore;
@@ -55,7 +53,6 @@ public class WebPlugin implements Plugin {
     loadWebEnv();
     loadStaticRoute();
     loadAnnotationRouter();
-    loadErrorHandler();
     vip.justlive.oxygen.web.router.Router.build();
   }
 
@@ -108,21 +105,6 @@ public class WebPlugin implements Plugin {
       }
     } catch (NoSuchMethodException e) {
       throw Exceptions.wrap(e);
-    }
-  }
-
-  private void loadErrorHandler() {
-    ExceptionHandler handler = Singleton.get(ExceptionHandler.class);
-    if (handler != null) {
-      if (log.isDebugEnabled()) {
-        log.debug("loaded error handle of user {}", handler);
-      }
-    } else {
-      handler = new ExceptionHandlerImpl();
-      Singleton.set(handler);
-      if (log.isDebugEnabled()) {
-        log.debug("loaded default error handle {}", handler);
-      }
     }
   }
 

@@ -32,7 +32,6 @@ import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
-import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.RoutingContext;
 import vip.justlive.oxygen.web.router.RoutingContextImpl;
 
@@ -138,7 +137,7 @@ public class HttpServerAioHandler implements AioHandler {
     try {
       Context.dispatch(ctx);
     } catch (Exception e) {
-      RouteHandler.error(ctx, e);
+      Context.routeError(ctx, e);
     } finally {
       Request.clear();
       Response.clear();
