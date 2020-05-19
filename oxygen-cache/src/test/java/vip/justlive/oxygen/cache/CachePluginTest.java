@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.cache.Cache;
-import vip.justlive.oxygen.ioc.IocPlugin;
 
 /**
  * @author wubo
@@ -30,7 +30,7 @@ public class CachePluginTest {
 
     Bootstrap.start();
 
-    CacheService cacheService = IocPlugin.beanStore().getBean(CacheService.class);
+    CacheService cacheService = Singleton.get(CacheService.class);
     cacheService.time();
     cacheService.time();
     cacheService.time1(1);

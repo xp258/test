@@ -19,12 +19,6 @@
     </dependency>
 
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>oxygen-ioc</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib-nodep</artifactId>
     </dependency>

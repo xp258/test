@@ -262,8 +262,8 @@ public class ClassUtils {
    * @param object the object to check
    * @return true为是代理对象
    */
-  public boolean isCglibProxy(Object object) {
-    return isCglibProxyClass(object.getClass());
+  public boolean isEnhancer(Object object) {
+    return isEnhancerClass(object.getClass());
   }
 
   /**
@@ -272,8 +272,8 @@ public class ClassUtils {
    * @param clazz the class to check
    * @return true为是代理类
    */
-  public boolean isCglibProxyClass(Class<?> clazz) {
-    return (clazz != null && isCglibProxyClassName(clazz.getName()));
+  public boolean isEnhancerClass(Class<?> clazz) {
+    return (clazz != null && isEnhancerClassName(clazz.getName()));
   }
 
   /**
@@ -282,7 +282,7 @@ public class ClassUtils {
    * @param className the class name to check
    * @return true为是代理类
    */
-  public boolean isCglibProxyClassName(String className) {
+  public boolean isEnhancerClassName(String className) {
     return (className != null && className.contains(Strings.DOUBLE_DOLLAR));
   }
 
@@ -292,9 +292,9 @@ public class ClassUtils {
    * @param clazz 代理类
    * @return 类
    */
-  public Class<?> getCglibActualClass(Class<?> clazz) {
+  public Class<?> getActualClass(Class<?> clazz) {
     Class<?> actualClass = clazz;
-    while (isCglibProxyClass(actualClass)) {
+    while (isEnhancerClass(actualClass)) {
       actualClass = actualClass.getSuperclass();
     }
     return actualClass;
@@ -310,7 +310,7 @@ public class ClassUtils {
   public Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
-    Class<?> actualClass = getCglibActualClass(clazz);
+    Class<?> actualClass = getActualClass(clazz);
     if (actualClass == null) {
       return methods;
     }

@@ -20,7 +20,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * 缓存key生成器 使用入参

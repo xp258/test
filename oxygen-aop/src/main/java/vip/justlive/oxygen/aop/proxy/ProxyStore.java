@@ -21,7 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
@@ -38,8 +37,7 @@ import vip.justlive.oxygen.core.util.base.ClassUtils;
 public class ProxyStore {
 
   final List<Object> PROXIES = new LinkedList<>();
-  private final ConcurrentMap<TYPE, List<Interceptor>> INTERCEPTORS = new ConcurrentHashMap<>(
-      4, 1);
+  private final Map<TYPE, List<Interceptor>> INTERCEPTORS = new ConcurrentHashMap<>(4, 1);
   private final Map<TYPE, Map<Method, List<Interceptor>>> STORE = new EnumMap<>(TYPE.class);
   private volatile boolean ready = false;
 
@@ -74,7 +72,7 @@ public class ProxyStore {
       return;
     }
     STORE.forEach((k, v) -> v.clear());
-    PROXIES.forEach(bean -> Stream.of(ClassUtils.getCglibActualClass(bean.getClass()).getMethods())
+    PROXIES.forEach(bean -> Stream.of(ClassUtils.getActualClass(bean.getClass()).getMethods())
         .forEach(ProxyStore::handleMethod));
     STORE.forEach((k, v) -> v.forEach((method, interceptors) -> Collections.sort(interceptors)));
     ready = true;
@@ -130,7 +128,7 @@ public class ProxyStore {
   /**
    * clean
    */
-  public void clean() {
+  public void clear() {
     STORE.clear();
     PROXIES.clear();
   }

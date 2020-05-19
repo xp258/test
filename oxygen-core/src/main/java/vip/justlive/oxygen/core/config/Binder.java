@@ -59,7 +59,7 @@ public class Binder {
       throw Exceptions.wrap(e);
     }
 
-    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    Class<?> actualClass = ClassUtils.getActualClass(clazz);
     boolean b = (prefix == null || Strings.DOT.equals(prefix)) && actualClass
         .isAnnotationPresent(ValueConfig.class);
     if (b) {

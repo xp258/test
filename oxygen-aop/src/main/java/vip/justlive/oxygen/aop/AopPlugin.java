@@ -21,9 +21,9 @@ import vip.justlive.oxygen.aop.interceptor.AnnotationInterceptor;
 import vip.justlive.oxygen.aop.interceptor.MethodInterceptor;
 import vip.justlive.oxygen.aop.proxy.ProxyStore;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
-import vip.justlive.oxygen.ioc.IocPlugin;
 
 /**
  * aop插件
@@ -39,7 +39,7 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void start() {
-    IocPlugin.beanStore().getBeans().forEach(
+    Singleton.getAll().forEach(
         bean -> ClassUtils.getMethodsAnnotatedWith(bean.getClass(), Aspect.class)
             .forEach(method -> handleMethod(method, bean)));
     ProxyStore.init();
@@ -47,7 +47,7 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void stop() {
-    ProxyStore.clean();
+    ProxyStore.clear();
   }
 
   private void handleMethod(Method method, Object bean) {

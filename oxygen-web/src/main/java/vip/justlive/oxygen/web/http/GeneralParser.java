@@ -29,7 +29,7 @@ import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.WebConf;
 
 /**

@@ -13,7 +13,7 @@
  */
 package vip.justlive.oxygen.aop;
 
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * @author wubo

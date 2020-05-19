@@ -16,8 +16,8 @@ package vip.justlive.oxygen.aop;
 import java.lang.reflect.Method;
 import vip.justlive.oxygen.aop.annotation.Aspect;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
-import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.ioc.annotation.Inject;
+import vip.justlive.oxygen.core.bean.Bean;
+import vip.justlive.oxygen.core.bean.Inject;
 
 /**
  * @author wubo

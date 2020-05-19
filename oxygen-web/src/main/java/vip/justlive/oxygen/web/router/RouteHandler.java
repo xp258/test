@@ -13,8 +13,8 @@
  */
 package vip.justlive.oxygen.web.router;
 
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
 
 /**
@@ -31,8 +31,7 @@ public interface RouteHandler {
    * @param ctx 上下文
    */
   static void notFound(RoutingContext ctx) {
-    IocPlugin.beanStore().getBean(ExceptionHandler.class)
-        .handle(ctx, Exceptions.fail("No handle found"), 404);
+    Singleton.get(ExceptionHandler.class).handle(ctx, Exceptions.fail("No handle found"), 404);
   }
 
   /**
@@ -42,7 +41,7 @@ public interface RouteHandler {
    * @param e 异常
    */
   static void exception(RoutingContext ctx, Exception e) {
-    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
+    Singleton.get(ExceptionHandler.class).handle(ctx, e, 500);
   }
 
   /**
@@ -52,7 +51,7 @@ public interface RouteHandler {
    * @param e 异常
    */
   static void error(RoutingContext ctx, Exception e) {
-    IocPlugin.beanStore().getBean(ExceptionHandler.class).error(ctx, e);
+    Singleton.get(ExceptionHandler.class).error(ctx, e);
   }
 
   /**

@@ -184,7 +184,7 @@ public class ConfigFactory {
       return;
     }
     ValueConfig config = ClassUtils
-        .getAnnotation(ClassUtils.getCglibActualClass(bean.getClass()), ValueConfig.class);
+        .getAnnotation(ClassUtils.getActualClass(bean.getClass()), ValueConfig.class);
     if (config == null) {
       load(bean, null);
     } else {

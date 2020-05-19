@@ -20,7 +20,7 @@ import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * header解析器

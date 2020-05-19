@@ -19,7 +19,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.base.ResourceBundle;
 import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -28,8 +28,8 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
-@Slf4j
 @Bean
+@Slf4j
 public class I18nWebHook implements WebHook {
 
   @Override

@@ -15,7 +15,7 @@ package vip.justlive.oxygen.cache;
 
 
 import vip.justlive.oxygen.cache.annotation.Cacheable;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * @author wubo

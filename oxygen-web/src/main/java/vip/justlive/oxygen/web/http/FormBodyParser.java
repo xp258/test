@@ -19,7 +19,7 @@ import java.util.Map;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * form body 解析器

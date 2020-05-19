@@ -16,16 +16,15 @@ package vip.justlive.oxygen.web;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.Urls;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
-import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
 import vip.justlive.oxygen.web.bind.ParamBinder;
@@ -81,23 +80,18 @@ public class WebPlugin implements Plugin {
   }
 
   private void loadAnnotationRouter() {
-    Set<Class<?>> routerClasses = ClassScannerPlugin.getTypesAnnotatedWith(Router.class);
-    if (routerClasses == null || routerClasses.isEmpty()) {
-      return;
-    }
-
-    for (Class<?> clazz : routerClasses) {
+    ClassScannerPlugin.getTypesAnnotatedWith(Router.class).forEach(clazz -> {
       Router router = clazz.getAnnotation(Router.class);
       if (router == null) {
-        continue;
+        return;
       }
-      parseRouter(router.value(), IocPlugin.beanStore().getBean(clazz.getName()));
-    }
+      parseRouter(router.value(), Singleton.get(clazz.getName()));
+    });
   }
 
   private void parseRouter(String rootPath, Object routerBean) {
     Class<?> clazz = routerBean.getClass();
-    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    Class<?> actualClass = ClassUtils.getActualClass(clazz);
     try {
       for (Method method : actualClass.getDeclaredMethods()) {
         if (!method.isAnnotationPresent(Mapping.class)) {
@@ -118,14 +112,14 @@ public class WebPlugin implements Plugin {
   }
 
   private void loadErrorHandler() {
-    ExceptionHandler handler = IocPlugin.beanStore().getBean(ExceptionHandler.class);
+    ExceptionHandler handler = Singleton.get(ExceptionHandler.class);
     if (handler != null) {
       if (log.isDebugEnabled()) {
         log.debug("loaded error handle of user {}", handler);
       }
     } else {
       handler = new ExceptionHandlerImpl();
-      IocPlugin.beanStore().addBean(handler);
+      Singleton.set(handler);
       if (log.isDebugEnabled()) {
         log.debug("loaded default error handle {}", handler);
       }
@@ -133,22 +127,22 @@ public class WebPlugin implements Plugin {
   }
 
   private void loadWebEnv() {
-    SessionStore sessionStore = IocPlugin.beanStore().getBean(SessionStore.class);
+    SessionStore sessionStore = Singleton.get(SessionStore.class);
     if (sessionStore != null) {
       Context.SESSION_MANAGER.setStore(sessionStore);
     }
     Context.SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
 
-    Context.PARSERS.addAll(IocPlugin.beanStore().getCastBeanMap(Parser.class).values());
+    Context.PARSERS.addAll(Singleton.getCastMap(Parser.class).values());
     Collections.sort(Context.PARSERS);
 
-    Context.BINDERS.addAll(IocPlugin.beanStore().getCastBeanMap(ParamBinder.class).values());
+    Context.BINDERS.addAll(Singleton.getCastMap(ParamBinder.class).values());
     Collections.sort(Context.BINDERS);
 
-    Context.HANDLERS.addAll(IocPlugin.beanStore().getCastBeanMap(ResultHandler.class).values());
+    Context.HANDLERS.addAll(Singleton.getCastMap(ResultHandler.class).values());
     Collections.sort(Context.HANDLERS);
 
-    Context.HOOKS.addAll(IocPlugin.beanStore().getCastBeanMap(WebHook.class).values());
+    Context.HOOKS.addAll(Singleton.getCastMap(WebHook.class).values());
     Collections.sort(Context.HOOKS);
   }
 

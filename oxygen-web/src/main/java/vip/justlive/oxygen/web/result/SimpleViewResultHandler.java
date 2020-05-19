@@ -18,7 +18,7 @@ import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.template.SimpleTemplateEngine;
 import vip.justlive.oxygen.core.util.template.TemplateEngine;
 import vip.justlive.oxygen.core.util.template.Templates;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;

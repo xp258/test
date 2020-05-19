@@ -16,7 +16,7 @@ package vip.justlive.oxygen.aop.interceptor;
 
 import java.lang.reflect.Method;
 import vip.justlive.oxygen.aop.AopWrapper;
-import vip.justlive.oxygen.core.util.base.PathMatcher;
+import vip.justlive.oxygen.core.util.base.SplitterMatcher;
 import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
@@ -26,17 +26,17 @@ import vip.justlive.oxygen.core.util.base.Strings;
  */
 public class MethodInterceptor extends AbstractInterceptor {
 
+  private static final SplitterMatcher MATCHER = new SplitterMatcher('.');
   private final String expression;
 
   public MethodInterceptor(String expression, AopWrapper aopWrapper) {
     super(aopWrapper);
-    this.expression = expression.replace(Strings.DOT, Strings.SLASH);
+    this.expression = expression;
   }
 
   @Override
   public boolean match(Method method) {
-    String path = method.getDeclaringClass().getName().replace(Strings.DOT, Strings.SLASH)
-        .concat(Strings.SLASH).concat(method.getName());
-    return PathMatcher.match(expression, path);
+    String path = method.getDeclaringClass().getName().concat(Strings.DOT).concat(method.getName());
+    return MATCHER.match(expression, path);
   }
 }

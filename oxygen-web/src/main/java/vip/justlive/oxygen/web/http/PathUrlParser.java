@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.router.OptionsRouteHandler;
 import vip.justlive.oxygen.web.router.Route;

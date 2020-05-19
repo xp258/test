@@ -13,7 +13,7 @@
  */
 package vip.justlive.oxygen.aop.proxy;
 
-import vip.justlive.oxygen.ioc.store.BeanProxy;
+import vip.justlive.oxygen.core.bean.BeanProxy;
 
 /**
  * cglib bean proxy

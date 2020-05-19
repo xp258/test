@@ -17,7 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.annotation.Param;
 import vip.justlive.oxygen.web.router.RoutingContext;
 

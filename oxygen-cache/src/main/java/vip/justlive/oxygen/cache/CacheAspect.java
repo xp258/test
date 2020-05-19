@@ -23,11 +23,11 @@ import vip.justlive.oxygen.aop.annotation.Aspect;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.cache.annotation.Cacheable;
 import vip.justlive.oxygen.cache.generator.ArgsKeyGenerator;
-import vip.justlive.oxygen.cache.generator.DefaultKeyGenerator;
+import vip.justlive.oxygen.cache.generator.SimpleKeyGenerator;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.cache.Cache;
 import vip.justlive.oxygen.core.cache.LocalCacheImpl;
 import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * cache切面
@@ -39,7 +39,7 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
 public class CacheAspect {
 
   static final Cache CACHE = new LocalCacheImpl("Aspect-Cache");
-  private final DefaultKeyGenerator defaultKeyGenerator;
+  private final SimpleKeyGenerator simpleKeyGenerator;
   private final ArgsKeyGenerator argsKeyGenerator;
 
   @Aspect(annotation = Cacheable.class, type = TYPE.BEFORE)
@@ -84,7 +84,7 @@ public class CacheAspect {
     }
     String key = cacheable.key();
     if (key.length() == 0) {
-      key = defaultKeyGenerator
+      key = simpleKeyGenerator
           .generate(invocation.getTarget(), invocation.getMethod(), invocation.getArgs())
           .toString();
     } else {

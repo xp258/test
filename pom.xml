@@ -11,9 +11,7 @@
     <module>oxygen-aop</module>
     <module>oxygen-cache</module>
     <module>oxygen-core</module>
-    <module>oxygen-ioc</module>
     <module>oxygen-jdbc</module>
-    <module>oxygen-job</module>
     <module>oxygen-web</module>
     <module>oxygen-web-tomcat</module>
     <module>oxygen-web-jetty</module>
@@ -197,19 +195,7 @@
 
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>oxygen-ioc</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>${project.groupId}</groupId>
         <artifactId>oxygen-jdbc</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>oxygen-job</artifactId>
         <version>${project.version}</version>
       </dependency>
 

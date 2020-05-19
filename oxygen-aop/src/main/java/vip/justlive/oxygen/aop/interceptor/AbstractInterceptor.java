@@ -62,11 +62,11 @@ public abstract class AbstractInterceptor implements Interceptor {
     boolean b = (count == 1 && aopWrapper.getMethod().getParameterTypes()[0] != Invocation.class)
         || count > 1;
     if (b) {
-      throw new IllegalArgumentException("aop方法入参只能为[Invocation]类型");
+      throw new IllegalArgumentException("argument can only be [Invocation]");
     }
     Class<?> returnType = aopWrapper.getMethod().getReturnType();
     if (returnType != Void.TYPE && returnType != boolean.class) {
-      throw new IllegalArgumentException("aop方法返回值只能为void或boolean");
+      throw new IllegalArgumentException("return type can only be [void] or [boolean]");
     }
   }
 }
