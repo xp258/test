@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 /**
  * placeHolder帮助类
@@ -116,10 +117,16 @@ public class PlaceHolderHelper {
   public String replacePlaceholders(String value, final Properties properties) {
     MoreObjects.notNull(properties, "'properties' must not be null");
     MoreObjects.notNull(value, "'value' must not be null");
-    return parseStringValue(value, properties, new HashSet<>());
+    return parseStringValue(value, properties::getProperty, new HashSet<>());
   }
 
-  protected String parseStringValue(String value, Properties properties,
+  public String replacePlaceholders(String value, UnaryOperator<String> operator) {
+    MoreObjects.notNull(operator, "'operator' must not be null");
+    MoreObjects.notNull(value, "'value' must not be null");
+    return parseStringValue(value, operator, new HashSet<>());
+  }
+
+  protected String parseStringValue(String value, UnaryOperator<String> operator,
       Set<String> visitedPlaceholders) {
     StringBuilder result = new StringBuilder(value);
     int startIndex = value.indexOf(this.placeholderPrefix);
@@ -135,13 +142,13 @@ public class PlaceHolderHelper {
                   + "' in property definitions");
         }
         // 递归
-        placeholder = parseStringValue(placeholder, properties, visitedPlaceholders);
+        placeholder = parseStringValue(placeholder, operator, visitedPlaceholders);
         // 获取没有占位的属性值
-        String propVal = properties.getProperty(placeholder);
-        propVal = getCommonVal(properties, placeholder, propVal);
+        String propVal = operator.apply(placeholder);
+        propVal = getCommonVal(operator, placeholder, propVal);
         if (propVal != null) {
           // 递归 表达式中含有表达式
-          propVal = parseStringValue(propVal, properties, visitedPlaceholders);
+          propVal = parseStringValue(propVal, operator, visitedPlaceholders);
           result.replace(startIndex, endIndex + this.placeholderSuffix.length(), propVal);
           startIndex = result.indexOf(this.placeholderPrefix, startIndex + propVal.length());
         } else if (this.ignoreUnresolvablePlaceholders) {
@@ -160,13 +167,13 @@ public class PlaceHolderHelper {
     return result.toString();
   }
 
-  private String getCommonVal(Properties properties, String placeholder, String propVal) {
+  private String getCommonVal(UnaryOperator<String> operator, String placeholder, String propVal) {
     if (propVal == null && this.valueSeparator != null) {
       int separatorIndex = placeholder.indexOf(this.valueSeparator);
       if (separatorIndex != -1) {
         String actualPlaceholder = placeholder.substring(0, separatorIndex);
         String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length());
-        propVal = properties.getProperty(actualPlaceholder);
+        propVal = operator.apply(actualPlaceholder);
         if (propVal == null) {
           propVal = defaultValue;
         }

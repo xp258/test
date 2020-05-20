@@ -16,18 +16,12 @@ package vip.justlive.oxygen.core.config;
 
 import lombok.Data;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author wubo
  */
 public class ConfigFactoryTest {
-
-  @Before
-  public void before() {
-    ConfigFactory.clear();
-  }
 
   @Test
   public void testLoadOneProp() {
@@ -42,16 +36,24 @@ public class ConfigFactoryTest {
     Assert.assertEquals("jack", prop.getName());
     Assert.assertEquals(new Integer(18), prop.getAge());
 
-  }
+    ConfigFactory.clear();
 
-  @Test
-  public void testLoadOverride() {
     ConfigFactory.loadProperties("classpath:/config/config.properties",
         "classpath:/config/config2.properties");
-    Prop prop = ConfigFactory.load(Prop.class);
+    prop = ConfigFactory.load(Prop.class);
 
-    Assert.assertNotNull(prop);
     Assert.assertEquals(new Integer(19), prop.getAge());
+
+    System.setProperty("fc.age", "23");
+    ConfigFactory.setProperty("fc.name", "321");
+
+    prop = ConfigFactory.load(Prop.class);
+    Assert.assertEquals(new Integer(23), prop.getAge());
+
+    ConfigFactory.setProperty("fc.age", "32");
+    prop = ConfigFactory.load(Prop.class);
+
+    Assert.assertEquals(new Integer(32), prop.getAge());
   }
 
   @Data

@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.util.io;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -96,4 +97,8 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
     }
   }
 
+  @Override
+  public String name() {
+    return "PropertiesLoader:" + Arrays.toString(locations);
+  }
 }

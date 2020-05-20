@@ -14,6 +14,8 @@
 package vip.justlive.oxygen.core.util.io;
 
 import java.util.Properties;
+import vip.justlive.oxygen.core.Order;
+import vip.justlive.oxygen.core.util.base.Naming;
 import vip.justlive.oxygen.core.util.base.PlaceHolderHelper;
 
 /**
@@ -22,7 +24,7 @@ import vip.justlive.oxygen.core.util.base.PlaceHolderHelper;
  * @author wubo
  */
 @FunctionalInterface
-public interface PropertySource {
+public interface PropertySource extends Order, Naming {
 
   /**
    * 获取属性集合
@@ -32,17 +34,27 @@ public interface PropertySource {
   Properties props();
 
   /**
-   * 获取属性
+   * 获取属性，如果遇到占位符会自动获取
    *
    * @param key 属性键值
    * @return 属性值
    */
   default String getProperty(String key) {
-    String value = props().getProperty(key);
+    String value = getRawProperty(key);
     if (value == null) {
       return null;
     }
     return getPlaceholderProperty(value);
+  }
+
+  /**
+   * 获取属性值
+   *
+   * @param key 键
+   * @return 属性值
+   */
+  default String getRawProperty(String key) {
+    return props().getProperty(key);
   }
 
   /**
@@ -84,5 +96,10 @@ public interface PropertySource {
       }
     }
     return false;
+  }
+
+  @Override
+  default String name() {
+    return getClass().getSimpleName();
   }
 }
