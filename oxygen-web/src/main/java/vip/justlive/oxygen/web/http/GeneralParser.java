@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
@@ -29,7 +30,6 @@ import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
-import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.WebConf;
 
 /**

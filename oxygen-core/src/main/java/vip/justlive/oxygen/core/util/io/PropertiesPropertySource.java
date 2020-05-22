@@ -25,9 +25,9 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class PropertiesPropertySource implements PropertySource {
 
+  private final Properties properties = new Properties();
   @Setter
   private int order;
-  private final Properties properties = new Properties();
 
   public void setProperty(String key, String value) {
     properties.setProperty(key, value);

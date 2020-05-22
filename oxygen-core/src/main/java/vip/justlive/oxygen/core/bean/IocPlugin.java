@@ -21,6 +21,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.aop.proxy.CglibBeanProxy;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
@@ -39,6 +40,8 @@ import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
 @Slf4j
 public class IocPlugin implements Plugin {
 
+  private static final boolean HAS_CGLIB_PROXY = ClassUtils
+      .isPresent("net.sf.cglib.proxy.MethodInterceptor");
   private BeanProxy beanProxy;
 
   @Override
@@ -50,7 +53,11 @@ public class IocPlugin implements Plugin {
   public void start() {
     List<BeanProxy> list = ServiceLoaderUtils.loadServices(BeanProxy.class);
     if (list.isEmpty()) {
-      beanProxy = new SimpleBeanProxy();
+      if (HAS_CGLIB_PROXY) {
+        beanProxy = new CglibBeanProxy();
+      } else {
+        beanProxy = new SimpleBeanProxy();
+      }
     } else {
       Collections.sort(list);
       beanProxy = list.get(0);

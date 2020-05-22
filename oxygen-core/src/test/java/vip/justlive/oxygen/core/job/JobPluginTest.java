@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.job;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.bean.Singleton;
 
 /**

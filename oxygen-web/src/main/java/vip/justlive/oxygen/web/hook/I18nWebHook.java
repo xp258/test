@@ -15,11 +15,11 @@ package vip.justlive.oxygen.web.hook;
 
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.base.ResourceBundle;
 import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.router.RoutingContext;
 

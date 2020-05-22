@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.base.ExpiringMap;
 import vip.justlive.oxygen.core.util.base.ExpiringMap.CleanPolicy;
 import vip.justlive.oxygen.core.util.base.ExpiringMap.ExpiringPolicy;
 import vip.justlive.oxygen.core.util.base.ExpiringMap.RemovalCause;

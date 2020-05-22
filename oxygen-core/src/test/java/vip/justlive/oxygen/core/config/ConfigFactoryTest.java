@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core.config;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
+import vip.justlive.oxygen.core.Bootstrap;
 
 /**
  * @author wubo
@@ -26,7 +27,7 @@ public class ConfigFactoryTest {
   @Test
   public void testLoadOneProp() {
 
-    ConfigFactory.loadProperties("classpath:/config/config.properties");
+    Bootstrap.initConfig();
 
     System.out.println(ConfigFactory.keys());
 
@@ -34,13 +35,6 @@ public class ConfigFactoryTest {
 
     Assert.assertNotNull(prop);
     Assert.assertEquals("jack", prop.getName());
-    Assert.assertEquals(new Integer(18), prop.getAge());
-
-    ConfigFactory.clear();
-
-    ConfigFactory.loadProperties("classpath:/config/config.properties",
-        "classpath:/config/config2.properties");
-    prop = ConfigFactory.load(Prop.class);
 
     Assert.assertEquals(new Integer(19), prop.getAge());
 

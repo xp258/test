@@ -35,7 +35,7 @@ public class CsvWriter {
   private final char separator;
   private final char quote;
   private final char escape;
-  protected final String end;
+  private final String end;
 
   public CsvWriter() {
     this(DEFAULT_SEPARATOR, DEFAULT_QUOTE, DEFAULT_ESCAPE);

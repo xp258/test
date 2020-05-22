@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.util.base;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -58,5 +59,26 @@ public class LruMap<K, V> extends LinkedHashMap<K, V> {
       consumer.accept(eldest.getKey(), eldest.getValue());
     }
     return b;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    LruMap<?, ?> lruMap = (LruMap<?, ?>) o;
+    return maxSize == lruMap.maxSize &&
+        Objects.equals(consumer, lruMap.consumer);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), maxSize, consumer);
   }
 }

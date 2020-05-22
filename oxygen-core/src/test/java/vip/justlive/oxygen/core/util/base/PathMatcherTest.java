@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URISyntaxException;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.base.PathMatcher;
 
 /**
  * @author wubo

@@ -16,10 +16,10 @@ package vip.justlive.oxygen.web.http;
 
 import java.nio.charset.Charset;
 import java.util.Map;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
-import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * form body 解析器

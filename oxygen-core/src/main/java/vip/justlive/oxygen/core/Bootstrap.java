@@ -125,7 +125,6 @@ public class Bootstrap {
     if (STATE.compareAndSet(false, true)) {
       log.info("starting bootstrap ...");
       registerUncaughtExceptionHandler();
-      initConfig();
       addSystemPlugin();
       initPlugins();
       registerShutdownHook();
@@ -173,7 +172,10 @@ public class Bootstrap {
    */
   private void initPlugins() {
     Collections.sort(PLUGINS);
-    PLUGINS.forEach(Plugin::start);
+    for (Plugin plugin : PLUGINS) {
+      log.info("start plugin: [{}]", plugin);
+      plugin.start();
+    }
   }
 
   /**
@@ -188,7 +190,10 @@ public class Bootstrap {
    */
   private void doClose() {
     log.info("closing bootstrap ...");
-    PLUGINS.forEach(Plugin::stop);
+    for (Plugin plugin : PLUGINS) {
+      log.info("stop plugin: [{}]", plugin);
+      plugin.stop();
+    }
     FileUtils.cleanTempBaseDir();
     STATE.set(false);
     synchronized (STATE) {

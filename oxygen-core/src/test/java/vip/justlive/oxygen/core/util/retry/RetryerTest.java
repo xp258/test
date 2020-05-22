@@ -21,8 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
-import vip.justlive.oxygen.core.util.retry.RetryBuilder;
-import vip.justlive.oxygen.core.util.retry.Retryer;
 
 /**
  * @author wubo

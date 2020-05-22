@@ -57,16 +57,6 @@ public interface Cache extends Naming {
   }
 
   /**
-   * 清除缓存
-   */
-  static void clearAll() {
-    for (Cache cache : CacheStore.CACHES.values()) {
-      cache.clear();
-    }
-    CacheStore.CACHES.clear();
-  }
-
-  /**
    * 获取缓存对象
    *
    * @param key cache key

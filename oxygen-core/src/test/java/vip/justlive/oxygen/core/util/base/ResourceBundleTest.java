@@ -18,7 +18,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.util.base.ResourceBundle;
 
 /**
  * @author wubo

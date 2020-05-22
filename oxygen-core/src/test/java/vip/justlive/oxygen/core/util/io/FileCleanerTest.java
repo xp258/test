@@ -22,8 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Test;
 import vip.justlive.oxygen.core.util.base.SnowflakeId;
-import vip.justlive.oxygen.core.util.io.FileCleaner;
-import vip.justlive.oxygen.core.util.io.FileUtils;
 
 /**
  * @author wubo

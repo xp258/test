@@ -17,8 +17,6 @@ package vip.justlive.oxygen.core.util.crypto;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.crypto.DelegateEncoder;
-import vip.justlive.oxygen.core.util.crypto.MessageDigestEncoder;
 
 /**
  * @author wubo

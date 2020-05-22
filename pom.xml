@@ -8,8 +8,6 @@
   <artifactId>oxygen</artifactId>
   <version>3.0.0</version>
   <modules>
-    <module>oxygen-aop</module>
-    <module>oxygen-cache</module>
     <module>oxygen-core</module>
     <module>oxygen-jdbc</module>
     <module>oxygen-web</module>
@@ -175,18 +173,6 @@
     <dependencies>
 
       <!-- self -->
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>oxygen-aop</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>oxygen-cache</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>oxygen-core</artifactId>

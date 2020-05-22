@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.io.Closer;
 
 /**
  * @author wubo

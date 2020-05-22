@@ -20,8 +20,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
-import vip.justlive.oxygen.core.util.template.SimpleTemplateEngine;
-import vip.justlive.oxygen.core.util.template.Templates;
 
 /**
  * @author wubo

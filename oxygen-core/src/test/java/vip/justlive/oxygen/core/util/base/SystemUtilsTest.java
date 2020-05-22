@@ -17,7 +17,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.base.SystemUtils;
 
 /**
  * @author wubo

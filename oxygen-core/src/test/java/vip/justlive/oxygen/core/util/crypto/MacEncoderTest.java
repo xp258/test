@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.util.crypto;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.crypto.MacEncoder;
 
 /**
  * @author wubo

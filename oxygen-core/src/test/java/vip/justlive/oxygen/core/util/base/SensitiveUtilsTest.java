@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.util.base;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.base.SensitiveUtils;
 
 /**
  * @author wubo

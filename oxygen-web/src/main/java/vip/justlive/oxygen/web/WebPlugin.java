@@ -16,7 +16,6 @@ package vip.justlive.oxygen.web;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.config.ConfigFactory;
@@ -40,7 +39,6 @@ import vip.justlive.oxygen.web.router.Route;
  *
  * @author wubo
  */
-@Slf4j
 public class WebPlugin implements Plugin {
 
   @Override

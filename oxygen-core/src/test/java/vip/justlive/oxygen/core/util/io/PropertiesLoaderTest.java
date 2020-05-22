@@ -22,8 +22,6 @@ import java.nio.file.Files;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.exception.CodedException;
-import vip.justlive.oxygen.core.util.io.ClassPathResource;
-import vip.justlive.oxygen.core.util.io.PropertiesLoader;
 
 /**
  * @author wubo

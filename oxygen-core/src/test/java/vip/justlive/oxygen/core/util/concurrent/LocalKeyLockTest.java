@@ -16,9 +16,6 @@ package vip.justlive.oxygen.core.util.concurrent;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.concurrent.KeyLock;
-import vip.justlive.oxygen.core.util.concurrent.LocalKeyLock;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo

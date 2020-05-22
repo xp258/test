@@ -42,10 +42,6 @@ public class SingletonTest {
     Assert.assertEquals(1, Singleton.getList(Echo1.class).size());
     Assert.assertEquals(2, Singleton.getList(EchoImpl0.class).size());
 
-    Assert.assertEquals(2, Singleton.getAll().size());
-
-    Assert.assertEquals(2, Singleton.names().size());
-
     Singleton.set("echo2", new EchoImpl0(), 0);
     try {
       Singleton.get(Echo0.class);
