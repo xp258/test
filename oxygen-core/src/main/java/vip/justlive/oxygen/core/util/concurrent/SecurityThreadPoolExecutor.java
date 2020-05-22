@@ -27,7 +27,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
 
 /**
@@ -37,7 +36,6 @@ import vip.justlive.oxygen.core.util.base.SecurityChecker;
  *
  * @author wubo
  */
-@Slf4j
 @Accessors(chain = true)
 public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
 

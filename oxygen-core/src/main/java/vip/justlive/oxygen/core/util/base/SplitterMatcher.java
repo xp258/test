@@ -16,14 +16,12 @@ package vip.justlive.oxygen.core.util.base;
 
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 分隔符匹配器
  *
  * @author wubo
  */
-@Slf4j
 public class SplitterMatcher {
 
   private static final String ANY_REGEX = ".*";

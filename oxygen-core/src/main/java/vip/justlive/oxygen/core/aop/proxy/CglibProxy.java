@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.core.aop.proxy;
 
 import java.lang.reflect.Method;
-import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -27,7 +26,6 @@ import vip.justlive.oxygen.core.util.base.ClassUtils;
  *
  * @author wubo
  */
-@Slf4j
 public class CglibProxy implements MethodInterceptor {
 
   private static final CglibProxy CGLIB_PROXY = new CglibProxy();
