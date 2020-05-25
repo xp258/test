@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.core.config;
 
-import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.Plugin;
 
 /**
@@ -25,7 +24,7 @@ public class ConfigPlugin implements Plugin {
 
   @Override
   public void start() {
-    Bootstrap.initConfig();
+    ConfigFactory.initConfig("classpath*:config.properties", "classpath*:/config/*.properties");
   }
 
   @Override

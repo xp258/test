@@ -17,7 +17,6 @@ package vip.justlive.oxygen.core.config;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
 
 /**
  * @author wubo
@@ -27,7 +26,7 @@ public class ConfigFactoryTest {
   @Test
   public void testLoadOneProp() {
 
-    Bootstrap.initConfig();
+    ConfigFactory.initConfig();
 
     System.out.println(ConfigFactory.keys());
 

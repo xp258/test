@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.web.server;
 
-import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
 import vip.justlive.oxygen.web.WebConf;
@@ -59,7 +58,7 @@ public class Server {
   public void listen(int port) {
     if (!ready) {
       ready = true;
-      Bootstrap.initConfig();
+      ConfigFactory.initConfig();
       WebConf conf = ConfigFactory.load(WebConf.class);
       if (conf.getPort() != null) {
         port = conf.getPort();

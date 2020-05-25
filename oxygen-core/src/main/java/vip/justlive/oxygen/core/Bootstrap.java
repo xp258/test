@@ -67,28 +67,6 @@ public class Bootstrap {
   }
 
   /**
-   * 初始化配置
-   * <br>
-   * 使用默认地址进行加载，然后使用覆盖路径再次加载
-   */
-  public void initConfig() {
-    initConfig("classpath*:config.properties", "classpath*:/config/*.properties");
-  }
-
-  /**
-   * 初始化配置
-   *
-   * @param locations 配置文件路径
-   */
-  public void initConfig(String... locations) {
-    ConfigFactory.loadProperties(locations);
-    String overridePath = ConfigFactory.getProperty("config.override.path");
-    if (overridePath != null && overridePath.length() > 0) {
-      ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
-    }
-  }
-
-  /**
    * 添加自定义插件
    *
    * @param plugins 插件

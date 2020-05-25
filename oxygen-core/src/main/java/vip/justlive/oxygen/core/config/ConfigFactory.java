@@ -55,6 +55,19 @@ public class ConfigFactory {
   }
 
   /**
+   * 初始化配置
+   *
+   * @param locations 配置文件路径
+   */
+  public void initConfig(String... locations) {
+    ConfigFactory.loadProperties(locations);
+    String overridePath = ConfigFactory.getProperty("config.override.path");
+    if (overridePath != null && overridePath.length() > 0) {
+      ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
+    }
+  }
+
+  /**
    * 加载配置文件
    *
    * @param locations 路径
