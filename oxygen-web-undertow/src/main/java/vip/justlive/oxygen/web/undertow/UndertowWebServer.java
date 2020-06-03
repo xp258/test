@@ -32,7 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.WebServer;
 import vip.justlive.oxygen.web.servlet.ServletWebInitializer;
 
@@ -48,12 +49,12 @@ public class UndertowWebServer implements WebServer {
   private int port;
 
   private UndertowConf undertowConf;
-  private WebConf webConf;
+  private String contextPath;
 
   @Override
   public void listen(int port) {
     this.port = port;
-    webConf = ConfigFactory.load(WebConf.class);
+    this.contextPath = WebConfigKeys.SERVER_CONTEXT_PATH.getValue();
     undertowConf = ConfigFactory.load(UndertowConf.class);
     DeploymentManager manager = deployment();
     manager.deploy();
@@ -66,7 +67,7 @@ public class UndertowWebServer implements WebServer {
     }
     undertow.start();
     log.info("undertow started and listened on port [{}] with context path [{}]", this.port,
-        webConf.getContextPath());
+        contextPath);
   }
 
   @Override
@@ -85,7 +86,7 @@ public class UndertowWebServer implements WebServer {
     Set<Class<?>> handlesTypes = new HashSet<>(2);
     return Servlets.defaultContainer().addDeployment(
         Servlets.deployment().setClassLoader(ClassUtils.getDefaultClassLoader())
-            .setContextPath(webConf.getContextPath()).setDeploymentName("oxygen")
+            .setContextPath(contextPath).setDeploymentName("oxygen")
             .addServletContainerInitializer(
                 new ServletContainerInitializerInfo(ServletWebInitializer.class, handlesTypes)));
   }
@@ -100,8 +101,8 @@ public class UndertowWebServer implements WebServer {
 
   private HttpHandler configHttp(HttpHandler httpHandler) {
     HttpHandler handler = httpHandler;
-    if (webConf.getContextPath() != null && webConf.getContextPath().length() > 0) {
-      handler = Handlers.path().addPrefixPath(webConf.getContextPath(), httpHandler);
+    if (Strings.hasText(contextPath)) {
+      handler = Handlers.path().addPrefixPath(contextPath, httpHandler);
     }
     return new EncodingHandler(handler, new ContentEncodingRepository()
         .addEncodingHandler("gzip", new GzipEncodingProvider(undertowConf.getGzipLevel()),

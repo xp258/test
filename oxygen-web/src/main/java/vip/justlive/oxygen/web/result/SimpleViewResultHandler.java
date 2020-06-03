@@ -14,12 +14,11 @@
 package vip.justlive.oxygen.web.result;
 
 import vip.justlive.oxygen.core.bean.Bean;
-import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.template.SimpleTemplateEngine;
 import vip.justlive.oxygen.core.util.template.TemplateEngine;
 import vip.justlive.oxygen.core.util.template.Templates;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -38,11 +37,10 @@ public class SimpleViewResultHandler implements ResultHandler {
   private final boolean viewCacheEnabled;
 
   public SimpleViewResultHandler() {
-    WebConf webConf = ConfigFactory.load(WebConf.class);
-    this.suffix = webConf.getSimpleViewSuffix();
-    this.prefix = webConf.getSimpleViewPrefix();
+    this.suffix = WebConfigKeys.VIEW_SUFFIX_SIMPLE.getValue();
+    this.prefix = WebConfigKeys.VIEW_PREFIX_SIMPLE.getValue();
     this.templateEngine = new SimpleTemplateEngine();
-    this.viewCacheEnabled = webConf.isViewCacheEnabled();
+    this.viewCacheEnabled = WebConfigKeys.VIEW_CACHE.castValue(boolean.class);
   }
 
   @Override

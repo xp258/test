@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.bean.Singleton;
-import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.Urls;
@@ -64,14 +63,15 @@ public class WebPlugin implements Plugin {
   }
 
   private void loadStaticRoute() {
-    WebConf conf = ConfigFactory.load(WebConf.class);
-    String[] paths = conf.getStaticPaths();
+    String[] paths = WebConfigKeys.STATIC_PATH.castValue(String[].class);
     if (paths == null) {
       return;
     }
-    vip.justlive.oxygen.web.router.Router.staticRoute().prefix(conf.getStaticPrefix())
-        .locations(Arrays.asList(paths)).cachingEnabled(conf.isViewCacheEnabled())
-        .maxAge(conf.getStaticCache());
+    vip.justlive.oxygen.web.router.Router.staticRoute()
+        .prefix(WebConfigKeys.STATIC_PREFIX.getValue())
+        .locations(Arrays.asList(paths))
+        .cachingEnabled(WebConfigKeys.VIEW_CACHE.castValue(boolean.class))
+        .maxAge(WebConfigKeys.STATIC_CACHE.castValue(int.class));
   }
 
   private void loadAnnotationRouter() {
@@ -111,7 +111,7 @@ public class WebPlugin implements Plugin {
     if (sessionStore != null) {
       Context.SESSION_MANAGER.setStore(sessionStore);
     }
-    Context.SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
+    Context.SESSION_MANAGER.setExpired(WebConfigKeys.SESSION_EXPIRED.castValue(long.class));
 
     Context.PARSERS.addAll(Singleton.getCastMap(Parser.class).values());
     Collections.sort(Context.PARSERS);

@@ -36,7 +36,7 @@ import vip.justlive.oxygen.core.util.base.PathMatcher;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
 import vip.justlive.oxygen.core.util.io.FileUtils;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.WebServer;
 
 /**
@@ -49,6 +49,7 @@ public class JettyWebServer implements WebServer {
 
   private int port;
   private Server server;
+  private String contextPath;
 
   @Override
   public void stop() {
@@ -77,9 +78,9 @@ public class JettyWebServer implements WebServer {
 
   @Override
   public void listen(int port) {
-    WebConf webConf = ConfigFactory.load(WebConf.class);
     JettyConf jettyConf = ConfigFactory.load(JettyConf.class);
     this.port = port;
+    this.contextPath = WebConfigKeys.SERVER_CONTEXT_PATH.getValue();
 
     server = new Server();
 
@@ -90,18 +91,18 @@ public class JettyWebServer implements WebServer {
     WebAppContext webapp = new WebAppContext();
     server.setHandler(webapp);
     try {
-      configWebapp(webapp, jettyConf, webConf);
+      configWebapp(webapp, jettyConf);
       server.start();
     } catch (Exception e) {
       throw Exceptions.wrap(e);
     }
     log.info("jetty started and listened on port [{}] with context path [{}]", this.port,
-        webConf.getContextPath());
+        contextPath);
   }
 
-  private void configWebapp(WebAppContext webapp, JettyConf jettyConf, WebConf webConf)
+  private void configWebapp(WebAppContext webapp, JettyConf jettyConf)
       throws URISyntaxException, IOException {
-    webapp.setContextPath(webConf.getContextPath());
+    webapp.setContextPath(contextPath);
     webapp.setVirtualHosts(jettyConf.getVirtualHosts());
     webapp.setMaxFormContentSize(jettyConf.getMaxFormContentSize());
     webapp.setMaxFormKeys(jettyConf.getMaxFormKeys());
@@ -116,15 +117,15 @@ public class JettyWebServer implements WebServer {
       File dir = new File(FileUtils.tempBaseDir(), "jetty-jsp");
       webapp.setResourceBase(dir.getAbsolutePath());
       if (dir.exists() || dir.mkdirs()) {
-        copyJspFiles(dir, webConf);
+        copyJspFiles(dir);
       }
     }
     webapp.addServlet(new ServletHolder("jsp", JettyJspServlet.class), "*.jsp");
     webapp.setConfigurations(new Configuration[]{new AnnotationConfiguration()});
   }
 
-  private void copyJspFiles(File dir, WebConf webConf) throws IOException {
-    String location = Urls.concat(webConf.getJspViewPrefix(), "/**/*.jsp");
+  private void copyJspFiles(File dir) throws IOException {
+    String location = Urls.concat(WebConfigKeys.VIEW_PREFIX_JSP.getValue(), "/**/*.jsp");
     String rootPath = PathMatcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
     Enumeration<URL> urls = ClassUtils.getDefaultClassLoader()

@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
@@ -33,7 +32,7 @@ public class SimpleTemplateEngineTest {
 
     Map<String, Object> attrs = new HashMap<>(4);
     attrs.put("a", 1);
-    CoreConf conf = new CoreConf();
+    Conf conf = new Conf();
     conf.setConfigOverridePath("/aaa");
     attrs.put("c", conf);
     attrs.put("b", Arrays.asList(1, 2, 3));
@@ -58,7 +57,7 @@ public class SimpleTemplateEngineTest {
   public void t1() {
     Map<String, Object> attrs = new HashMap<>(4);
     attrs.put("a", 1);
-    CoreConf conf = new CoreConf();
+    Conf conf = new Conf();
     attrs.put("c", conf);
     attrs.put("b", Arrays.asList(1, 2, 3));
 

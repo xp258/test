@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.concurrent.AbstractQueueWorker;
 import vip.justlive.oxygen.core.util.io.IoUtils;
@@ -43,7 +43,7 @@ public class WriteWorker extends AbstractQueueWorker<Object> {
     super(channelContext.getGroupContext().getWorkerExecutor());
     this.channelContext = channelContext;
     this.aioHandler = channelContext.getGroupContext().getAioHandler();
-    this.useFuture = Boolean.parseBoolean(ConfigFactory.getProperty("aio.write.future", "false"));
+    this.useFuture = CoreConfigKeys.AIO_USE_FUTURE.castValue(boolean.class);
     if (this.useFuture) {
       writeFuture = CompletableFuture.completedFuture(null);
       semaphore = null;

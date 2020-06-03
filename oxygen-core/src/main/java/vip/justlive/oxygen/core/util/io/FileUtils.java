@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.SnowflakeId;
@@ -372,8 +372,8 @@ public class FileUtils {
    * @return temp dir
    */
   public File tempDir() {
-    String tempDir = ConfigFactory.getProperty("main.temp.dir");
-    if (tempDir == null || tempDir.trim().length() == 0) {
+    String tempDir = CoreConfigKeys.TEMP_DIR.getValue();
+    if (!Strings.hasText(tempDir)) {
       try {
         tempDir = System.getProperty("java.io.tmpdir");
       } catch (Exception e) {

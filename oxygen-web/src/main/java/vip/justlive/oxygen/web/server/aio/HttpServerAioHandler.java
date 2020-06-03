@@ -105,7 +105,7 @@ public class HttpServerAioHandler implements AioHandler {
     if (builder == null) {
       return null;
     }
-    if (!builder.requestUri.startsWith(contextPath)) {
+    if (Strings.hasText(contextPath) && !builder.requestUri.startsWith(contextPath)) {
       throw Exceptions.fail(String
           .format("RequestUri [%s] not match contextPath [%s]", builder.requestUri, contextPath));
     }

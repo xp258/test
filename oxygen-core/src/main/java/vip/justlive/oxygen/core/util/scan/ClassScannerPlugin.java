@@ -20,10 +20,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 类扫描插件
@@ -77,11 +77,11 @@ public class ClassScannerPlugin implements Plugin {
    * @return classes
    */
   public static Set<Class<?>> getClasses() {
-    CoreConf config = ConfigFactory.load(CoreConf.class);
+    String classScan = CoreConfigKeys.CLASS_SCAN.getValue();
     ClassScanner scanner = new DefaultClassScanner();
     Set<String> pkgs = new HashSet<>(2);
-    if (config.getClassScan() != null) {
-      pkgs.addAll(Arrays.asList(config.getClassScan()));
+    if (Strings.hasText(classScan)) {
+      pkgs.addAll(Arrays.asList(classScan.split(Strings.COMMA)));
     }
     pkgs.add("vip.justlive.oxygen");
     return scanner.scan(pkgs.toArray(new String[0]));

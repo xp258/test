@@ -22,7 +22,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.net.aio.GroupContext;
 import vip.justlive.oxygen.core.util.net.aio.Server;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.WebServer;
 
 /**
@@ -40,9 +40,8 @@ public class AioWebServer implements WebServer {
   public void listen(int port) {
     this.port = port;
     AioServerConf serverConf = ConfigFactory.load(AioServerConf.class);
-    WebConf webConf = ConfigFactory.load(WebConf.class);
-    GroupContext groupContext = new GroupContext(
-        new HttpServerAioHandler(webConf.getContextPath()));
+    String contextPath = WebConfigKeys.SERVER_CONTEXT_PATH.getValue();
+    GroupContext groupContext = new GroupContext(new HttpServerAioHandler(contextPath));
     groupContext.setAioListener(new HttpServerAioListener(serverConf));
     groupContext.setAcceptThreads(serverConf.getAcceptThreads());
     groupContext.setAcceptMaxWaiter(serverConf.getAcceptMaxWaiter());
@@ -57,7 +56,7 @@ public class AioWebServer implements WebServer {
       throw Exceptions.wrap(e);
     }
     log.info("aio-web-server started and listened on port [{}] with context path [{}]", this.port,
-        webConf.getContextPath());
+        contextPath);
   }
 
   @Override

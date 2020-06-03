@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadFactoryBuilder;
@@ -66,10 +66,9 @@ public class JobPlugin implements Plugin {
   }
 
   private void init() {
-    CoreConf config = ConfigFactory.load(CoreConf.class);
-    wheelTimer = new WheelTimer(1, 60, config.getJobPoolSize(),
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat(config.getJobThreadFormat())
-            .build());
+    wheelTimer = new WheelTimer(1, 60, CoreConfigKeys.JOB_CORE_POOL_SIZE.castValue(int.class),
+        new ThreadFactoryBuilder().setDaemon(true)
+            .setNameFormat(CoreConfigKeys.JOB_THREAD_NAME_FORMAT.getValue()).build());
   }
 
   private void parseJobs() {

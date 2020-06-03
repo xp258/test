@@ -21,9 +21,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.io.AbstractResourceLoader;
 import vip.justlive.oxygen.core.util.io.SourceResource;
@@ -116,10 +115,10 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
   }
 
   private static Locale defaultLocale() {
-    CoreConf conf = ConfigFactory.load(CoreConf.class);
-    if (conf.getI18nDefaultLanguage() != null && conf.getI18nDefaultLanguage().length() > 0
-        && conf.getI18nDefaultCountry() != null && conf.getI18nDefaultCountry().length() > 0) {
-      return new Locale(conf.getI18nDefaultLanguage(), conf.getI18nDefaultCountry());
+    String language = CoreConfigKeys.I18N_LANGUAGE.getValue();
+    String country = CoreConfigKeys.I18N_COUNTRY.getValue();
+    if (Strings.hasText(language) && Strings.hasText(country)) {
+      return new Locale(language, country);
     }
     return Locale.getDefault();
   }
@@ -167,8 +166,7 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
 
   @Override
   public void start() {
-    CoreConf conf = ConfigFactory.load(CoreConf.class);
-    load(conf.getI18nPath());
+    load(CoreConfigKeys.I18N_PATH.getValue());
   }
 
   @Override

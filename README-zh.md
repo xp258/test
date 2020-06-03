@@ -18,23 +18,15 @@
   - i18n国际化
   - 资源文件加载，提供file,jar,classpath等文件加载
   - 类扫描器
-  - 部分工具类
-  - retry重试
-
-- oxygen-ioc
   - 基于构造器的轻量级依赖注入
+  - 缓存
+  - 提供基于注解`Scheduled`的定时任务
+  - 部分工具类
 
 - oxygen-aop
   - 基于cglib实现的切面
   - 轻巧简单，可单独使用
   - 可使用注解`Aspect`或直接实现`Interceptor`编写切面
-
-- oxygen-cache
-  - 内置Ehcache和LocalCache缓存
-  - 提供基于注解`Cacheable`的方法缓存
-
-- oxygen-job
-  - 提供基于注解`Scheduled`的定时任务
 
 - oxygen-jdbc
   - 小巧简单的jdbc实现，纯jdk实现，无第三方jar

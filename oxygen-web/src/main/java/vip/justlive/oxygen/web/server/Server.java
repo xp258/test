@@ -15,7 +15,7 @@ package vip.justlive.oxygen.web.server;
 
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.aio.AioWebServer;
 
 /**
@@ -59,11 +59,9 @@ public class Server {
     if (!ready) {
       ready = true;
       ConfigFactory.initConfig();
-      WebConf conf = ConfigFactory.load(WebConf.class);
-      if (conf.getPort() != null) {
-        port = conf.getPort();
-      } else {
-        conf.setPort(port);
+      Integer cp = WebConfigKeys.SERVER_PORT.castValue(Integer.class);
+      if (cp != null) {
+        port = cp;
       }
       webServer.listen(port);
     }

@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.timer.WheelTimer;
@@ -220,19 +220,12 @@ public class ThreadUtils {
   /**
    * 全局pool
    *
-   * thread_pool.global.pool_size=10
-   * <br>
-   * thread_pool.global.queue_size=100000
-   *
    * @return pool
    */
   public synchronized SecurityThreadPoolExecutor globalPool() {
     if (globalPool == null) {
-      int poolSize = Integer
-          .parseInt(ConfigFactory.getProperty("thread_pool.global.pool_size", "10"));
-      int queueSize = Integer
-          .parseInt(ConfigFactory.getProperty("thread_pool.global.queue_size", "100000"));
-      globalPool = newThreadPool(1, poolSize, 120, queueSize, "global-pool-%d");
+      globalPool = newThreadPool(1, CoreConfigKeys.THREAD_POOL_SIZE.castValue(int.class), 120,
+          CoreConfigKeys.THREAD_POOL_QUEUE.castValue(int.class), "global-pool-%d");
       globalPool.setSecurityChecker(new SecurityChecker()
           .addChecker(new OwnerThreadChecker(ThreadUtils.addShutdownHook(globalTimer::shutdown))));
     }
@@ -242,20 +235,13 @@ public class ThreadUtils {
   /**
    * 全局时间轮，通过以下参数可进行配置，默认为毫秒级时间轮
    *
-   * wheel_timer.global.duration=1
-   * <br>
-   * wheel_timer.global.wheel_size=60
-   * <br>
-   * wheel_timer.global.pool_size=10
-   *
    * @return WheelTimer
    */
   public synchronized WheelTimer globalTimer() {
     if (globalTimer == null) {
-      globalTimer = new WheelTimer(
-          Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.duration", "1")),
-          Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.wheel_size", "60")),
-          Integer.parseInt(ConfigFactory.getProperty("wheel_timer.global.pool_size", "10")));
+      globalTimer = new WheelTimer(CoreConfigKeys.WHEEL_TIMER_DURATION.castValue(long.class),
+          CoreConfigKeys.WHEEL_TIMER_WHEEL_SIZE.castValue(int.class),
+          CoreConfigKeys.WHEEL_TIMER_POOL_SIZE.castValue(int.class));
       globalTimer.getSecurityChecker()
           .addChecker(new OwnerThreadChecker(ThreadUtils.addShutdownHook(globalTimer::shutdown)));
     }

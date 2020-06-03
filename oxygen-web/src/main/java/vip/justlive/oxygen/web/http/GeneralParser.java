@@ -22,7 +22,6 @@ import java.util.List;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.bean.Bean;
-import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
@@ -30,7 +29,7 @@ import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.WebConfigKeys;
 
 /**
  * 请求基础解析
@@ -135,7 +134,7 @@ public class GeneralParser implements Parser {
       request.secure = req.isSecure();
       request.remoteAddress = req.getRemoteAddr();
       try {
-        req.setCharacterEncoding(ConfigFactory.load(WebConf.class).getCharset());
+        req.setCharacterEncoding(WebConfigKeys.REQUEST_CHARSET.getValue());
       } catch (UnsupportedEncodingException e) {
         //ignore
       }

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.Strings;
@@ -61,8 +62,8 @@ public class ConfigFactory {
    */
   public void initConfig(String... locations) {
     ConfigFactory.loadProperties(locations);
-    String overridePath = ConfigFactory.getProperty("config.override.path");
-    if (overridePath != null && overridePath.length() > 0) {
+    String overridePath = CoreConfigKeys.CONFIG_OVERRIDE_PATH.getValue();
+    if (Strings.hasText(overridePath)) {
       ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
     }
   }
