@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
@@ -147,6 +148,7 @@ public class Bootstrap {
    * 初始化插件
    */
   private void initPlugins() {
+    PLUGINS.addAll(Singleton.getList(Plugin.class));
     Collections.sort(PLUGINS);
     for (Plugin plugin : PLUGINS) {
       log.info("start plugin: [{}]", plugin);
@@ -170,6 +172,7 @@ public class Bootstrap {
       log.info("stop plugin: [{}]", plugin);
       plugin.stop();
     }
+    PLUGINS.clear();
     FileUtils.cleanTempBaseDir();
     STATE.set(false);
     synchronized (STATE) {

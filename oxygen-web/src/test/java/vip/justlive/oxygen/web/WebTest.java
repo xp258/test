@@ -38,8 +38,7 @@ public class WebTest {
     Router.router().method(HttpMethod.GET).path("/a").handler(ctx -> ctx.response().write(msg));
     Router.router().method(HttpMethod.POST).path("/a")
         .handler(ctx -> ctx.response().write(msg + "!"));
-    Server server = Server.server();
-    server.listen(port);
+    Server.listen(port);
 
     ThreadUtils.sleep(3000);
 
@@ -62,7 +61,7 @@ public class WebTest {
       Assert.fail();
     }
 
-    server.stop();
+    Server.stop();
   }
 
 }

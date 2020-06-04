@@ -26,9 +26,9 @@ public class ConfigFactoryTest {
   @Test
   public void testLoadOneProp() {
 
-    ConfigFactory.initConfig();
+    ConfigFactory.loadProperties("classpath*:config.properties", "classpath*:/config/*.properties");
 
-    System.out.println(ConfigFactory.keys());
+    Assert.assertTrue(ConfigFactory.keys().contains("fc.age"));
 
     Prop prop = ConfigFactory.load(Prop.class);
 

@@ -89,7 +89,7 @@ public class ClassScannerPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE;
+    return Integer.MIN_VALUE + 100;
   }
 
   @Override

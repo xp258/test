@@ -40,9 +40,11 @@ import vip.justlive.oxygen.web.router.Route;
  */
 public class WebPlugin implements Plugin {
 
+  public static final WebPlugin PLUGIN = new WebPlugin();
+
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 60;
+    return Integer.MIN_VALUE + 800;
   }
 
   @Override

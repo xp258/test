@@ -15,7 +15,6 @@
 package vip.justlive.oxygen.web.tomcat;
 
 import java.io.File;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
@@ -38,7 +37,6 @@ import vip.justlive.oxygen.web.server.WebServer;
  *
  * @author wubo
  */
-@Slf4j
 public class TomcatWebServer implements WebServer {
 
   private Tomcat tomcat;
@@ -109,8 +107,6 @@ public class TomcatWebServer implements WebServer {
     initServer();
     try {
       tomcat.start();
-      log.info("tomcat started and listened on port [{}] with context path [{}]", this.port,
-          contextPath);
       startDaemonAwaitThread();
     } catch (LifecycleException e) {
       throw Exceptions.wrap(e);

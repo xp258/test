@@ -13,35 +13,22 @@
  */
 package vip.justlive.oxygen.web.server;
 
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.web.WebConfigKeys;
-import vip.justlive.oxygen.web.server.aio.AioWebServer;
+import vip.justlive.oxygen.web.WebPlugin;
 
 /**
  * server 启动类
  *
  * @author wubo
  */
+@Slf4j
+@UtilityClass
 public class Server {
 
-  private WebServer webServer;
-
   private volatile boolean ready = false;
-
-  /**
-   * web server
-   *
-   * @return webServer
-   */
-  public static Server server() {
-    Server server = new Server();
-    server.webServer = ServiceLoaderUtils.loadServiceOrNull(WebServer.class);
-    if (server.webServer == null) {
-      server.webServer = new AioWebServer();
-    }
-    return server;
-  }
 
   /**
    * 监听端口并启动服务
@@ -58,12 +45,12 @@ public class Server {
   public void listen(int port) {
     if (!ready) {
       ready = true;
-      ConfigFactory.initConfig();
-      Integer cp = WebConfigKeys.SERVER_PORT.castValue(Integer.class);
-      if (cp != null) {
-        port = cp;
-      }
-      webServer.listen(port);
+      ServerPlugin plugin = new ServerPlugin(port);
+      Bootstrap.addCustomPlugin(plugin, WebPlugin.PLUGIN);
+      Bootstrap.start();
+      log.info("[{}] started and listened on port [{}] with context path [{}]",
+          plugin.webServer.getClass().getSimpleName(), port,
+          WebConfigKeys.SERVER_CONTEXT_PATH.getValue());
     }
   }
 
@@ -72,8 +59,7 @@ public class Server {
    */
   public void stop() {
     if (ready) {
-      ready = false;
-      webServer.stop();
+      Bootstrap.close();
     }
   }
 

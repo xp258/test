@@ -50,7 +50,7 @@ public class JobPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 30;
+    return Integer.MIN_VALUE + 400;
   }
 
   @Override

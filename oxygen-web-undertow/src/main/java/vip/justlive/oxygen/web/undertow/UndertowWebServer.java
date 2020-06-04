@@ -28,7 +28,6 @@ import io.undertow.util.Headers;
 import java.util.HashSet;
 import java.util.Set;
 import javax.servlet.ServletException;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
@@ -42,7 +41,6 @@ import vip.justlive.oxygen.web.servlet.ServletWebInitializer;
  *
  * @author wubo
  */
-@Slf4j
 public class UndertowWebServer implements WebServer {
 
   private Undertow undertow;
@@ -66,8 +64,6 @@ public class UndertowWebServer implements WebServer {
       throw Exceptions.wrap(e);
     }
     undertow.start();
-    log.info("undertow started and listened on port [{}] with context path [{}]", this.port,
-        contextPath);
   }
 
   @Override

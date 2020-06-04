@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.Strings;
@@ -53,19 +52,6 @@ public class ConfigFactory {
     SOURCE = new MultiPropertySource().addSource(APP_SOURCE)
         .addSource(new SystemEnvPropertySource()).addSource(new SystemPropertySource());
     BINDER = new Binder(SOURCE);
-  }
-
-  /**
-   * 初始化配置
-   *
-   * @param locations 配置文件路径
-   */
-  public void initConfig(String... locations) {
-    ConfigFactory.loadProperties(locations);
-    String overridePath = CoreConfigKeys.CONFIG_OVERRIDE_PATH.getValue();
-    if (Strings.hasText(overridePath)) {
-      ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
-    }
   }
 
   /**

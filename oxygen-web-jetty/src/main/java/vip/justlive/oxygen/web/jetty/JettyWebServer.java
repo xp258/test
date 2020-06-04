@@ -96,8 +96,6 @@ public class JettyWebServer implements WebServer {
     } catch (Exception e) {
       throw Exceptions.wrap(e);
     }
-    log.info("jetty started and listened on port [{}] with context path [{}]", this.port,
-        contextPath);
   }
 
   private void configWebapp(WebAppContext webapp, JettyConf jettyConf)

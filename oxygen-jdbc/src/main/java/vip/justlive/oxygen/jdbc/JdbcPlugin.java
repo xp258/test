@@ -46,7 +46,7 @@ public class JdbcPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 50;
+    return Integer.MIN_VALUE + 700;
   }
 
   @Override

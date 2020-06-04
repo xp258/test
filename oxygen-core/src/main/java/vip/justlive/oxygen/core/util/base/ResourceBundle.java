@@ -131,7 +131,7 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 5;
+    return Integer.MIN_VALUE + 200;
   }
 
   /**

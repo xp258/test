@@ -16,6 +16,8 @@ package vip.justlive.oxygen.core.config;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 属性
@@ -37,6 +39,10 @@ public class ConfigKey {
     return ConfigFactory.getProperty(name, defaultValue);
   }
 
+  public String getValue(String defaultValue) {
+    return Strings.firstOrNull(getValue(), defaultValue);
+  }
+
   public <T> T castValue(Class<T> type) {
     String value = getValue();
     if (value == null) {
@@ -46,5 +52,9 @@ public class ConfigKey {
       return type.cast(value);
     }
     return DefaultConverterService.sharedConverterService().convert(value, type);
+  }
+
+  public <T> T castValue(Class<T> type, T defaultValue) {
+    return MoreObjects.firstOrNull(castValue(type), defaultValue);
   }
 }

@@ -13,7 +13,9 @@
  */
 package vip.justlive.oxygen.core.config;
 
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 配置插件
@@ -24,7 +26,11 @@ public class ConfigPlugin implements Plugin {
 
   @Override
   public void start() {
-    ConfigFactory.initConfig("classpath*:config.properties", "classpath*:/config/*.properties");
+    ConfigFactory.loadProperties("classpath*:config.properties", "classpath*:/config/*.properties");
+    String overridePath = CoreConfigKeys.CONFIG_OVERRIDE_PATH.getValue();
+    if (Strings.hasText(overridePath)) {
+      ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
+    }
   }
 
   @Override
