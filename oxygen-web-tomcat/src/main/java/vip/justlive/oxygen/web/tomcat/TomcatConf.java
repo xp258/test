@@ -25,7 +25,7 @@ import vip.justlive.oxygen.core.util.base.Strings;
  * @author wubo
  */
 @Data
-@ValueConfig("server.tomcat")
+@ValueConfig("oxygen.server.tomcat")
 public class TomcatConf {
 
   /**

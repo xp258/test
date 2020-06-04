@@ -48,10 +48,10 @@ public class HttpServerAioListener implements AioListener {
     if (log.isDebugEnabled()) {
       log.debug("channel connected {}", channelContext);
     }
-    ConnectionTimeout timeout = new ConnectionTimeout(channelContext, conf.getAioIdleTimeout(),
-        conf.getAioRequestTimeout());
+    ConnectionTimeout timeout = new ConnectionTimeout(channelContext, conf.getIdleTimeout(),
+        conf.getRequestTimeout());
     ThreadUtils.globalTimer()
-        .scheduleWithDelay(timeout, conf.getAioIdleTimeout(), TimeUnit.MILLISECONDS, timeout);
+        .scheduleWithDelay(timeout, conf.getIdleTimeout(), TimeUnit.MILLISECONDS, timeout);
   }
 
   @Override
