@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.aop.proxy.CglibBeanProxy;
+import vip.justlive.oxygen.core.aop.proxy.CompilerBeanProxy;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
@@ -56,7 +57,12 @@ public class IocPlugin implements Plugin {
       if (HAS_CGLIB_PROXY) {
         beanProxy = new CglibBeanProxy();
       } else {
-        beanProxy = new SimpleBeanProxy();
+        try {
+          beanProxy = new CompilerBeanProxy();
+        } catch (Exception e) {
+          log.warn("Compiler Bean Proxy init error", e);
+          beanProxy = new SimpleBeanProxy();
+        }
       }
     } else {
       Collections.sort(list);

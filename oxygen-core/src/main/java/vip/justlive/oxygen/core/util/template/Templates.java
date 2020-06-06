@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +40,7 @@ import vip.justlive.oxygen.core.util.io.SourceResource;
 public class Templates {
 
   private final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
+  private final TemplateEngine ENGINE = new SimpleTemplateEngine();
 
   private final File BASE_DIR;
 
@@ -88,4 +90,19 @@ public class Templates {
     }
   }
 
+  public String loadAndRender(String path, Map<String, Object> attrs) {
+    return render(cachedTemplate(path), attrs);
+  }
+
+  public void loadAndRender(String path, Map<String, Object> attrs, Writer writer) {
+    render(cachedTemplate(path), attrs, writer);
+  }
+
+  public String render(String template, Map<String, Object> attrs) {
+    return ENGINE.render(template, attrs);
+  }
+
+  public void render(String template, Map<String, Object> attrs, Writer writer) {
+    ENGINE.render(template, attrs, writer);
+  }
 }

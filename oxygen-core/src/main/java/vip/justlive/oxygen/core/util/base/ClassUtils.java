@@ -301,6 +301,25 @@ public class ClassUtils {
   }
 
   /**
+   * 获取实际类名
+   *
+   * @param clazz 类
+   * @return className
+   */
+  public String getClassName(Class<?> clazz) {
+    String className = clazz.getTypeName();
+    if (!clazz.isMemberClass()) {
+      return className;
+    }
+    Class<?> parent = clazz.getDeclaringClass();
+    if (parent == null) {
+      return className;
+    }
+    String parentName = getClassName(parent);
+    return parentName + Strings.DOT + className.substring(parent.getName().length() + 1);
+  }
+
+  /**
    * 获取类下被注解的方法
    *
    * @param clazz 类

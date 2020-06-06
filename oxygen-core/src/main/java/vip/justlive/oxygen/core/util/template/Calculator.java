@@ -30,7 +30,6 @@ import vip.justlive.oxygen.core.util.base.MoreObjects;
 public class Calculator {
 
   private final String TEMPLATE = "#{var $result = %s; $out.write('' + $result); }";
-  private final SimpleTemplateEngine ENGINE = new SimpleTemplateEngine();
 
   /**
    * 计算
@@ -54,7 +53,7 @@ public class Calculator {
     if (data != null) {
       attrs.putAll(MoreObjects.beanToMap(data));
     }
-    return new BigDecimal(ENGINE.render(String.format(TEMPLATE, formula), attrs));
+    return new BigDecimal(Templates.render(String.format(TEMPLATE, formula), attrs));
   }
 
   /**

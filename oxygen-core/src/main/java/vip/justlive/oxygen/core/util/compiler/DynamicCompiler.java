@@ -50,7 +50,7 @@ public class DynamicCompiler implements Closeable {
   private static final Pattern PACKAGE_PATTERN = Pattern
       .compile("package\\s+([$_a-zA-Z][$_a-zA-Z0-9.]*);");
   private static final Pattern CLASS_PATTERN = Pattern
-      .compile("class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)\\s+");
+      .compile("class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)[\\s<]");
 
   private final ClassLoader loader;
   private final List<String> options;
@@ -64,6 +64,9 @@ public class DynamicCompiler implements Closeable {
     ClassLoader parent = Thread.currentThread().getContextClassLoader();
     this.loader = new DynamicClassLoader(parent, byteCodes);
     this.compiler = ToolProvider.getSystemJavaCompiler();
+    if (this.compiler == null) {
+      throw Exceptions.fail("no compiler found");
+    }
     StandardJavaFileManager fileManager = compiler.getStandardFileManager(collector, null, null);
     if (parent instanceof URLClassLoader) {
       try {

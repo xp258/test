@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core.util.io;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -44,8 +45,8 @@ public class FileUtils {
   private final Properties MIME_TYPES = new Properties();
 
   static {
-    try {
-      MIME_TYPES.load(FileUtils.class.getResourceAsStream("/mime-types.properties"));
+    try (InputStream in = FileUtils.class.getResourceAsStream("/mime-types.properties")) {
+      MIME_TYPES.load(in);
     } catch (IOException e) {
       log.warn("mime types initial failed ", e);
     }

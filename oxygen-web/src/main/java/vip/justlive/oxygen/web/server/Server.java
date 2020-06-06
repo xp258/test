@@ -46,7 +46,7 @@ public class Server {
     if (!ready) {
       ready = true;
       ServerPlugin plugin = new ServerPlugin(port);
-      Bootstrap.addCustomPlugin(plugin, WebPlugin.PLUGIN);
+      Bootstrap.addCustomPlugin(plugin);
       Bootstrap.start();
       log.info("[{}] started and listened on port [{}] with context path [{}]",
           plugin.webServer.getClass().getSimpleName(), port,
