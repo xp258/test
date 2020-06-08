@@ -25,7 +25,7 @@ import vip.justlive.oxygen.core.util.base.ClassUtils;
 public class SimpleBeanProxy implements BeanProxy {
 
   @Override
-  public Object proxy(Class<?> clazz, Object... args) {
+  public <T> T proxy(Class<T> clazz, Object... args) {
     try {
       return clazz.getConstructor(ClassUtils.getConstructorArgsTypes(clazz, args))
           .newInstance(args);

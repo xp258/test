@@ -15,13 +15,13 @@ package vip.justlive.oxygen.core.aop;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.function.Function;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.aop.Aspect.TYPE;
 import vip.justlive.oxygen.core.aop.interceptor.Interceptor;
 import vip.justlive.oxygen.core.aop.proxy.ProxyStore;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * aop调用封装
@@ -38,7 +38,7 @@ public final class Invocation {
   private final Object[] args;
   private Object returnValue;
 
-  public void intercept(Function<Invocation, Object> callback) {
+  public void intercept(Callback callback) {
     boolean interrupted = doIntercept(TYPE.BEFORE, method);
     try {
       if (interrupted && log.isDebugEnabled()) {
@@ -47,9 +47,9 @@ public final class Invocation {
       } else if (!interrupted) {
         returnValue = callback.apply(this);
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       doIntercept(TYPE.CATCHING, method);
-      throw e;
+      throw Exceptions.wrap(e);
     }
     doIntercept(TYPE.AFTER, method);
   }

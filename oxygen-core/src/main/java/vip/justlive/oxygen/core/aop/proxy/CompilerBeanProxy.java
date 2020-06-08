@@ -61,11 +61,11 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
   }
 
   public static Method lookup(long key) {
-    return METHODS.remove(key);
+    return METHODS.get(key);
   }
 
   @Override
-  public Object proxy(Class<?> clazz, Object... args) {
+  public <T> T proxy(Class<T> clazz, Object... args) {
     ClassMeta classMeta = new ClassMeta();
     Class<?> actualClass = ClassUtils.getActualClass(clazz);
     classMeta.packageName = actualClass.getPackage().getName();
@@ -86,7 +86,8 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
           code);
     }
     Class<?> proxyClass = compiler.compile(classMeta.packageName, classMeta.className, code);
-    Object bean = super.proxy(proxyClass, args);
+    @SuppressWarnings("unchecked")
+    T bean = (T) super.proxy(proxyClass, args);
     ProxyStore.PROXIES.add(bean);
     return bean;
   }
@@ -111,13 +112,10 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
 
   private List<ConstructorMeta> getConstructorMeta(Class<?> actualClass, ClassMeta classMeta) {
     List<ConstructorMeta> constructorMetas = new ArrayList<>();
-    Constructor<?>[] constructors = actualClass.getConstructors();
-    if (constructors.length == 1 && constructors[0].getParameterCount() == 0) {
-      return constructorMetas;
-    }
-    for (Constructor<?> constructor : constructors) {
+    for (Constructor<?> constructor : actualClass.getConstructors()) {
       ConstructorMeta meta = new ConstructorMeta();
       meta.params = getGeneric(constructor.getParameters(), actualClass, classMeta);
+      meta.exceptions = getExceptionTypes(constructor.getExceptionTypes());
       constructorMetas.add(meta);
     }
     return constructorMetas;
@@ -135,7 +133,7 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
       meta.name = method.getName();
       meta.generic = getGeneric(method.getTypeParameters(), true);
       meta.returnType = getReturnType(method);
-      meta.exceptions = getExceptionTypes(method);
+      meta.exceptions = getExceptionTypes(method.getExceptionTypes());
       meta.params = getGeneric(method.getParameters(), method.getDeclaringClass(), classMeta);
       METHODS.put(meta.key, method);
       methodMetas.add(meta);
@@ -144,12 +142,10 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
   }
 
   private String getReturnType(Method method) {
-    Type type = method.getGenericReturnType();
-    return type.getTypeName();
+    return new TypeImpl(method.getGenericReturnType()).getTypeName();
   }
 
-  private String[] getExceptionTypes(Method method) {
-    Class<?>[] types = method.getExceptionTypes();
+  private String[] getExceptionTypes(Class<?>[] types) {
     String[] rts = new String[types.length];
     for (int i = 0; i < types.length; i++) {
       rts[i] = ClassUtils.getClassName(types[i]);
@@ -206,7 +202,7 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
       } else {
         sb.append(" & ");
       }
-      sb.append(bounds[j].getTypeName());
+      sb.append(new TypeImpl(bounds[j]).getTypeName());
     }
   }
 
@@ -233,6 +229,7 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
   public static class ConstructorMeta {
 
     private String[] params;
+    private String[] exceptions;
   }
 
   @Getter

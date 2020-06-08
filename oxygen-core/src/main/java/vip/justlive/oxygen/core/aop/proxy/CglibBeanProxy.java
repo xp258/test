@@ -24,7 +24,7 @@ import vip.justlive.oxygen.core.bean.BeanProxy;
 public class CglibBeanProxy implements BeanProxy {
 
   @Override
-  public Object proxy(Class<?> clazz, Object... args) {
+  public <T> T proxy(Class<T> clazz, Object... args) {
     return CglibProxy.proxy(clazz, args);
   }
 

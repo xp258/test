@@ -68,6 +68,7 @@ public class IocPlugin implements Plugin {
       Collections.sort(list);
       beanProxy = list.get(0);
     }
+    log.info("init bean proxy of class [{}]", beanProxy.getClass());
     ioc();
   }
 

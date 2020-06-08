@@ -28,7 +28,8 @@ public interface BeanProxy extends Order {
    *
    * @param clazz 类
    * @param args 构造参数
+   * @param <T> 泛型
    * @return obj
    */
-  Object proxy(Class<?> clazz, Object... args);
+  <T> T proxy(Class<T> clazz, Object... args);
 }

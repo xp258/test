@@ -18,7 +18,6 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import vip.justlive.oxygen.core.aop.Invocation;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
@@ -51,13 +50,7 @@ public class CglibProxy implements MethodInterceptor {
   @Override
   public Object intercept(Object obj, Method method, Object[] args, MethodProxy methodProxy) {
     Invocation invocation = new Invocation(obj, method, args);
-    invocation.intercept(ivt -> {
-      try {
-        return methodProxy.invokeSuper(ivt.getTarget(), ivt.getArgs());
-      } catch (Throwable throwable) {
-        throw Exceptions.wrap(throwable);
-      }
-    });
+    invocation.intercept(ivt -> methodProxy.invokeSuper(ivt.getTarget(), ivt.getArgs()));
     return invocation.getReturnValue();
   }
 }

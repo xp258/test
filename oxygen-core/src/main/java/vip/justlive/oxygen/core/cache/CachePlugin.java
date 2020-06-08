@@ -33,9 +33,7 @@ public class CachePlugin implements Plugin {
   public void start() {
     // fast fail
     Cache.cache();
-    if (log.isDebugEnabled()) {
-      log.debug("init cache of class [{}]", Cache.cache().getClass());
-    }
+    log.info("init cache of class [{}]", Cache.cache().getClass());
   }
 
   @Override
