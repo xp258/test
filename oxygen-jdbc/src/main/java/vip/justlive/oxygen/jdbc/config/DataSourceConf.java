@@ -22,7 +22,7 @@ import vip.justlive.oxygen.core.util.base.MoreObjects;
  * @author wubo
  */
 @Data
-@vip.justlive.oxygen.core.config.ValueConfig("datasource")
+@vip.justlive.oxygen.core.config.ValueConfig("oxygen.datasource")
 public class DataSourceConf {
 
   /**

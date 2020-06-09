@@ -35,7 +35,7 @@
   - 支持i18n动态切换
   - 提供`WebHook`进行请求拦截处理
   - 支持自定义全局异常处理
-  
+  - 内置aio服务器
 
 
 ## 特性
@@ -437,7 +437,7 @@ public class CustomExceptionHandler extends ExceptionHandlerImpl {
 
 **编码指定**
 ```java
-Server.server().listen(8080);
+Server.listen(8080);
 ```
 **配置文件**
 ```properties
@@ -675,6 +675,23 @@ oxygen.server.undertow.gzipMinLength=1024
 oxygen.server.undertow.allowUnescapedCharactersInUrl=true
 # 是否开启http2
 oxygen.server.undertow.http2enabled=false
+
+
+#### aio
+# aio服务连接空闲超时时间，单位毫秒
+oxygen.server.aio.idleTimeout=10000
+# aio请求连接超时时间，负数为不超时
+oxygen.server.aio.requestTimeout=-1
+# 连接线程数
+oxygen.server.aio.acceptThreads=100
+# 连接线程最大等待数
+oxygen.server.aio.acceptMaxWaiter=10000
+# 工作线程数
+oxygen.server.aio.workerThreads=200
+# 工作线程最大等待数
+oxygen.server.aio.workerMaxWaiter=1000000
+# 是否hold住端口，true的话随主线程退出而退出，false的话则要主动退出
+oxygen.server.aio.daemon=false
 
 ```
 
