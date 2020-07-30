@@ -68,9 +68,8 @@ public class Subscriber {
       return false;
     }
     Subscriber that = (Subscriber) o;
-    return Objects.equals(pattern, that.pattern) &&
-        Objects.equals(target, that.target) &&
-        Objects.equals(method, that.method);
+    return Objects.equals(pattern, that.pattern) && Objects.equals(target, that.target) && Objects
+        .equals(method, that.method);
   }
 
   @Override

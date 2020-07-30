@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventContext {
 
-  static final ThreadLocal<EventContext> CTX = new ThreadLocal<>();
+  private static final ThreadLocal<EventContext> CTX = new ThreadLocal<>();
 
   private final String channel;
   private final Object event;
@@ -36,4 +36,11 @@ public class EventContext {
     return CTX.get();
   }
 
+  static void set(EventContext ctx) {
+    CTX.set(ctx);
+  }
+
+  static void remove() {
+    CTX.remove();
+  }
 }
