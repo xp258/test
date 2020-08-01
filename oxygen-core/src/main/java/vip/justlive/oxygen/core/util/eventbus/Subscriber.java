@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import lombok.Getter;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * 订阅包装
@@ -48,9 +49,9 @@ public class Subscriber {
     try {
       method.invoke(target, ctx.getEvent());
     } catch (IllegalArgumentException e) {
-      throw new Error("Method rejected target/argument: " + ctx.getEvent(), e);
+      throw Exceptions.fault(e, "Method rejected target/argument: " + ctx.getEvent());
     } catch (IllegalAccessException e) {
-      throw new Error("Method became inaccessible: " + ctx.getEvent(), e);
+      throw Exceptions.fault(e, "Method became inaccessible: " + ctx.getEvent());
     } catch (InvocationTargetException e) {
       if (e.getCause() instanceof Error) {
         throw (Error) e.getCause();
