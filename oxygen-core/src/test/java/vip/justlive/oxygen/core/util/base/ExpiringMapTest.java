@@ -60,7 +60,7 @@ public class ExpiringMapTest {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 20
-        .expiration(20, TimeUnit.MILLISECONDS)
+        .expiration(200, TimeUnit.MILLISECONDS)
         // 访问刷新
         .expiringPolicy(ExpiringPolicy.ACCESSED)
         // 累积
@@ -74,15 +74,15 @@ public class ExpiringMapTest {
     Assert.assertNotNull(expiringMap.get(key));
     Assert.assertNotNull(expiringMap.get(k));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNotNull(expiringMap.get(key));
     Assert.assertNull(expiringMap.get(k));

@@ -27,6 +27,5 @@ public class DeadEs {
   public void dead(DeadEvent event) {
     log.info("dead event {}", event);
     deadCount++;
-    throw new IllegalArgumentException();
   }
 }
