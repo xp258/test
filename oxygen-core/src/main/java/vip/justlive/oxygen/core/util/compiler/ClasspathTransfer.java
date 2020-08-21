@@ -33,7 +33,6 @@ import vip.justlive.oxygen.core.util.io.FileUtils;
  */
 public class ClasspathTransfer {
 
-  private static final String FILE_PREFIX = "file:";
   private static final String FAT_JAR_SEPARATOR = "!/";
   private static final File ROOT;
 
@@ -54,7 +53,7 @@ public class ClasspathTransfer {
         fatJar(path.substring(0, index), path.substring(index + FAT_JAR_SEPARATOR.length()),
             result);
       } else if (path.endsWith(Strings.EXCLAMATION_MARK)) {
-        result.add(new File(path.substring(FILE_PREFIX.length(), path.length() - 1)));
+        result.add(new File(path.substring(Strings.FILE_PREFIX.length(), path.length() - 1)));
       }
     }
     files.clear();
