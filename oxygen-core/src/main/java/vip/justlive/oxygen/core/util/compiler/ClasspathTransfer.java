@@ -33,7 +33,7 @@ import vip.justlive.oxygen.core.util.io.FileUtils;
  */
 public class ClasspathTransfer {
 
-  private static final String FILE_PREFIX = "file:/";
+  private static final String FILE_PREFIX = "file:";
   private static final String FAT_JAR_SEPARATOR = "!/";
   private static final File ROOT;
 
