@@ -40,8 +40,6 @@ import vip.justlive.oxygen.core.util.io.IoUtils;
 public class Multipart {
 
   private static final String DEFAULT_BOUNDARY = "----oxygen_" + SnowflakeId.defaultNextId();
-  private static final String FORM_DATA = "Content-Disposition: form-data; name=\"%s\"";
-  private static final String FORM_FILE_DATA = "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"";
 
   private final String boundary;
   private List<Part> parts;
@@ -68,53 +66,6 @@ public class Multipart {
     }
     parts.add(new Part(name, file, filename));
     return this;
-  }
-
-  public byte[] toBytes(Charset charset) {
-    if (parts == null || parts.isEmpty()) {
-      return new byte[0];
-    }
-
-    Bytes bytes = new Bytes();
-    for (Part part : parts) {
-      if (part.isFile()) {
-        appendFile(part, bytes, charset);
-      } else {
-        appendValue(part, bytes, charset);
-      }
-    }
-    appendEnd(bytes, charset);
-    return bytes.toArray();
-  }
-
-  private void appendEnd(Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(boundary, charset).write(Strings.DASH)
-        .write(Strings.DASH).write(Bytes.CR).write(Bytes.LF);
-  }
-
-  private void appendValue(Part part, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(boundary, charset).write(Bytes.CR)
-        .write(Bytes.LF);
-    bytes.write(String.format(FORM_DATA, part.getName()), charset).write(Bytes.CR).write(Bytes.LF);
-    bytes.write(Bytes.CR).write(Bytes.LF);
-    bytes.write(part.getValue(), charset).write(Bytes.CR).write(Bytes.LF);
-  }
-
-  private void appendFile(Part part, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(boundary, charset).write(Bytes.CR)
-        .write(Bytes.LF);
-    bytes.write(String.format(FORM_FILE_DATA, part.getName(), part.getFilename()), charset)
-        .write(Bytes.CR).write(Bytes.LF);
-    bytes.write(HttpHeaders.CONTENT_TYPE).write(Bytes.COLON).write(Bytes.SPACE).write(MoreObjects
-        .firstNonNull(FileUtils.parseMimeType(part.getFilename()),
-            HttpHeaders.APPLICATION_OCTET_STREAM));
-    bytes.write(Bytes.CR).write(Bytes.LF).write(Bytes.CR).write(Bytes.LF);
-    try (InputStream input = Files.newInputStream(part.getFile().toPath())) {
-      IoUtils.copy(input, bytes);
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
-    bytes.write(Bytes.CR).write(Bytes.LF);
   }
 
 }

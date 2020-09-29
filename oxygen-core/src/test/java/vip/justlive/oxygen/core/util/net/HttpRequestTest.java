@@ -17,6 +17,8 @@ package vip.justlive.oxygen.core.util.net;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.junit.Assert;
@@ -31,12 +33,16 @@ public class HttpRequestTest {
 
   @Test
   public void test0() throws IOException {
+    AtomicInteger count = new AtomicInteger();
     try (HttpResponse response = HttpRequest.get(
         "https://cn.bing.com/AS/Suggestions?pt=page.serp&bq=Charset&mkt=zh-cn&ds=mobileweb&qry=charset&cp=7&cvid=5E954FAA1B634A69A7CCF9438379A606")
         .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
+        .interceptors(Collections.singletonList(new TestHttpRequestInterceptor(count)))
         .followRedirects(false).execute()) {
       Assert.assertEquals(200, response.getCode());
     }
+
+    Assert.assertEquals(1, count.get());
   }
 
   public void test1() throws IOException {
