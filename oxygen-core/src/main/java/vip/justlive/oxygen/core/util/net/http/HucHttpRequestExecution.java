@@ -20,12 +20,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import javax.net.ssl.HttpsURLConnection;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.io.FileUtils;
 import vip.justlive.oxygen.core.util.io.IoUtils;
@@ -35,9 +41,11 @@ import vip.justlive.oxygen.core.util.json.Json;
  * HttpURLConnection 实现的执行器
  *
  * @author wubo
+ * @since 3.0.4
  */
 public class HucHttpRequestExecution implements HttpRequestExecution {
 
+  private static final String DEFAULT_BOUNDARY = "----oxygen_" + SnowflakeId.defaultNextId();
   private static final String FORM_DATA = "Content-Disposition: form-data; name=\"%s\"";
   private static final String FORM_FILE_DATA = "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"";
 
@@ -69,7 +77,7 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     // add headers
     request.getHeaders().forEach(connection::addRequestProperty);
     boolean nonOutput = request.getMethod() == HttpMethod.GET || (
-        request.getBody() == null && request.getMultipart() == null);
+        request.getBody() == null && request.getHttpBody() != HttpBody.MULTIPART);
     connection.setDoOutput(!nonOutput);
     if (nonOutput) {
       connection.connect();
@@ -82,7 +90,12 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
         out.flush();
       }
     }
-    return new HttpResponse(connection, request.getCharset());
+    InputStream is = connection.getErrorStream();
+    if (is == null) {
+      is = connection.getInputStream();
+    }
+    return new HucHttpResponse(connection, connection.getResponseCode(),
+        connection.getResponseMessage(), is, request.getCharset());
   }
 
   private Function<Object, byte[]> getFunc(HttpRequest request) {
@@ -91,7 +104,7 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     } else if (request.getHttpBody() == HttpBody.JSON) {
       return obj -> jsonBodyConvert(obj, request.getCharset());
     } else if (request.getHttpBody() == HttpBody.MULTIPART) {
-      return obj -> multipartConvert(obj, request.getMultipart(), request.getCharset());
+      return obj -> multipartConvert(obj, request.getParts(), request.getCharset());
     } else if (request.getHttpBody() == HttpBody.OTHERS && request.getFunc() != null) {
       return request.getFunc();
     }
@@ -120,6 +133,12 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
 
   private void setContentType(HttpRequest request) {
     String contentType = request.getHeaders().get(HttpHeaders.CONTENT_TYPE);
+    if (contentType == null) {
+      contentType = request.getHttpBody().getMedia();
+      if (request.getHttpBody() == HttpBody.MULTIPART) {
+        contentType += "; boundary=" + DEFAULT_BOUNDARY;
+      }
+    }
     if (contentType != null && !contentType.contains(HttpHeaders.CHARSET)) {
       request.getHeaders()
           .put(HttpHeaders.CONTENT_TYPE, contentType + ";charset=" + request.getCharset().name());
@@ -148,40 +167,41 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     }
   }
 
-  private byte[] multipartConvert(Object body, Multipart multipart, Charset charset) {
+  private byte[] multipartConvert(Object body, List<Part> multipart, Charset charset) {
     if (body != null) {
-      MoreObjects.beanToMap(body).forEach((k, v) -> multipart.add(k, v.toString()));
+      MoreObjects.beanToMap(body).forEach((k, v) -> multipart.add(new Part(k, v.toString())));
     }
-    if (multipart.getParts() == null || multipart.getParts().isEmpty()) {
+    if (multipart == null || multipart.isEmpty()) {
       return new byte[0];
     }
     Bytes bytes = new Bytes();
-    for (Part part : multipart.getParts()) {
+    for (Part part : multipart) {
       if (part.isFile()) {
-        appendFile(multipart.getBoundary(), part, bytes, charset);
+        appendFile(part, bytes, charset);
       } else {
-        appendValue(multipart.getBoundary(), part, bytes, charset);
+        appendValue(part, bytes, charset);
       }
     }
-    appendEnd(multipart.getBoundary(), bytes, charset);
+    appendEnd(bytes, charset);
     return bytes.toArray();
   }
 
-  private void appendEnd(String boundary, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(boundary, charset).write(Strings.DASH)
+  private void appendEnd(Bytes bytes, Charset charset) {
+    bytes.write(Strings.DASH).write(Strings.DASH).write(DEFAULT_BOUNDARY, charset)
+        .write(Strings.DASH)
         .write(Strings.DASH).write(Bytes.CR).write(Bytes.LF);
   }
 
-  private void appendValue(String boundary, Part part, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(boundary, charset).write(Bytes.CR)
+  private void appendValue(Part part, Bytes bytes, Charset charset) {
+    bytes.write(Strings.DASH).write(Strings.DASH).write(DEFAULT_BOUNDARY, charset).write(Bytes.CR)
         .write(Bytes.LF);
     bytes.write(String.format(FORM_DATA, part.getName()), charset).write(Bytes.CR).write(Bytes.LF);
     bytes.write(Bytes.CR).write(Bytes.LF);
     bytes.write(part.getValue(), charset).write(Bytes.CR).write(Bytes.LF);
   }
 
-  private void appendFile(String boundary, Part part, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(boundary, charset).write(Bytes.CR)
+  private void appendFile(Part part, Bytes bytes, Charset charset) {
+    bytes.write(Strings.DASH).write(Strings.DASH).write(DEFAULT_BOUNDARY, charset).write(Bytes.CR)
         .write(Bytes.LF);
     bytes.write(String.format(FORM_FILE_DATA, part.getName(), part.getFilename()), charset)
         .write(Bytes.CR).write(Bytes.LF);
@@ -197,4 +217,43 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     bytes.write(Bytes.CR).write(Bytes.LF);
   }
 
+  /**
+   * huc实现的response
+   */
+  @EqualsAndHashCode(callSuper = true)
+  public static class HucHttpResponse extends HttpResponse {
+
+    @Getter
+    private final HttpURLConnection connection;
+
+    public HucHttpResponse(HttpURLConnection connection, int code, String message, InputStream body,
+        Charset charset) {
+      super(code, message, body, charset);
+      this.connection = connection;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      if (super.getHeaders() == null) {
+        Map<String, String> map = new HashMap<>(4);
+        // Header field 0 is the 'HTTP/1.1 200' line for most HttpURLConnections, but not on GAE
+        for (int i = 0; ; i++) {
+          String name = this.connection.getHeaderFieldKey(i);
+          if (name != null && name.trim().length() > 0) {
+            map.put(name, this.connection.getHeaderField(i));
+          } else if (i > 0) {
+            break;
+          }
+        }
+        setHeaders(map);
+      }
+      return super.getHeaders();
+    }
+
+    @Override
+    public void close() throws IOException {
+      super.close();
+      this.connection.disconnect();
+    }
+  }
 }

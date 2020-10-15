@@ -20,6 +20,7 @@ import vip.justlive.oxygen.core.Order;
  * http请求拦截器
  *
  * @author wubo
+ * @since 3.0.4
  */
 public interface HttpRequestInterceptor extends Order {
 

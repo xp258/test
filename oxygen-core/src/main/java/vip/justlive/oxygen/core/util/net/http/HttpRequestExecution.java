@@ -19,6 +19,7 @@ import java.io.IOException;
  * http请求执行器
  *
  * @author wubo
+ * @since 3.0.4
  */
 public interface HttpRequestExecution {
 

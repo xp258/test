@@ -14,10 +14,12 @@
 
 package vip.justlive.oxygen.core.util.net.http;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Proxy;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +28,6 @@ import java.util.function.Function;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
-import vip.justlive.oxygen.core.util.base.HttpHeaders;
 
 /**
  * http request
@@ -46,7 +47,7 @@ public class HttpRequest {
   private Charset charset = StandardCharsets.UTF_8;
   private Object queryParam;
   private Object body;
-  private Multipart multipart;
+  private List<Part> parts;
   private Function<Object, byte[]> func;
   private Proxy proxy;
   private SSLSocketFactory sslSocketFactory;
@@ -230,7 +231,6 @@ public class HttpRequest {
   public HttpRequest formBody(Object body) {
     this.body = body;
     this.httpBody = HttpBody.FORM;
-    this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_FORM_URLENCODED);
     return this;
   }
 
@@ -243,32 +243,66 @@ public class HttpRequest {
   public HttpRequest jsonBody(Object body) {
     this.body = body;
     this.httpBody = HttpBody.JSON;
-    this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_JSON);
     return this;
   }
 
   /**
    * multipart body
    *
-   * @return multipart
+   * @param name 参数名称
+   * @param file 文件
+   * @return request
+   * @since 3.0.4
    */
-  public Multipart multipart() {
-    return multipart(null);
+  public HttpRequest multipart(String name, File file) {
+    return multipart(name, file, null);
+  }
+
+  /**
+   * multipart body
+   *
+   * @param name 参数名称
+   * @param value 值
+   * @return request
+   * @since 3.0.4
+   */
+  public HttpRequest multipart(String name, String value) {
+    this.httpBody = HttpBody.MULTIPART;
+    if (parts == null) {
+      parts = new ArrayList<>();
+    }
+    parts.add(new Part(name, value));
+    return this;
   }
 
   /**
    * multipart body
    *
    * @param body 请求体
-   * @return multipart
+   * @return request
    */
-  public Multipart multipart(Object body) {
-    this.multipart = new Multipart();
-    this.headers.put(HttpHeaders.CONTENT_TYPE,
-        HttpHeaders.MULTIPART_FORM_DATA_BOUNDARY + this.multipart.getBoundary());
+  public HttpRequest multipart(Object body) {
     this.body = body;
     this.httpBody = HttpBody.MULTIPART;
-    return multipart;
+    return this;
+  }
+
+  /**
+   * multipart body
+   *
+   * @param name 参数名称
+   * @param file 文件
+   * @param filename 文件名称
+   * @return request
+   * @since 3.0.4
+   */
+  public HttpRequest multipart(String name, File file, String filename) {
+    this.httpBody = HttpBody.MULTIPART;
+    if (parts == null) {
+      parts = new ArrayList<>();
+    }
+    parts.add(new Part(name, file, filename));
+    return this;
   }
 
   /**

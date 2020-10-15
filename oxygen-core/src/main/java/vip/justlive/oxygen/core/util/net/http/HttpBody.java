@@ -13,30 +13,39 @@
  */
 package vip.justlive.oxygen.core.util.net.http;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+
 /**
  * http body 类型
  *
  * @author wubo
+ * @since 3.0.4
  */
+@Getter
+@RequiredArgsConstructor
 public enum HttpBody {
   /**
    * 没有body
    */
-  NONE,
+  NONE(null),
   /**
    * 表单
    */
-  FORM,
+  FORM(HttpHeaders.APPLICATION_FORM_URLENCODED),
   /**
    * 复合类型
    */
-  MULTIPART,
+  MULTIPART(HttpHeaders.MULTIPART_FORM_DATA),
   /**
    * json类型
    */
-  JSON,
+  JSON(HttpHeaders.APPLICATION_JSON),
   /**
    * 其他类型
    */
-  OTHERS
+  OTHERS(null);
+
+  private final String media;
 }

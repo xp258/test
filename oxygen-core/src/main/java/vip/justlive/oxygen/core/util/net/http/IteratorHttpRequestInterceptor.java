@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
  * 拦截器迭代处理
  *
  * @author wubo
+ * @since 3.0.4
  */
 @RequiredArgsConstructor
 public class IteratorHttpRequestInterceptor implements HttpRequestExecution {
