@@ -54,7 +54,7 @@ public class Part {
     if (isFile()) {
       res += ", file:" + file + ", filename:" + filename;
     }
-    res += +'}';
+    res += "}";
     return res;
   }
 }

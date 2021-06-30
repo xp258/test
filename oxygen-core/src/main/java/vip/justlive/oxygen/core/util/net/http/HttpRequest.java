@@ -348,7 +348,7 @@ public class HttpRequest {
     if (parts != null) {
       res += ", parts:" + parts;
     }
-    res += '}';
+    res += "}";
     return res;
   }
 }

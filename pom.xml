@@ -27,8 +27,8 @@
 
     <cglib.version>3.3.0</cglib.version>
     <junit.version>4.13.1</junit.version>
-    <lombok.version>1.18.16</lombok.version>
-    <slf4j.version>1.7.30</slf4j.version>
+    <lombok.version>1.18.20</lombok.version>
+    <slf4j.version>1.7.31</slf4j.version>
 
     <skipTests>true</skipTests>
     <maven.compiler.source>${java.version}</maven.compiler.source>
