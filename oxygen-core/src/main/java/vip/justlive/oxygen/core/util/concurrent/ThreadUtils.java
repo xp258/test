@@ -227,8 +227,7 @@ public class ThreadUtils {
    */
   public synchronized WheelTimer globalTimer() {
     if (globalTimer == null) {
-      globalTimer = new WheelTimer(CoreConfigKeys.WHEEL_TIMER_DURATION.castValue(long.class),
-          CoreConfigKeys.WHEEL_TIMER_WHEEL_SIZE.castValue(int.class),
+      globalTimer = new WheelTimer(1, CoreConfigKeys.WHEEL_TIMER_WHEEL_SIZE.castValue(int.class),
           CoreConfigKeys.WHEEL_TIMER_POOL_SIZE.castValue(int.class));
       globalTimer.getSecurityChecker()
           .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown)));

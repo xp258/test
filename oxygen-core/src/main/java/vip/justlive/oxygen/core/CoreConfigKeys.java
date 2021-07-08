@@ -49,7 +49,6 @@ public class CoreConfigKeys {
   public ConfigKey THREAD_POOL_SIZE = new ConfigKey("oxygen.threadPool.size", "10");
   public ConfigKey THREAD_POOL_QUEUE = new ConfigKey("oxygen.threadPool.queue", "100000");
 
-  public ConfigKey WHEEL_TIMER_DURATION = new ConfigKey("oxygen.wheelTimer.duration", "1");
   public ConfigKey WHEEL_TIMER_WHEEL_SIZE = new ConfigKey("oxygen.wheelTimer.wheelSize", "60");
   public ConfigKey WHEEL_TIMER_POOL_SIZE = new ConfigKey("oxygen.wheelTimer.poolSize", "10");
   public ConfigKey WHEEL_TIMER_TIMEOUT = new ConfigKey("oxygen.wheelTimer.timeout", "100");
