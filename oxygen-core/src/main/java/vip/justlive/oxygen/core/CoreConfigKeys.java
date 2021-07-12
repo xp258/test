@@ -53,5 +53,7 @@ public class CoreConfigKeys {
   public ConfigKey WHEEL_TIMER_POOL_SIZE = new ConfigKey("oxygen.wheelTimer.poolSize", "10");
   public ConfigKey WHEEL_TIMER_TIMEOUT = new ConfigKey("oxygen.wheelTimer.timeout", "100");
 
+  public ConfigKey RESIDENT_POOL_MAX_SIZE = new ConfigKey("oxygen.residentPool.maxSize", "100");
+
   public ConfigKey AIO_USE_FUTURE = new ConfigKey("oxygen.aio.future", "false");
 }
