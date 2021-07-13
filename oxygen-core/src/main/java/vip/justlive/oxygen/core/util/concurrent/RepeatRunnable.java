@@ -102,6 +102,10 @@ public class RepeatRunnable implements Runnable {
     workInitiated.countDown();
     try {
       while (shutdownInitiated.getCount() > 0) {
+        if (Thread.currentThread().isInterrupted()) {
+          log.info("[{}] thread is interrupted, stop repeat at {} rounds", name, rounds);
+          break;
+        }
         runnable.run();
         rounds++;
       }

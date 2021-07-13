@@ -18,12 +18,14 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 常驻线程池
  *
  * @author wubo
  */
+@Slf4j
 public class ResidentPool {
 
   @Getter
@@ -56,6 +58,13 @@ public class ResidentPool {
    */
   public int count() {
     return pool.getActiveCount();
+  }
+
+  /**
+   * 关闭线程池
+   */
+  public void shutdown() {
+    pool.shutdownNow();
   }
 
   private void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
