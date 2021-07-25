@@ -100,6 +100,17 @@ public class MapJobStore implements JobStore {
   }
 
   @Override
+  public synchronized void pauseJob(String jobKey) {
+    JobInfoWrapper wrapper = jobInfos.get(jobKey);
+    if (wrapper == null) {
+      return;
+    }
+    for (JobTriggerWrapper trigger : wrapper.triggers) {
+      pauseTrigger(trigger.trigger.getKey());
+    }
+  }
+
+  @Override
   public synchronized void pauseTrigger(String triggerKey) {
     JobTriggerWrapper wrapper = triggerMap.get(triggerKey);
     if (wrapper == null) {
@@ -110,14 +121,29 @@ public class MapJobStore implements JobStore {
   }
 
   @Override
+  public void resumeJob(String jobKey) {
+    JobInfoWrapper wrapper = jobInfos.get(jobKey);
+    if (wrapper == null) {
+      return;
+    }
+    for (JobTriggerWrapper trigger : wrapper.triggers) {
+      resumeTrigger(trigger.trigger.getKey());
+    }
+  }
+
+  @Override
   public synchronized void resumeTrigger(String triggerKey) {
     JobTriggerWrapper wrapper = triggerMap.get(triggerKey);
     if (wrapper == null || wrapper.state != STATE_PAUSED) {
       return;
     }
     wrapper.state = STATE_WAITING;
-    // TODO
-    timeTriggers.add(wrapper);
+    Long nextFireTime = wrapper.trigger.computeNextFireTime(System.currentTimeMillis());
+    if (nextFireTime != null) {
+      timeTriggers.add(wrapper);
+    } else {
+      wrapper.state = STATE_COMPLETE;
+    }
   }
 
   @Override

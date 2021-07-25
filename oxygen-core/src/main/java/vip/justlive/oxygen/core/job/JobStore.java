@@ -34,7 +34,11 @@ public interface JobStore {
 
   void removeTrigger(String triggerKey);
 
+  void pauseJob(String jobKey);
+
   void pauseTrigger(String triggerKey);
+
+  void resumeJob(String jobKey);
 
   void resumeTrigger(String triggerKey);
 

@@ -30,4 +30,6 @@ public interface JobTrigger {
 
   Long getFireTimeAfter(long timestamp);
 
+  Long computeNextFireTime(long timestamp);
+
 }

@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -51,15 +52,23 @@ public class SchedulerImpl implements Scheduler {
 
   @Override
   public void scheduleJob(JobInfo jobInfo, JobTrigger trigger) {
+    Long nextFireTime = trigger.computeNextFireTime(System.currentTimeMillis());
+    if (nextFireTime == null) {
+      throw new IllegalArgumentException(
+          "job will never fire with triggerKey '" + trigger.getKey() + "'");
+    }
     jobStore.storeJob(jobInfo, true);
     jobStore.storeTrigger(trigger);
-    // TODO start job
   }
 
   @Override
   public void scheduleJob(JobTrigger trigger) {
+    Long nextFireTime = trigger.computeNextFireTime(System.currentTimeMillis());
+    if (nextFireTime == null) {
+      throw new IllegalArgumentException(
+          "job will never fire with triggerKey '" + trigger.getKey() + "'");
+    }
     jobStore.storeTrigger(trigger);
-    // TODO start job
   }
 
   @Override
@@ -69,20 +78,30 @@ public class SchedulerImpl implements Scheduler {
 
   @Override
   public void triggerJob(String jobKey) {
-    // TODO Auto-generated method stub
-
+    FixedTimeJobTrigger trigger = new FixedTimeJobTrigger(UUID.randomUUID().toString(), jobKey);
+    long now = System.currentTimeMillis();
+    trigger.setStartTime(now);
+    trigger.computeNextFireTime(now);
+    jobStore.storeTrigger(trigger);
   }
 
   @Override
   public void pauseJob(String jobKey) {
-    // TODO Auto-generated method stub
+    jobStore.pauseJob(jobKey);
+  }
 
+  @Override
+  public void pauseTrigger(String triggerKey) {
+    jobStore.pauseTrigger(triggerKey);
   }
 
   @Override
   public void resumeJob(String jobKey) {
-    // TODO Auto-generated method stub
-
+    jobStore.resumeJob(jobKey);
   }
 
+  @Override
+  public void resumeTrigger(String triggerKey) {
+    jobStore.resumeTrigger(triggerKey);
+  }
 }

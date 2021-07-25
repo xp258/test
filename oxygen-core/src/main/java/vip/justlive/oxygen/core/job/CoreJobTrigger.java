@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.job;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -23,13 +24,15 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@RequiredArgsConstructor
 public abstract class CoreJobTrigger implements JobTrigger {
 
-  private String jobKey;
+  protected final String key;
+  protected final String jobKey;
 
-  private Long startTime;
-  private Long endTime;
+  protected Long startTime;
+  protected Long endTime;
 
-  private Long previousFireTime;
-  private Long nextFireTime;
+  protected Long previousFireTime;
+  protected Long nextFireTime;
 }

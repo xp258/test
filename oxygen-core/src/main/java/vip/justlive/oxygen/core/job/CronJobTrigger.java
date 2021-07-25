@@ -29,7 +29,6 @@ import vip.justlive.oxygen.core.util.timer.CronExpression;
 @Setter
 public class CronJobTrigger extends CoreJobTrigger {
 
-  private final String key;
   private final String cron;
   private final CronExpression expression;
 
@@ -42,8 +41,7 @@ public class CronJobTrigger extends CoreJobTrigger {
   }
 
   public CronJobTrigger(String key, String jobKey, String cron, TimeZone timeZone) {
-    this.key = MoreObjects.notNull(key);
-    setJobKey(MoreObjects.notNull(jobKey));
+    super(MoreObjects.notNull(key), MoreObjects.notNull(jobKey));
     this.cron = MoreObjects.notNull(cron);
     this.expression = new CronExpression(cron, timeZone);
   }
@@ -51,10 +49,20 @@ public class CronJobTrigger extends CoreJobTrigger {
   @Override
   public Long getFireTimeAfter(long timestamp) {
     Date date = expression.next(new Date(timestamp));
+    while (date != null && (startTime != null && startTime > date.getTime())
+        && (endTime != null && endTime > date.getTime())) {
+      date = expression.next(date);
+    }
     if (date != null) {
       return date.getTime();
     }
     return null;
+  }
+
+  @Override
+  public Long computeNextFireTime(long timestamp) {
+    nextFireTime = getFireTimeAfter(timestamp);
+    return nextFireTime;
   }
 
 }
