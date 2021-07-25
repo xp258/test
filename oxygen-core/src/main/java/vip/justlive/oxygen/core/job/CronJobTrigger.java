@@ -29,14 +29,20 @@ import vip.justlive.oxygen.core.util.timer.CronExpression;
 @Setter
 public class CronJobTrigger extends CoreJobTrigger {
 
+  private final String key;
   private final String cron;
   private final CronExpression expression;
 
   public CronJobTrigger(String jobKey, String cron) {
-    this(jobKey, cron, TimeZone.getDefault());
+    this(jobKey, jobKey, cron, TimeZone.getDefault());
   }
 
-  public CronJobTrigger(String jobKey, String cron, TimeZone timeZone) {
+  public CronJobTrigger(String key, String jobKey, String cron) {
+    this(key, jobKey, cron, TimeZone.getDefault());
+  }
+
+  public CronJobTrigger(String key, String jobKey, String cron, TimeZone timeZone) {
+    this.key = MoreObjects.notNull(key);
     setJobKey(MoreObjects.notNull(jobKey));
     this.cron = MoreObjects.notNull(cron);
     this.expression = new CronExpression(cron, timeZone);
@@ -50,4 +56,5 @@ public class CronJobTrigger extends CoreJobTrigger {
     }
     return null;
   }
+
 }

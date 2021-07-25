@@ -18,14 +18,12 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 常驻线程池
  *
  * @author wubo
  */
-@Slf4j
 public class ResidentPool {
 
   @Getter

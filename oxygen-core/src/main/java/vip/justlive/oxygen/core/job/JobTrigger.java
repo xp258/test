@@ -20,6 +20,8 @@ package vip.justlive.oxygen.core.job;
  */
 public interface JobTrigger {
 
+  String getKey();
+
   String getJobKey();
 
   Long getPreviousFireTime();

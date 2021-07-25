@@ -35,7 +35,7 @@ import vip.justlive.oxygen.core.util.timer.WheelTimer;
 @Slf4j
 public class JobPlugin implements Plugin {
 
-  private static final List<Job> SCHEDULED_JOBS = new ArrayList<>();
+  private static final List<Job1> SCHEDULED_JOBS = new ArrayList<>();
 
   private WheelTimer wheelTimer;
 
@@ -78,9 +78,9 @@ public class JobPlugin implements Plugin {
   }
 
   private void handleMethod(Method method, Object bean) {
-    Job job;
+    Job1 job;
     try {
-      job = new Job(bean, bean.getClass().getMethod(method.getName(), method.getParameterTypes()));
+      job = new Job1(bean, bean.getClass().getMethod(method.getName(), method.getParameterTypes()));
     } catch (NoSuchMethodException e) {
       throw Exceptions.wrap(e);
     }
@@ -118,7 +118,7 @@ public class JobPlugin implements Plugin {
     }
   }
 
-  private void addFixedDelayJob(Job job, String fixedDelay, String initialDelay) {
+  private void addFixedDelayJob(Job1 job, String fixedDelay, String initialDelay) {
     long fixedDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(fixedDelay));
     long initialDelayVal = 0;
     if (initialDelay.length() > 0) {
@@ -129,7 +129,7 @@ public class JobPlugin implements Plugin {
     addJob(job);
   }
 
-  private void addFixedRateJob(Job job, String fixedRate, String initialDelay) {
+  private void addFixedRateJob(Job1 job, String fixedRate, String initialDelay) {
     long fixedRateVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(fixedRate));
     long initialDelayVal = 0;
     if (initialDelay.length() > 0) {
@@ -141,14 +141,14 @@ public class JobPlugin implements Plugin {
     addJob(job);
   }
 
-  private void addCronJob(Job job, String cron) {
+  private void addCronJob(Job1 job, String cron) {
     cron = ConfigFactory.getPlaceholderProperty(cron);
     wheelTimer.scheduleOnCron(job.configCron(cron), cron);
     addJob(job);
   }
 
-  private void addOnApplicationStartJob(Job job, boolean async) {
-    Job target = job.configOnApplicationStart(async);
+  private void addOnApplicationStartJob(Job1 job, boolean async) {
+    Job1 target = job.configOnApplicationStart(async);
     if (async) {
       wheelTimer.schedule(target, 0, TimeUnit.MILLISECONDS);
     } else {
@@ -157,7 +157,7 @@ public class JobPlugin implements Plugin {
     addJob(target);
   }
 
-  private void addJob(Job job) {
+  private void addJob(Job1 job) {
     if (log.isDebugEnabled()) {
       log.debug("add a job [{}]", job);
     }

@@ -13,9 +13,13 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
 
 /**
  * map实现的job store
@@ -24,41 +28,96 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MapJobStore implements JobStore {
 
-  private final Map<String, JobInfo> jobInfos = new ConcurrentHashMap<>(4);
-
+  private final Map<String, JobInfoWrapper> jobInfos = new ConcurrentHashMap<>(4);
+  private final Map<String, JobTriggerWrapper> triggerMap = new ConcurrentHashMap<>(4);
+  private final TreeSet<JobTriggerWrapper> timeTriggers = new TreeSet<>(new JobTriggerComparator());
 
   @Override
   public void storeJob(JobInfo jobInfo, boolean replaceExisting) {
-    if (replaceExisting) {
-      jobInfos.put(jobInfo.getKey(), jobInfo);
-    } else {
-      jobInfos.putIfAbsent(jobInfo.getKey(), jobInfo);
+    JobInfoWrapper wrapper = jobInfos.get(jobInfo.getKey());
+    if (wrapper == null) {
+      jobInfos.put(jobInfo.getKey(), new JobInfoWrapper(jobInfo));
+    } else if (replaceExisting) {
+      wrapper.jobInfo = jobInfo;
     }
   }
 
   @Override
   public JobInfo getJobInfo(String jobKey) {
-    return jobInfos.get(jobKey);
-  }
-
-  @Override
-  public void removeJob(String jobKey) {
-    jobInfos.remove(jobKey);
-  }
-
-  @Override
-  public void storeTrigger(JobTrigger trigger) {
-
-  }
-
-  @Override
-  public JobTrigger getJobTrigger(String jobKey) {
+    JobInfoWrapper wrapper = jobInfos.get(jobKey);
+    if (wrapper != null) {
+      return wrapper.jobInfo;
+    }
     return null;
   }
 
   @Override
-  public void removeTrigger(String jobKey) {
+  public void removeJob(String jobKey) {
+    JobInfoWrapper wrapper = jobInfos.remove(jobKey);
+    if (wrapper != null) {
+      wrapper.triggers.forEach(k -> triggerMap.remove(k.trigger.getKey()));
+    }
+  }
 
+  @Override
+  public void storeTrigger(JobTrigger trigger) {
+    if (trigger == null) {
+      return;
+    }
+    JobTriggerWrapper triggerWrapper = new JobTriggerWrapper(trigger);
+    if (triggerMap.putIfAbsent(trigger.getKey(), triggerWrapper) != null) {
+      throw new IllegalArgumentException("trigger key '" + trigger.getKey() + "' already exists");
+    }
+    JobInfoWrapper wrapper = jobInfos.get(trigger.getJobKey());
+    if (wrapper != null) {
+      wrapper.triggers.add(triggerWrapper);
+    }
+    timeTriggers.add(triggerWrapper);
+  }
+
+  @Override
+  public List<JobTrigger> getJobTrigger(String jobKey) {
+    List<JobTrigger> list = new LinkedList<JobTrigger>();
+    JobInfoWrapper wrapper = jobInfos.get(jobKey);
+    if (wrapper != null) {
+      wrapper.triggers.forEach(item -> list.add(item.trigger));
+    }
+    return list;
+  }
+
+  @Override
+  public void removeTrigger(String triggerKey) {
+    JobTriggerWrapper trigger = triggerMap.remove(triggerKey);
+    if (trigger == null) {
+      return;
+    }
+    JobInfoWrapper wrapper = jobInfos.get(trigger.trigger.getJobKey());
+    if (wrapper == null) {
+      return;
+    }
+    wrapper.triggers.remove(trigger);
+    timeTriggers.remove(trigger);
+  }
+
+  @Override
+  public synchronized void pauseTrigger(String triggerKey) {
+    JobTriggerWrapper wrapper = triggerMap.get(triggerKey);
+    if (wrapper == null) {
+      return;
+    }
+    wrapper.state = STATE_PAUSED;
+    timeTriggers.remove(wrapper);
+  }
+
+  @Override
+  public synchronized void resumeTrigger(String triggerKey) {
+    JobTriggerWrapper wrapper = triggerMap.get(triggerKey);
+    if (wrapper == null || wrapper.state != STATE_PAUSED) {
+      return;
+    }
+    wrapper.state = STATE_WAITING;
+    // TODO
+    timeTriggers.add(wrapper);
   }
 
   @Override
@@ -78,6 +137,47 @@ public class MapJobStore implements JobStore {
 
   @Override
   public void triggerCompleted(JobTrigger trigger, int state) {
+
+  }
+
+  static class JobInfoWrapper {
+    JobInfo jobInfo;
+    final List<JobTriggerWrapper> triggers = new LinkedList<>();
+
+    JobInfoWrapper(JobInfo jobInfo) {
+      this.jobInfo = jobInfo;
+    }
+  }
+
+  @RequiredArgsConstructor
+  static class JobTriggerWrapper {
+    final JobTrigger trigger;
+    int state;
+  }
+
+  static final int STATE_WAITING = 0;
+  static final int STATE_ACQUIRED = 1;
+  static final int STATE_EXECUTING = 2;
+  static final int STATE_COMPLETE = 3;
+  static final int STATE_PAUSED = 4;
+
+  static class JobTriggerComparator implements Comparator<JobTriggerWrapper> {
+
+    @Override
+    public int compare(JobTriggerWrapper o1, JobTriggerWrapper o2) {
+      Long nextFireTime1 = o1.trigger.getNextFireTime();
+      Long nextFireTime2 = o2.trigger.getNextFireTime();
+      if (nextFireTime1 != null || nextFireTime2 != null) {
+        if (nextFireTime1 == null) {
+          return 1;
+        }
+        if (nextFireTime2 == null) {
+          return -1;
+        }
+        return Long.compare(nextFireTime1, nextFireTime2);
+      }
+      return 0;
+    }
 
   }
 }

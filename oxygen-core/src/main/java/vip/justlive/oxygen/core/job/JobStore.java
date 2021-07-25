@@ -30,9 +30,13 @@ public interface JobStore {
 
   void storeTrigger(JobTrigger trigger);
 
-  JobTrigger getJobTrigger(String jobKey);
+  List<JobTrigger> getJobTrigger(String jobKey);
 
-  void removeTrigger(String jobKey);
+  void removeTrigger(String triggerKey);
+
+  void pauseTrigger(String triggerKey);
+
+  void resumeTrigger(String triggerKey);
 
   List<JobTrigger> acquireNextTriggers(long maxTimestamp, int maxSize);
 
