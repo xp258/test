@@ -13,12 +13,16 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 /**
  * 固定时间trigger
- * 
- * @author wubo
  *
+ * @author wubo
  */
+@ToString
+@EqualsAndHashCode(callSuper = true)
 public class FixedTimeJobTrigger extends CoreJobTrigger {
 
   public FixedTimeJobTrigger(String key, String jobKey) {
@@ -31,12 +35,6 @@ public class FixedTimeJobTrigger extends CoreJobTrigger {
       return startTime;
     }
     return null;
-  }
-
-  @Override
-  public Long computeNextFireTime(long timestamp) {
-    nextFireTime = getFireTimeAfter(timestamp);
-    return nextFireTime;
   }
 
 }

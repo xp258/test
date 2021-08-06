@@ -20,28 +20,86 @@ package vip.justlive.oxygen.core.job;
  */
 public interface Scheduler {
 
+  /**
+   * 启动
+   */
   void start();
 
+  /**
+   * 停止
+   */
   void shutdown();
 
+  /**
+   * 是否停止
+   *
+   * @return true为停止
+   */
   boolean isShutdown();
 
+  /**
+   * 添加任务
+   *
+   * @param jobInfo         任务信息
+   * @param replaceExisting 已存在是否替换
+   */
   void addJob(JobInfo jobInfo, boolean replaceExisting);
 
+  /**
+   * 添加任务并进行调度
+   *
+   * @param jobInfo 任务信息
+   * @param trigger 触发器
+   */
   void scheduleJob(JobInfo jobInfo, JobTrigger trigger);
 
+  /**
+   * 调度任务
+   *
+   * @param trigger 触发器
+   */
   void scheduleJob(JobTrigger trigger);
 
+  /**
+   * 删除任务
+   *
+   * @param jobKey 任务key
+   */
   void removeJob(String jobKey);
 
+  /**
+   * 执行一次任务
+   *
+   * @param jobKey 任务key
+   */
   void triggerJob(String jobKey);
 
+  /**
+   * 暂停任务
+   *
+   * @param jobKey 任务key
+   */
   void pauseJob(String jobKey);
 
+  /**
+   * 暂停触发器
+   *
+   * @param triggerKey 触发器key
+   */
   void pauseTrigger(String triggerKey);
 
+  /**
+   * 恢复任务
+   *
+   * @param jobKey 任务key
+   */
   void resumeJob(String jobKey);
 
+  /**
+   * 恢复触发器
+   *
+   * @param triggerKey 触发器key
+   */
   void resumeTrigger(String triggerKey);
 
 }

@@ -13,41 +13,76 @@
  */
 package vip.justlive.oxygen.core.job;
 
-import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import vip.justlive.oxygen.core.job.JobResource.WaitingTaskFuture;
+import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * 调度实现类
- * 
- * @author wubo
  *
+ * @author wubo
  */
-@RequiredArgsConstructor
 public class SchedulerImpl implements Scheduler {
 
-  private final JobStore jobStore;
+  private final JobResource resource;
+  private final SchedulerRunnable schedulerRunnable;
+  private final RepeatRunnable schedulerThread;
+  private final AtomicLong ids = new AtomicLong();
+
+  public SchedulerImpl(JobResource resource) {
+    this.resource = resource;
+    this.schedulerRunnable = new SchedulerRunnable(resource);
+    this.schedulerThread = new RepeatRunnable("Job_Scheduler", schedulerRunnable);
+    this.resource.setSchedulerThread(schedulerThread);
+    Signaler signaler = new Signaler() {
+      @Override
+      public void schedulingChange() {
+        schedulerRunnable.schedulingChange();
+      }
+
+      @Override
+      public void triggerCompleted(String triggerKey, long previousFireTime) {
+        List<WaitingTaskFuture> list = resource.futures.get(triggerKey);
+        if (list == null) {
+          return;
+        }
+        Iterator<WaitingTaskFuture> it = list.iterator();
+        while (it.hasNext()) {
+          if (it.next().nextFireTime == previousFireTime) {
+            it.remove();
+            break;
+          }
+        }
+      }
+    };
+    this.resource.setSignaler(signaler);
+    this.resource.getJobStore().initialize(this.resource.getSignaler());
+  }
+
 
   @Override
   public void start() {
-    // TODO Auto-generated method stub
-
+    ThreadUtils.residentPool().add(schedulerThread);
+    schedulerThread.awaitRunning();
   }
 
   @Override
   public void shutdown() {
-    // TODO Auto-generated method stub
-
+    schedulerRunnable.shutdown();
+    schedulerThread.shutdown();
   }
 
   @Override
   public boolean isShutdown() {
-    // TODO Auto-generated method stub
-    return false;
+    return schedulerThread.isShutdown();
   }
 
   @Override
   public void addJob(JobInfo jobInfo, boolean replaceExisting) {
-    jobStore.storeJob(jobInfo, replaceExisting);
+    resource.getJobStore().storeJob(jobInfo, replaceExisting);
   }
 
   @Override
@@ -57,8 +92,9 @@ public class SchedulerImpl implements Scheduler {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
     }
-    jobStore.storeJob(jobInfo, true);
-    jobStore.storeTrigger(trigger);
+    resource.getJobStore().storeJob(jobInfo, true);
+    resource.getJobStore().storeTrigger(trigger);
+    resource.getSignaler().schedulingChange();
   }
 
   @Override
@@ -68,40 +104,70 @@ public class SchedulerImpl implements Scheduler {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
     }
-    jobStore.storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger);
+    resource.getSignaler().schedulingChange();
   }
 
   @Override
   public void removeJob(String jobKey) {
-    jobStore.removeJob(jobKey);
+    removeJobWaitingTask(jobKey);
+    resource.getJobStore().removeJob(jobKey);
   }
 
   @Override
   public void triggerJob(String jobKey) {
-    FixedTimeJobTrigger trigger = new FixedTimeJobTrigger(UUID.randomUUID().toString(), jobKey);
+    FixedTimeJobTrigger trigger = new FixedTimeJobTrigger("Tmp_Trigger_" + ids.getAndIncrement(),
+        jobKey);
     long now = System.currentTimeMillis();
     trigger.setStartTime(now);
     trigger.computeNextFireTime(now);
-    jobStore.storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger);
+    resource.getSignaler().schedulingChange();
   }
 
   @Override
   public void pauseJob(String jobKey) {
-    jobStore.pauseJob(jobKey);
+    resource.getJobStore().pauseJob(jobKey);
+    removeJobWaitingTask(jobKey);
   }
 
   @Override
   public void pauseTrigger(String triggerKey) {
-    jobStore.pauseTrigger(triggerKey);
+    resource.getJobStore().pauseTrigger(triggerKey);
+    removeWaitingTask(triggerKey);
   }
 
   @Override
   public void resumeJob(String jobKey) {
-    jobStore.resumeJob(jobKey);
+    resource.getJobStore().resumeJob(jobKey);
+    resource.getSignaler().schedulingChange();
   }
 
   @Override
   public void resumeTrigger(String triggerKey) {
-    jobStore.resumeTrigger(triggerKey);
+    resource.getJobStore().resumeTrigger(triggerKey);
+    resource.getSignaler().schedulingChange();
+  }
+
+  private void removeWaitingTask(String triggerKey) {
+    List<WaitingTaskFuture> list = resource.futures.remove(triggerKey);
+    if (list == null) {
+      return;
+    }
+    for (WaitingTaskFuture future : list) {
+      future.future.cancel(true);
+    }
+    list.clear();
+  }
+
+  private void removeJobWaitingTask(String jobKey) {
+    List<JobTrigger> list = resource.getJobStore().getJobTrigger(jobKey);
+    if (list == null) {
+      return;
+    }
+    for (JobTrigger jobTrigger : list) {
+      removeWaitingTask(jobTrigger.getKey());
+    }
+
   }
 }

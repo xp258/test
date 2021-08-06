@@ -20,16 +20,55 @@ package vip.justlive.oxygen.core.job;
  */
 public interface JobTrigger {
 
+  /**
+   * 触发器key
+   *
+   * @return key
+   */
   String getKey();
 
+  /**
+   * 任务key
+   *
+   * @return jobKey
+   */
   String getJobKey();
 
+  /**
+   * 上一次执行时间
+   *
+   * @return 上一次执行时间
+   */
   Long getPreviousFireTime();
 
+  /**
+   * 下一次执行时间
+   *
+   * @return 下一次执行时间
+   */
   Long getNextFireTime();
 
+  /**
+   * 获取指定时间后最近一次执行时间
+   *
+   * @param timestamp 时间戳
+   * @return 时间戳
+   */
   Long getFireTimeAfter(long timestamp);
 
+  /**
+   * 设置最近一次完成时间
+   *
+   * @param timestamp 时间戳
+   */
+  void setLastCompletedTime(Long timestamp);
+
+  /**
+   * 根据指定时间戳计算下一次执行时间
+   *
+   * @param timestamp 时间戳
+   * @return 时间戳
+   */
   Long computeNextFireTime(long timestamp);
 
 }

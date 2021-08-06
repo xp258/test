@@ -13,19 +13,21 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * scheduler工厂类
- * 
+ *
  * @author wubo
  */
 @Slf4j
+@UtilityClass
 public class SchedulerFactory {
 
-  public static Scheduler getScheduler(JobConf conf) {
+  public Scheduler getScheduler(JobConf conf) {
     JobStore jobStore = null;
     if (Strings.hasText(conf.getJobStoreClass())) {
       try {
@@ -40,6 +42,19 @@ public class SchedulerFactory {
       jobStore = new MapJobStore();
     }
 
-    return new SchedulerImpl(jobStore);
+    JobThreadPool pool = null;
+    if (Strings.hasText(conf.getJobThreadPoolClass())) {
+      try {
+        Class<?> jobThreadPoolClass = ClassUtils.forName(conf.getJobStoreClass());
+        pool = (JobThreadPool) ClassUtils.newInstance(jobThreadPoolClass);
+      } catch (Exception e) {
+        log.warn("load JobThreadPool failed.", e);
+      }
+    }
+
+    if (pool == null) {
+      pool = new SimpleJobThreadPool(conf.getThreadCorePoolSize(), conf.getThreadNameFormat());
+    }
+    return new SchedulerImpl(new JobResource(conf, jobStore, pool));
   }
 }

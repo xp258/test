@@ -13,9 +13,11 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * jobTrigger基础类
@@ -24,8 +26,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 @RequiredArgsConstructor
 public abstract class CoreJobTrigger implements JobTrigger {
+
+  protected AtomicLong rounds = new AtomicLong(0);
 
   protected final String key;
   protected final String jobKey;
@@ -35,4 +40,25 @@ public abstract class CoreJobTrigger implements JobTrigger {
 
   protected Long previousFireTime;
   protected Long nextFireTime;
+  protected Long lastCompletedTime;
+
+  @Override
+  public void setLastCompletedTime(Long lastCompletedTime) {
+    this.lastCompletedTime = lastCompletedTime;
+    this.rounds.incrementAndGet();
+  }
+
+  @Override
+  public Long computeNextFireTime(long timestamp) {
+    previousFireTime = nextFireTime;
+    Long begin = timestamp;
+    if (nextFireTime != null) {
+      begin = nextFireTime;
+    }
+    while (begin != null && begin <= timestamp) {
+      begin = getFireTimeAfter(begin);
+    }
+    nextFireTime = begin;
+    return nextFireTime;
+  }
 }

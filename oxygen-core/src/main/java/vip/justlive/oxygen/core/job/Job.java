@@ -15,11 +15,15 @@ package vip.justlive.oxygen.core.job;
 
 /**
  * job接口
- * 
- * @author wubo
  *
+ * @author wubo
  */
 public interface Job {
 
+  /**
+   * 执行任务
+   *
+   * @param ctx 上下文
+   */
   void execute(JobContext ctx);
 }

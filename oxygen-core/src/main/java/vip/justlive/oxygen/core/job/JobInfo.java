@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.job;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * job信息
@@ -21,12 +22,13 @@ import lombok.Data;
  * @author wubo
  */
 @Data
+@Accessors(chain = true)
 public class JobInfo {
 
   private String key;
   private String description;
 
-  private Class<?> handlerClass;
-
+  private String handlerClass;
+  private String param;
 
 }

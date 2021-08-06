@@ -15,8 +15,9 @@ package vip.justlive.oxygen.core.job;
 
 import java.util.Date;
 import java.util.TimeZone;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.ToString;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.timer.CronExpression;
 
@@ -26,7 +27,8 @@ import vip.justlive.oxygen.core.util.timer.CronExpression;
  * @author wubo
  */
 @Getter
-@Setter
+@ToString
+@EqualsAndHashCode(callSuper = true)
 public class CronJobTrigger extends CoreJobTrigger {
 
   private final String cron;
@@ -57,12 +59,6 @@ public class CronJobTrigger extends CoreJobTrigger {
       return date.getTime();
     }
     return null;
-  }
-
-  @Override
-  public Long computeNextFireTime(long timestamp) {
-    nextFireTime = getFireTimeAfter(timestamp);
-    return nextFireTime;
   }
 
 }

@@ -22,31 +22,115 @@ import java.util.List;
  */
 public interface JobStore {
 
+  /**
+   * 初始化信号器
+   *
+   * @param signaler 信号器
+   */
+  void initialize(Signaler signaler);
+
+  /**
+   * 保存job
+   *
+   * @param jobInfo         job信息
+   * @param replaceExisting 是否替换已存在
+   */
   void storeJob(JobInfo jobInfo, boolean replaceExisting);
 
+  /**
+   * 根据jobKey获取任务信息
+   *
+   * @param jobKey 任务key
+   * @return 任务信息
+   */
   JobInfo getJobInfo(String jobKey);
 
+  /**
+   * 删除任务
+   *
+   * @param jobKey 任务key
+   */
   void removeJob(String jobKey);
 
+  /**
+   * 保存任务触发器
+   *
+   * @param trigger 触发器
+   */
   void storeTrigger(JobTrigger trigger);
 
+  /**
+   * 获取任务下关联的触发器
+   *
+   * @param jobKey 任务key
+   * @return list
+   */
   List<JobTrigger> getJobTrigger(String jobKey);
 
+  /**
+   * 删除触发器
+   *
+   * @param triggerKey 触发器key
+   */
   void removeTrigger(String triggerKey);
 
+  /**
+   * 暂停任务
+   *
+   * @param jobKey 任务key
+   */
   void pauseJob(String jobKey);
 
+  /**
+   * 暂停触发器
+   *
+   * @param triggerKey 触发器key
+   */
   void pauseTrigger(String triggerKey);
 
+  /**
+   * 恢复任务
+   *
+   * @param jobKey 任务key
+   */
   void resumeJob(String jobKey);
 
+  /**
+   * 恢复触发器
+   *
+   * @param triggerKey 触发器key
+   */
   void resumeTrigger(String triggerKey);
 
+  /**
+   * 获取最近可执行的触发器
+   *
+   * @param maxTimestamp 最大时间戳
+   * @param maxSize      获取最大数量
+   * @return list
+   */
   List<JobTrigger> acquireNextTriggers(long maxTimestamp, int maxSize);
 
+  /**
+   * 释放获取的触发器
+   *
+   * @param trigger 触发器
+   */
   void releaseTrigger(JobTrigger trigger);
 
-  void triggerFired(JobTrigger trigger);
+  /**
+   * 触发器准备执行
+   *
+   * @param trigger 触发器
+   * @return result
+   */
+  TriggerFiredResult triggerFired(JobTrigger trigger);
 
+  /**
+   * 触发器执行完成
+   *
+   * @param trigger 触发器
+   * @param state   状态
+   */
   void triggerCompleted(JobTrigger trigger, int state);
 }

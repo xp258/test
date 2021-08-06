@@ -18,14 +18,20 @@ import vip.justlive.oxygen.core.config.ValueConfig;
 
 /**
  * job配置
- * 
- * @author wubo
  *
+ * @author wubo
  */
 @Data
 @ValueConfig("oxygen.job")
 public class JobConf {
 
   private String jobStoreClass;
-  private String schedulerClass;
+  private String jobThreadPoolClass;
+
+  private int threadCorePoolSize = 10;
+  private String threadNameFormat = "job-%d";
+
+  private int fetchMaxSize = 100;
+  private long idleWaitTime = 30000;
+  private int idleWaitRandom = 7 * 1000;
 }

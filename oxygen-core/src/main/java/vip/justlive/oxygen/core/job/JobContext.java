@@ -14,24 +14,29 @@
 package vip.justlive.oxygen.core.job;
 
 /**
- * 
  * @author wubo
- *
  */
 public interface JobContext {
 
   /**
    * 获取job信息
-   * 
+   *
    * @return job信息
    */
-  JobInfo getInfo();
+  JobInfo getJobInfo();
 
   /**
    * 获取参数
-   * 
+   *
    * @return 参数
    */
   String getParam();
+
+  /**
+   * 获取预计触发时间
+   *
+   * @return 时间
+   */
+  long getExpectedFireTime();
 
 }
