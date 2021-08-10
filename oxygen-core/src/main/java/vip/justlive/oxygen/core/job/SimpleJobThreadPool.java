@@ -55,7 +55,7 @@ public class SimpleJobThreadPool implements JobThreadPool {
     ThreadPoolExecutor pool = fastPool;
 
     AtomicInteger count = slowHits.get(jobKey);
-    if (count != null && count.incrementAndGet() > slowHitLimit) {
+    if (count != null && count.get() > slowHitLimit) {
       pool = slowPool;
     }
 
