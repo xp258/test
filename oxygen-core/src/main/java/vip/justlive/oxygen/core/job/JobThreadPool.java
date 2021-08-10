@@ -23,7 +23,8 @@ public interface JobThreadPool {
   /**
    * 执行任务
    *
+   * @param jobKey   任务key
    * @param runnable 任务
    */
-  void execute(Runnable runnable);
+  void execute(String jobKey, Runnable runnable);
 }

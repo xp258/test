@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.core.job;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import vip.justlive.oxygen.core.job.JobResource.WaitingTaskFuture;
@@ -49,12 +48,15 @@ public class SchedulerImpl implements Scheduler {
         if (list == null) {
           return;
         }
-        Iterator<WaitingTaskFuture> it = list.iterator();
-        while (it.hasNext()) {
-          if (it.next().nextFireTime == previousFireTime) {
-            it.remove();
+        WaitingTaskFuture future = null;
+        for (WaitingTaskFuture ft : list) {
+          if (ft.nextFireTime == previousFireTime) {
+            future = ft;
             break;
           }
+        }
+        if (future != null) {
+          list.remove(future);
         }
       }
     };

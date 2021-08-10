@@ -95,7 +95,6 @@ public class JobPlugin implements Plugin {
       trigger = new CronJobTrigger(jobInfo.getKey(), cron);
     }
 
-    log.info("job : {} {}", jobInfo, trigger);
     if (trigger == null) {
       return;
     }
@@ -108,6 +107,8 @@ public class JobPlugin implements Plugin {
       throw Exceptions.wrap(e);
     }
     AnnotationJob.put(jobInfo.getKey(), invoker);
+
+    log.info("add job: {} {}", jobInfo, trigger);
     scheduler.scheduleJob(jobInfo, trigger);
   }
 
