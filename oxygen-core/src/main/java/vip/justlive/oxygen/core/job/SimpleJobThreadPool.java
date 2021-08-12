@@ -75,9 +75,12 @@ public class SimpleJobThreadPool implements JobThreadPool {
         runnable.run();
       } finally {
         long end = System.currentTimeMillis();
-        if (end - currentWindow > slowTimeWindow) {
-          currentWindow = end;
-          slowHits.clear();
+
+        synchronized (slowHits) {
+          if (end - currentWindow > slowTimeWindow) {
+            currentWindow = end;
+            slowHits.clear();
+          }
         }
 
         if (end - start > slowThreshold) {

@@ -47,6 +47,8 @@ public class MapJobStore implements JobStore {
       jobInfos.put(jobInfo.getKey(), new JobInfoWrapper(jobInfo));
     } else if (replaceExisting) {
       wrapper.jobInfo = jobInfo;
+    } else {
+      throw new IllegalArgumentException("job '" + jobInfo.getKey() + "' already exists");
     }
   }
 
