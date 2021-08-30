@@ -51,7 +51,6 @@ public class RespData<T> implements Serializable {
   /**
    * T 返回数据
    */
-  @SuppressWarnings("squid:S1948")
   private T data;
 
 }
