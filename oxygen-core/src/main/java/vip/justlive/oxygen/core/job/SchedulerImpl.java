@@ -43,7 +43,7 @@ public class SchedulerImpl implements Scheduler {
       }
 
       @Override
-      public void triggerCompleted(String triggerKey, long previousFireTime) {
+      public synchronized void triggerCompleted(String triggerKey, long previousFireTime) {
         List<WaitingTaskFuture> list = resource.futures.get(triggerKey);
         if (list == null) {
           return;

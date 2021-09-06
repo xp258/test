@@ -532,7 +532,7 @@ public class Entity<T> {
         convert(obj, primary, id);
         return id;
       }
-      return Jdbc.update(sql, params);
+      return Jdbc.update(conn, sql, params);
     } catch (IllegalAccessException | SQLException e) {
       throw JdbcException.wrap(e);
     }

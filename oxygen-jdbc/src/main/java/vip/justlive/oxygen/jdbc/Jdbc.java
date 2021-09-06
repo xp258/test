@@ -42,7 +42,8 @@ import vip.justlive.oxygen.jdbc.page.PageDialectHelper;
 @UtilityClass
 public class Jdbc {
 
-  final String PRIMARY_KEY = Jdbc.class.getSimpleName();
+  public final String PRIMARY_KEY = Jdbc.class.getSimpleName();
+
   final String TEMPLATE = "oxygen.datasource.%s";
   private final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   private final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
@@ -456,7 +457,6 @@ public class Jdbc {
       close(stmt);
       if (closeCon) {
         close(connection);
-        removeThreadLocal(connection);
       }
       onFinally(ctx, result);
     }
@@ -791,7 +791,6 @@ public class Jdbc {
       close(stmt);
       if (closeCon) {
         close(connection);
-        removeThreadLocal(connection);
       }
       onFinally(ctx, rows);
     }
@@ -830,8 +829,13 @@ public class Jdbc {
         closeable.close();
       } catch (Exception e) {
         throw JdbcException.wrap(e);
+      } finally {
+        if (closeable instanceof Connection) {
+          removeThreadLocal((Connection) closeable);
+        }
       }
     }
+
   }
 
   private void before(SqlCtx ctx) {

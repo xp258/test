@@ -35,7 +35,7 @@ public class JobPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 400;
+    return Integer.MIN_VALUE + 700;
   }
 
   @Override
@@ -53,6 +53,7 @@ public class JobPlugin implements Plugin {
     JobConf conf = ConfigFactory.load(JobConf.class);
     scheduler = SchedulerFactory.getScheduler(conf);
     scheduler.start();
+    Singleton.set(scheduler);
   }
 
   private void parseJobs() {

@@ -61,5 +61,4 @@ public class JobTriggerEntity {
   @Column("last_completed_time")
   private Long lastCompletedTime;
 
-
 }

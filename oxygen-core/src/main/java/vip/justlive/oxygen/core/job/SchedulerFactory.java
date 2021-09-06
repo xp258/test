@@ -60,6 +60,7 @@ public class SchedulerFactory {
     if (pool == null) {
       pool = new SimpleJobThreadPool(conf);
     }
+    log.info("create scheduler with {} and {}", jobStore, pool);
     return new SchedulerImpl(new JobResource(conf, jobStore, pool));
   }
 }

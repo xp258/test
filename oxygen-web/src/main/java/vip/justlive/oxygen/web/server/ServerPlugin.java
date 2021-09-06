@@ -36,7 +36,7 @@ public class ServerPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 200;
+    return Integer.MIN_VALUE + 300;
   }
 
   @Override
