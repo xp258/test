@@ -58,7 +58,19 @@ public interface JobStore {
    * @param trigger         触发器
    * @param replaceExisting 是否替换已存在
    */
-  void storeTrigger(JobTrigger trigger, boolean replaceExisting);
+  default void storeTrigger(JobTrigger trigger, boolean replaceExisting) {
+    storeTrigger(trigger, JobResource.STATE_WAITING, replaceExisting);
+  }
+
+  /**
+   * 保存任务触发器
+   *
+   * @param trigger         触发器
+   * @param state           状态
+   * @param replaceExisting 是否替换已存在
+   */
+  void storeTrigger(JobTrigger trigger, int state, boolean replaceExisting);
+
 
   /**
    * 获取任务下关联的触发器
@@ -134,4 +146,14 @@ public interface JobStore {
    * @param state   状态
    */
   void triggerCompleted(JobTrigger trigger, int state);
+
+  /**
+   * 获取触发器
+   *
+   * @param maxTimestamp 最大时间戳
+   * @param state        状态
+   * @return 触发器
+   */
+  List<JobTrigger> acquireTriggersInState(long maxTimestamp, int state);
+
 }

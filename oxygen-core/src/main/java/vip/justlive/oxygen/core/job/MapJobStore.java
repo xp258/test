@@ -13,6 +13,12 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import static vip.justlive.oxygen.core.job.JobResource.STATE_ACQUIRED;
+import static vip.justlive.oxygen.core.job.JobResource.STATE_COMPLETE;
+import static vip.justlive.oxygen.core.job.JobResource.STATE_PAUSED;
+import static vip.justlive.oxygen.core.job.JobResource.STATE_WAITING;
+
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -70,11 +76,12 @@ public class MapJobStore implements JobStore {
   }
 
   @Override
-  public synchronized void storeTrigger(JobTrigger trigger, boolean replaceExisting) {
+  public synchronized void storeTrigger(JobTrigger trigger, int state, boolean replaceExisting) {
     if (trigger == null) {
       return;
     }
     JobTriggerWrapper triggerWrapper = new JobTriggerWrapper(trigger);
+    triggerWrapper.state = state;
     JobTriggerWrapper existedTriggerWrapper = triggerMap
         .putIfAbsent(trigger.getKey(), triggerWrapper);
     if (!replaceExisting && existedTriggerWrapper != null) {
@@ -232,6 +239,21 @@ public class MapJobStore implements JobStore {
     signaler.schedulingChange();
   }
 
+  @Override
+  public synchronized List<JobTrigger> acquireTriggersInState(long maxTimestamp,
+      int state) {
+
+    List<JobTrigger> list = new LinkedList<>();
+
+    for (JobTriggerWrapper wrapper : timeTriggers) {
+      if (wrapper.state == state && wrapper.trigger.getNextFireTime() != null
+          && wrapper.trigger.getNextFireTime() < maxTimestamp) {
+        list.add(wrapper.trigger);
+      }
+    }
+    return list;
+  }
+
   static class JobInfoWrapper {
 
     JobInfo jobInfo;
@@ -250,11 +272,6 @@ public class MapJobStore implements JobStore {
     final JobTrigger trigger;
     int state;
   }
-
-  static final int STATE_WAITING = 0;
-  static final int STATE_ACQUIRED = 1;
-  static final int STATE_COMPLETE = 2;
-  static final int STATE_PAUSED = 3;
 
   static class JobTriggerComparator implements Comparator<JobTriggerWrapper> {
 

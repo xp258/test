@@ -69,10 +69,12 @@ public class SchedulerImpl implements Scheduler {
   public void start() {
     ThreadUtils.residentPool().add(schedulerThread);
     schedulerThread.awaitRunning();
+    resource.getSchedulerPlugins().forEach(SchedulerPlugin::start);
   }
 
   @Override
   public void shutdown() {
+    resource.getSchedulerPlugins().forEach(SchedulerPlugin::shutdown);
     schedulerRunnable.shutdown();
     schedulerThread.shutdown();
   }

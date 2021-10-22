@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +29,11 @@ import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
 @Data
 public class JobResource {
 
+  public static final int STATE_WAITING = 0;
+  public static final int STATE_ACQUIRED = 1;
+  public static final int STATE_COMPLETE = 2;
+  public static final int STATE_PAUSED = 3;
+
   private final JobConf conf;
   private final JobStore jobStore;
   private final JobThreadPool pool;
@@ -36,6 +42,7 @@ public class JobResource {
   private Signaler signaler;
 
   Map<String, List<WaitingTaskFuture>> futures = new ConcurrentHashMap<>(4);
+  List<SchedulerPlugin> schedulerPlugins = new ArrayList<>();
 
   static class WaitingTaskFuture {
 
