@@ -55,9 +55,10 @@ public interface JobStore {
   /**
    * 保存任务触发器
    *
-   * @param trigger 触发器
+   * @param trigger         触发器
+   * @param replaceExisting 是否替换已存在
    */
-  void storeTrigger(JobTrigger trigger);
+  void storeTrigger(JobTrigger trigger, boolean replaceExisting);
 
   /**
    * 获取任务下关联的触发器

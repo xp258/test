@@ -66,7 +66,7 @@ public class DelayOrRateJobTrigger extends CoreJobTrigger {
   @Override
   public void setLastCompletedTime(Long lastCompletedTime) {
     super.setLastCompletedTime(lastCompletedTime);
-    if (isDelay()) {
+    if (lastCompletedTime != null && isDelay()) {
       nextFireTime = getFireTimeAfter(lastCompletedTime);
     }
   }

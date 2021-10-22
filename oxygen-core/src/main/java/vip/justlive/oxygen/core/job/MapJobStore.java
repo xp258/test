@@ -70,18 +70,24 @@ public class MapJobStore implements JobStore {
   }
 
   @Override
-  public synchronized void storeTrigger(JobTrigger trigger) {
+  public synchronized void storeTrigger(JobTrigger trigger, boolean replaceExisting) {
     if (trigger == null) {
       return;
     }
     JobTriggerWrapper triggerWrapper = new JobTriggerWrapper(trigger);
-    if (triggerMap.putIfAbsent(trigger.getKey(), triggerWrapper) != null) {
+    JobTriggerWrapper existedTriggerWrapper = triggerMap
+        .putIfAbsent(trigger.getKey(), triggerWrapper);
+    if (!replaceExisting && existedTriggerWrapper != null) {
       throw new IllegalArgumentException("trigger key '" + trigger.getKey() + "' already exists");
     }
     JobInfoWrapper wrapper = jobInfos.get(trigger.getJobKey());
     if (wrapper == null) {
       throw new IllegalArgumentException(
           "the job '" + trigger.getJobKey() + "' referenced by the trigger does not exist.");
+    }
+    if (existedTriggerWrapper != null) {
+      wrapper.triggers.remove(existedTriggerWrapper);
+      timeTriggers.remove(existedTriggerWrapper);
     }
     wrapper.triggers.add(triggerWrapper);
     timeTriggers.add(triggerWrapper);

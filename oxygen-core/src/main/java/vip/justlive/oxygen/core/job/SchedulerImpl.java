@@ -95,7 +95,7 @@ public class SchedulerImpl implements Scheduler {
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
     }
     resource.getJobStore().storeJob(jobInfo, true);
-    resource.getJobStore().storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger, true);
     resource.getSignaler().schedulingChange();
   }
 
@@ -106,7 +106,7 @@ public class SchedulerImpl implements Scheduler {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
     }
-    resource.getJobStore().storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger, false);
     resource.getSignaler().schedulingChange();
   }
 
@@ -123,7 +123,7 @@ public class SchedulerImpl implements Scheduler {
     long now = System.currentTimeMillis();
     trigger.setStartTime(now);
     trigger.computeNextFireTime(now);
-    resource.getJobStore().storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger, false);
     resource.getSignaler().schedulingChange();
   }
 

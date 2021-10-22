@@ -110,13 +110,13 @@ public class JdbcJobStore implements JobStore {
   }
 
   @Override
-  public void storeTrigger(JobTrigger trigger) {
+  public void storeTrigger(JobTrigger trigger, boolean replaceExisting) {
     if (trigger == null) {
       return;
     }
     executeInLock(LOCK_TRIGGER_ACCESS, conn -> {
       JobTriggerEntity entity = loadTrigger(conn, trigger.getKey());
-      if (entity != null) {
+      if (!replaceExisting && entity != null) {
         throw new IllegalArgumentException("trigger key '" + trigger.getKey() + "' already exists");
       }
 
@@ -125,8 +125,13 @@ public class JdbcJobStore implements JobStore {
         throw new IllegalArgumentException(
             "the job '" + trigger.getJobKey() + "' referenced by the trigger does not exist.");
       }
-      Entity.parse(JobTriggerEntity.class)
-          .insert(conn, converter.convert(trigger).setState(STATE_WAITING));
+      JobTriggerEntity et = converter.convert(trigger).setState(STATE_WAITING);
+      if (entity == null) {
+        Entity.parse(JobTriggerEntity.class)
+            .insert(conn, et);
+      } else {
+        Entity.parse(JobTriggerEntity.class).updateById(conn, et.setId(entity.getId()));
+      }
       return null;
     });
   }
