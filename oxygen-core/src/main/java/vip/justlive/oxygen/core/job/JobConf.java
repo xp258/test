@@ -40,5 +40,5 @@ public class JobConf {
   private long idleWaitTime = 30000;
   private int idleWaitRandom = 7 * 1000;
   private long misfireThreshold = 60000;
-  private long lostThreshold = 120000;
+  private long lostThreshold = 600000;
 }
