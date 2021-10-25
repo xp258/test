@@ -19,10 +19,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.bean.Singleton;
+import vip.justlive.oxygen.core.job.CoreJobTrigger;
 import vip.justlive.oxygen.core.job.JobTrigger;
 import vip.justlive.oxygen.jdbc.Jdbc;
 import vip.justlive.oxygen.jdbc.JdbcException;
@@ -137,5 +139,25 @@ public class Utils {
       log.warn("Lock '{}' attempt to return by: {}-{} -- but not owner!", lockName,
           Thread.currentThread().getName(), Thread.currentThread().getId());
     }
+  }
+
+  public void fillTriggerProperty(CoreJobTrigger trigger, JobTriggerEntity entity) {
+    trigger.setStartTime(entity.getStartTime());
+    trigger.setEndTime(entity.getEndTime());
+    trigger.setPreviousFireTime(entity.getPreviousFireTime());
+    trigger.setNextFireTime(entity.getNextFireTime());
+    trigger.setLastCompletedTime(entity.getLastCompletedTime());
+    trigger.setRounds(new AtomicLong(entity.getRounds()));
+  }
+
+  public void fillEntityProperty(JobTriggerEntity entity, CoreJobTrigger jobTrigger) {
+    entity.setJobKey(jobTrigger.getJobKey())
+        .setTriggerKey(jobTrigger.getKey())
+        .setStartTime(jobTrigger.getEndTime())
+        .setEndTime(jobTrigger.getEndTime())
+        .setPreviousFireTime(jobTrigger.getPreviousFireTime())
+        .setNextFireTime(jobTrigger.getNextFireTime())
+        .setLastCompletedTime(jobTrigger.getLastCompletedTime())
+        .setRounds(jobTrigger.getRounds().get());
   }
 }
