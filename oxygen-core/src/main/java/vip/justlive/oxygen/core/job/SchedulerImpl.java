@@ -91,7 +91,7 @@ public class SchedulerImpl implements Scheduler {
 
   @Override
   public void scheduleJob(JobInfo jobInfo, JobTrigger trigger) {
-    Long nextFireTime = trigger.computeNextFireTime(System.currentTimeMillis());
+    Long nextFireTime = trigger.computeNextFireTime();
     if (nextFireTime == null) {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
@@ -103,7 +103,7 @@ public class SchedulerImpl implements Scheduler {
 
   @Override
   public void scheduleJob(JobTrigger trigger) {
-    Long nextFireTime = trigger.computeNextFireTime(System.currentTimeMillis());
+    Long nextFireTime = trigger.computeNextFireTime();
     if (nextFireTime == null) {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
@@ -124,7 +124,7 @@ public class SchedulerImpl implements Scheduler {
         jobKey);
     long now = System.currentTimeMillis();
     trigger.setStartTime(now);
-    trigger.computeNextFireTime(now);
+    trigger.computeNextFireTime();
     resource.getJobStore().storeTrigger(trigger, false);
     resource.getSignaler().schedulingChange();
   }

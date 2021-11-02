@@ -25,28 +25,28 @@ import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
  */
 @Slf4j
 public class LostSchedulerPlugin implements SchedulerPlugin {
-
+  
   private final RepeatRunnable repeatRunnable = new RepeatRunnable("Job_Lost",
       this::recoverLostJobs);
-
+  
   private JobResource resource;
-
+  
   @Override
   public void initialize(JobResource resource, Scheduler scheduler) {
     this.resource = resource;
   }
-
+  
   @Override
   public void start() {
     ThreadUtils.residentPool().add(repeatRunnable);
     repeatRunnable.awaitRunning();
   }
-
+  
   @Override
   public void shutdown() {
     repeatRunnable.shutdown();
   }
-
+  
   private void recoverLostJobs() {
     long startTime = System.currentTimeMillis();
     int count = 0;
@@ -54,45 +54,45 @@ public class LostSchedulerPlugin implements SchedulerPlugin {
       if (log.isDebugEnabled()) {
         log.debug("scanning for lost...");
       }
-
+      
       long maxTimestamp = System.currentTimeMillis() - resource.getConf().getLostThreshold();
-
+      
       List<JobTrigger> triggers = resource.getJobStore()
           .acquireTriggersInState(maxTimestamp, JobResource.STATE_ACQUIRED);
       if (triggers == null || triggers.isEmpty()) {
         return;
       }
-
+      
       for (JobTrigger trigger : triggers) {
         if (doUpdateOfLostTrigger(trigger)) {
           count++;
         }
       }
-
+      
     } catch (Exception e) {
       log.error("Error handling lost", e);
     } finally {
-
+      
       if (log.isDebugEnabled()) {
         log.debug("handle lost end and restart {} trigger(s)", count);
       }
-
+      
       long timeToSleep =
           resource.getConf().getLostThreshold() - (System.currentTimeMillis() - startTime);
       ThreadUtils.sleep(timeToSleep);
     }
   }
-
+  
   private boolean doUpdateOfLostTrigger(JobTrigger trigger) {
-    trigger.computeNextFireTime(System.currentTimeMillis());
-
+    trigger.computeNextFireTime();
+    
     if (trigger.getNextFireTime() == null) {
       resource.getJobStore().storeTrigger(trigger, JobResource.STATE_COMPLETE, true);
     } else {
       resource.getJobStore().storeTrigger(trigger, true);
       return true;
     }
-
+    
     return false;
   }
 }

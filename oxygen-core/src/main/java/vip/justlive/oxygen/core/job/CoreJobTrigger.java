@@ -51,14 +51,14 @@ public abstract class CoreJobTrigger implements JobTrigger {
   @Override
   public Long computeNextFireTime(long timestamp) {
     previousFireTime = nextFireTime;
-    Long begin = timestamp;
+    Long next = timestamp;
     if (nextFireTime != null) {
-      begin = nextFireTime;
+      next = nextFireTime;
     }
-    while (begin != null && begin <= timestamp) {
-      begin = getFireTimeAfter(begin);
+    while (next != null && next <= timestamp) {
+      next = getFireTimeAfter(next);
     }
-    nextFireTime = begin;
+    nextFireTime = next;
     return nextFireTime;
   }
 }

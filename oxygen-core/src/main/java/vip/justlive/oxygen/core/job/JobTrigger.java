@@ -71,4 +71,13 @@ public interface JobTrigger {
    */
   Long computeNextFireTime(long timestamp);
 
+
+  /**
+   * 计算下一次执行时间，启动和恢复任务时调用
+   *
+   * @return 时间戳
+   */
+  default Long computeNextFireTime() {
+    return computeNextFireTime(System.currentTimeMillis());
+  }
 }

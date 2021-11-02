@@ -81,4 +81,12 @@ public class DelayOrRateJobTrigger extends CoreJobTrigger {
     }
     return super.computeNextFireTime(timestamp);
   }
+
+  @Override
+  public Long computeNextFireTime() {
+    if (!isDelay() && nextFireTime != null) {
+      return super.computeNextFireTime(nextFireTime);
+    }
+    return super.computeNextFireTime();
+  }
 }

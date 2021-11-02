@@ -88,7 +88,7 @@ public class MisfireSchedulerPlugin implements SchedulerPlugin {
 
   private boolean doUpdateOfMisfiredTrigger(JobTrigger trigger) {
 
-    trigger.computeNextFireTime(System.currentTimeMillis());
+    trigger.computeNextFireTime();
 
     if (trigger.getNextFireTime() == null) {
       resource.getJobStore().storeTrigger(trigger, JobResource.STATE_COMPLETE, true);

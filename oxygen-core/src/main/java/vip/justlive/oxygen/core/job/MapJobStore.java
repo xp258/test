@@ -163,7 +163,7 @@ public class MapJobStore implements JobStore {
       return;
     }
     wrapper.state = STATE_WAITING;
-    Long nextFireTime = wrapper.trigger.computeNextFireTime(System.currentTimeMillis());
+    Long nextFireTime = wrapper.trigger.computeNextFireTime();
     if (nextFireTime != null) {
       timeTriggers.add(wrapper);
     } else {
