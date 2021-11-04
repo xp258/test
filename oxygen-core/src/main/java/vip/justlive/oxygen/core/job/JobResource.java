@@ -29,11 +29,6 @@ import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
 @Data
 public class JobResource {
 
-  public static final int STATE_WAITING = 0;
-  public static final int STATE_ACQUIRED = 1;
-  public static final int STATE_COMPLETE = 2;
-  public static final int STATE_PAUSED = 3;
-
   private final JobConf conf;
   private final JobStore jobStore;
   private final JobThreadPool pool;

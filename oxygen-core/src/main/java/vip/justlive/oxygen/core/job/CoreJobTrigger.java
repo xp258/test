@@ -29,27 +29,29 @@ import lombok.ToString;
 @ToString
 @RequiredArgsConstructor
 public abstract class CoreJobTrigger implements JobTrigger {
-
+  
   protected AtomicLong rounds = new AtomicLong(0);
-
+  
   protected final String key;
   protected final String jobKey;
-
+  
   protected Long startTime;
   protected Long endTime;
-
+  
   protected Long previousFireTime;
   protected Long nextFireTime;
   protected Long lastCompletedTime;
-
+  
+  protected Integer state;
+  
   @Override
   public void setLastCompletedTime(Long lastCompletedTime) {
     this.lastCompletedTime = lastCompletedTime;
     this.rounds.incrementAndGet();
   }
-
+  
   @Override
-  public Long computeNextFireTime(long timestamp) {
+  public Long triggerFired(long timestamp) {
     previousFireTime = nextFireTime;
     Long next = timestamp;
     if (nextFireTime != null) {

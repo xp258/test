@@ -38,19 +38,19 @@ import vip.justlive.oxygen.jdbc.handler.StringResultHandler;
 @Slf4j
 @UtilityClass
 public class Utils {
-
+  
   public final String LOCK_TRIGGER_ACCESS = "trigger_access";
-
+  
   private final List<Converter> CONVERTERS = new ArrayList<>();
   private final ThreadLocal<Set<String>> LOCK_OWNERS = new ThreadLocal<>();
-
+  
   static {
     CONVERTERS.add(new FixedTimeJobTriggerConverter());
     CONVERTERS.add(new DelayOrRateJobTriggerConverter());
     CONVERTERS.add(new CronJobTriggerConverter());
     CONVERTERS.addAll(Singleton.getList(Converter.class));
   }
-
+  
   public JobTriggerEntity convert(JobTrigger trigger) {
     for (Converter converter : CONVERTERS) {
       if (converter.classType() == trigger.getClass()) {
@@ -59,7 +59,7 @@ public class Utils {
     }
     return null;
   }
-
+  
   public JobTrigger convert(JobTriggerEntity entity) {
     if (entity.getTriggerType() == null) {
       return null;
@@ -71,7 +71,7 @@ public class Utils {
     }
     return null;
   }
-
+  
   public Set<String> getThreadLocks() {
     Set<String> threadLocks = LOCK_OWNERS.get();
     if (threadLocks == null) {
@@ -80,7 +80,7 @@ public class Utils {
     }
     return threadLocks;
   }
-
+  
   public <T> T executeInLock(String dataSourceName, String lockName,
       Function<Connection, T> function) {
     boolean isLocked = false;
@@ -104,7 +104,7 @@ public class Utils {
       }
     }
   }
-
+  
   public boolean obtainLock(Connection conn, String lockName) {
     if (!getThreadLocks().contains(lockName)) {
       String name = Jdbc.query(conn, "select name from oxy_lock where name = ? for update",
@@ -120,7 +120,7 @@ public class Utils {
     }
     return true;
   }
-
+  
   public void releaseLock(String lockName, boolean isLocked) {
     if (!isLocked) {
       return;
@@ -140,7 +140,7 @@ public class Utils {
           Thread.currentThread().getName(), Thread.currentThread().getId());
     }
   }
-
+  
   public void fillTriggerProperty(CoreJobTrigger trigger, JobTriggerEntity entity) {
     trigger.setStartTime(entity.getStartTime());
     trigger.setEndTime(entity.getEndTime());
@@ -148,8 +148,9 @@ public class Utils {
     trigger.setNextFireTime(entity.getNextFireTime());
     trigger.setLastCompletedTime(entity.getLastCompletedTime());
     trigger.setRounds(new AtomicLong(entity.getRounds()));
+    trigger.setState(entity.getState());
   }
-
+  
   public void fillEntityProperty(JobTriggerEntity entity, CoreJobTrigger jobTrigger) {
     entity.setJobKey(jobTrigger.getJobKey())
         .setTriggerKey(jobTrigger.getKey())

@@ -27,78 +27,78 @@ import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class MisfireSchedulerPlugin implements SchedulerPlugin {
-
+  
   private final RepeatRunnable repeatRunnable = new RepeatRunnable("Job_Misfire",
       this::recoverMisfiredJobs);
-
+  
   private JobResource resource;
-
+  
   @Override
   public void initialize(JobResource resource, Scheduler scheduler) {
     this.resource = resource;
   }
-
+  
   @Override
   public void start() {
     ThreadUtils.residentPool().add(repeatRunnable);
     repeatRunnable.awaitRunning();
   }
-
+  
   @Override
   public void shutdown() {
     repeatRunnable.shutdown();
   }
-
+  
   private void recoverMisfiredJobs() {
-
+    
     long startTime = System.currentTimeMillis();
     int count = 0;
     try {
       if (log.isDebugEnabled()) {
         log.debug("scanning for misfires...");
       }
-
+      
       long maxTimestamp = System.currentTimeMillis() - resource.getConf().getMisfireThreshold();
-
+      
       List<JobTrigger> triggers = resource.getJobStore()
-          .acquireTriggersInState(maxTimestamp, JobResource.STATE_WAITING);
+          .acquireTriggersInState(maxTimestamp, JobConstants.STATE_WAITING);
       if (triggers == null || triggers.isEmpty()) {
         return;
       }
-
+      
       for (JobTrigger trigger : triggers) {
         if (doUpdateOfMisfiredTrigger(trigger)) {
           count++;
         }
       }
-
+      
     } catch (Exception e) {
       log.error("Error handling misfires", e);
     } finally {
-
+      
       if (log.isDebugEnabled()) {
         log.debug("handle misfires end and restart {} trigger(s)", count);
       }
-
+      
       long timeToSleep =
           resource.getConf().getMisfireThreshold() - (System.currentTimeMillis() - startTime);
       ThreadUtils.sleep(timeToSleep);
     }
   }
-
+  
   private boolean doUpdateOfMisfiredTrigger(JobTrigger trigger) {
-
+    
     trigger.computeNextFireTime();
-
+    
     if (trigger.getNextFireTime() == null) {
-      resource.getJobStore().storeTrigger(trigger, JobResource.STATE_COMPLETE, true);
+      resource.getJobStore().storeTrigger(trigger, JobConstants.STATE_COMPLETE, true);
     } else {
       resource.getJobStore().storeTrigger(trigger, true);
       return true;
     }
-
+    
     return false;
   }
-
-
+  
+  
 }

@@ -58,7 +58,7 @@ public class LostSchedulerPlugin implements SchedulerPlugin {
       long maxTimestamp = System.currentTimeMillis() - resource.getConf().getLostThreshold();
       
       List<JobTrigger> triggers = resource.getJobStore()
-          .acquireTriggersInState(maxTimestamp, JobResource.STATE_ACQUIRED);
+          .acquireTriggersInState(maxTimestamp, JobConstants.STATE_ACQUIRED);
       if (triggers == null || triggers.isEmpty()) {
         return;
       }
@@ -87,7 +87,7 @@ public class LostSchedulerPlugin implements SchedulerPlugin {
     trigger.computeNextFireTime();
     
     if (trigger.getNextFireTime() == null) {
-      resource.getJobStore().storeTrigger(trigger, JobResource.STATE_COMPLETE, true);
+      resource.getJobStore().storeTrigger(trigger, JobConstants.STATE_COMPLETE, true);
     } else {
       resource.getJobStore().storeTrigger(trigger, true);
       return true;

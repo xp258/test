@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.job.JobConstants;
 import vip.justlive.oxygen.core.job.JobInfo;
-import vip.justlive.oxygen.core.job.JobResource;
 import vip.justlive.oxygen.core.job.JobRunTask;
 import vip.justlive.oxygen.core.job.JobStore;
 import vip.justlive.oxygen.core.job.JobTrigger;
@@ -38,19 +38,19 @@ import vip.justlive.oxygen.jdbc.record.Entity;
  */
 @Slf4j
 public class JdbcJobStore implements JobStore {
-
-
+  
+  
   private Signaler signaler;
   private String dataSourceName;
-
-
+  
+  
   @Override
   public void initialize(Signaler signaler) {
     this.signaler = signaler;
     this.dataSourceName = ConfigFactory
         .getProperty("oxygen.job.jdbc.dataSourceName", Jdbc.PRIMARY_KEY);
   }
-
+  
   @Override
   public void storeJob(JobInfo jobInfo, boolean replaceExisting) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -70,7 +70,7 @@ public class JdbcJobStore implements JobStore {
       return null;
     });
   }
-
+  
   @Override
   public JobInfo getJobInfo(String jobKey) {
     return Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -82,7 +82,7 @@ public class JdbcJobStore implements JobStore {
           .setHandlerClass(entity.getHandlerClass()).setParam(entity.getParam());
     });
   }
-
+  
   @Override
   public void removeJob(String jobKey) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -96,7 +96,7 @@ public class JdbcJobStore implements JobStore {
       return null;
     });
   }
-
+  
   @Override
   public void storeTrigger(JobTrigger trigger, int state, boolean replaceExisting) {
     if (trigger == null) {
@@ -107,7 +107,7 @@ public class JdbcJobStore implements JobStore {
       if (!replaceExisting && entity != null) {
         throw new IllegalArgumentException("trigger key '" + trigger.getKey() + "' already exists");
       }
-
+      
       JobInfoEntity jobEntity = loadJob(conn, trigger.getJobKey());
       if (jobEntity == null) {
         throw new IllegalArgumentException(
@@ -123,7 +123,7 @@ public class JdbcJobStore implements JobStore {
       return null;
     });
   }
-
+  
   @Override
   public List<JobTrigger> getJobTrigger(String jobKey) {
     return Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -139,7 +139,7 @@ public class JdbcJobStore implements JobStore {
       return triggers;
     });
   }
-
+  
   @Override
   public void removeTrigger(String triggerKey) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -148,7 +148,7 @@ public class JdbcJobStore implements JobStore {
       return null;
     });
   }
-
+  
   @Override
   public void pauseJob(String jobKey) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -156,17 +156,17 @@ public class JdbcJobStore implements JobStore {
       List<JobTriggerEntity> triggers = model.find(conn, new JobTriggerEntity().setJobKey(jobKey));
       for (JobTriggerEntity trigger : triggers) {
         boolean shouldUpdate =
-            trigger.getState() != null && (trigger.getState() == JobResource.STATE_WAITING
-                || trigger.getState() == JobResource.STATE_ACQUIRED);
+            trigger.getState() != null && (trigger.getState() == JobConstants.STATE_WAITING
+                || trigger.getState() == JobConstants.STATE_ACQUIRED);
         if (shouldUpdate) {
           model.updateById(conn,
-              new JobTriggerEntity().setId(trigger.getId()).setState(JobResource.STATE_PAUSED));
+              new JobTriggerEntity().setId(trigger.getId()).setState(JobConstants.STATE_PAUSED));
         }
       }
       return null;
     });
   }
-
+  
   @Override
   public void pauseTrigger(String triggerKey) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -175,31 +175,31 @@ public class JdbcJobStore implements JobStore {
           .findOne(conn, new JobTriggerEntity().setTriggerKey(triggerKey));
       boolean shouldUpdate =
           trigger != null && trigger.getState() != null && (
-              trigger.getState() == JobResource.STATE_WAITING
-                  || trigger.getState() == JobResource.STATE_ACQUIRED);
+              trigger.getState() == JobConstants.STATE_WAITING
+                  || trigger.getState() == JobConstants.STATE_ACQUIRED);
       if (shouldUpdate) {
         model.updateById(conn,
-            new JobTriggerEntity().setId(trigger.getId()).setState(JobResource.STATE_PAUSED));
+            new JobTriggerEntity().setId(trigger.getId()).setState(JobConstants.STATE_PAUSED));
       }
       return null;
     });
   }
-
+  
   @Override
   public void resumeJob(String jobKey) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
       Entity<JobTriggerEntity> model = Entity.parse(JobTriggerEntity.class);
       List<JobTriggerEntity> triggers = model.find(conn, new JobTriggerEntity().setJobKey(jobKey));
       for (JobTriggerEntity trigger : triggers) {
-        if (trigger.getState() != null && trigger.getState() == JobResource.STATE_PAUSED) {
+        if (trigger.getState() != null && trigger.getState() == JobConstants.STATE_PAUSED) {
           model.updateById(conn,
-              new JobTriggerEntity().setId(trigger.getId()).setState(JobResource.STATE_WAITING));
+              new JobTriggerEntity().setId(trigger.getId()).setState(JobConstants.STATE_WAITING));
         }
       }
       return null;
     });
   }
-
+  
   @Override
   public void resumeTrigger(String triggerKey) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -207,14 +207,14 @@ public class JdbcJobStore implements JobStore {
       JobTriggerEntity trigger = model
           .findOne(conn, new JobTriggerEntity().setTriggerKey(triggerKey));
       if (trigger != null && trigger.getState() != null
-          && trigger.getState() == JobResource.STATE_PAUSED) {
+          && trigger.getState() == JobConstants.STATE_PAUSED) {
         model.updateById(conn,
-            new JobTriggerEntity().setId(trigger.getId()).setState(JobResource.STATE_WAITING));
+            new JobTriggerEntity().setId(trigger.getId()).setState(JobConstants.STATE_WAITING));
       }
       return null;
     });
   }
-
+  
   @Override
   public List<JobTrigger> acquireNextTriggers(long maxTimestamp, int maxSize) {
     String lockName;
@@ -226,16 +226,16 @@ public class JdbcJobStore implements JobStore {
     return Utils.executeInLock(dataSourceName, lockName,
         conn -> acquireNextTriggers(conn, maxTimestamp, maxSize));
   }
-
+  
   @Override
   public void releaseTrigger(JobTrigger trigger) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
       Jdbc.update(conn, "update oxy_job_trigger set state = ? where trigger_key = ? and state = ?",
-          JobResource.STATE_ACQUIRED, trigger.getKey(), JobResource.STATE_WAITING);
+          JobConstants.STATE_ACQUIRED, trigger.getKey(), JobConstants.STATE_WAITING);
       return null;
     });
   }
-
+  
   @Override
   public TriggerFiredResult triggerFired(JobTrigger trigger) {
     return Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
@@ -249,57 +249,57 @@ public class JdbcJobStore implements JobStore {
       JobTriggerEntity triggerEntity = triggerModel
           .findOne(conn, new JobTriggerEntity().setTriggerKey(trigger.getKey()));
       if (triggerEntity == null || triggerEntity.getState() == null
-          || triggerEntity.getState() != JobResource.STATE_ACQUIRED) {
+          || triggerEntity.getState() != JobConstants.STATE_ACQUIRED) {
         return null;
       }
-
+      
       JobTrigger newTrigger = Utils.convert(triggerEntity);
-      newTrigger.computeNextFireTime(System.currentTimeMillis());
-
+      newTrigger.triggerFired(System.currentTimeMillis());
+      
       JobTriggerEntity newTriggerEntity = Utils.convert(newTrigger);
       if (newTrigger.getNextFireTime() == null) {
-        newTriggerEntity.setState(JobResource.STATE_COMPLETE);
+        newTriggerEntity.setState(JobConstants.STATE_COMPLETE);
       } else {
-        newTriggerEntity.setState(JobResource.STATE_WAITING);
+        newTriggerEntity.setState(JobConstants.STATE_WAITING);
       }
       newTriggerEntity.setId(triggerEntity.getId());
       triggerModel.updateById(conn, newTriggerEntity);
-
+      
       return new TriggerFiredResult(newTrigger, null);
     });
   }
-
+  
   @Override
   public void triggerCompleted(JobTrigger trigger, int state) {
     Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS, conn -> {
       if (state == JobRunTask.DELETE) {
         removeTrigger(trigger.getKey());
       }
-
+      
       JobTriggerEntity triggerEntity = loadTrigger(conn, trigger.getKey());
       if (triggerEntity == null) {
         return null;
       }
-
+      
       JobTrigger newTrigger = Utils.convert(triggerEntity);
       long lastCompletedTime = System.currentTimeMillis();
-
+      
       newTrigger.setLastCompletedTime(lastCompletedTime);
       trigger.setLastCompletedTime(lastCompletedTime);
-
+      
       Entity.parse(JobTriggerEntity.class)
           .updateById(Utils.convert(newTrigger).setId(triggerEntity.getId()));
       return null;
     });
     signaler.schedulingChange();
   }
-
+  
   @Override
   public List<JobTrigger> acquireTriggersInState(long maxTimestamp, int state) {
     return Utils.executeInLock(dataSourceName, Utils.LOCK_TRIGGER_ACCESS,
         conn -> acquireTriggersInState(conn, maxTimestamp, state));
   }
-
+  
   private List<JobTrigger> acquireTriggersInState(Connection conn, long maxTimestamp,
       int state) {
     List<JobTrigger> triggers = new ArrayList<>();
@@ -311,16 +311,16 @@ public class JdbcJobStore implements JobStore {
     }
     return triggers;
   }
-
+  
   private List<JobTrigger> acquireNextTriggers(Connection conn, long maxTimestamp, int maxSize) {
     List<JobTrigger> triggers = new ArrayList<>();
-
+    
     long noEarlierThan = System.currentTimeMillis();
     List<JobTriggerEntity> list = Jdbc.query(conn,
         "select * from oxy_job_trigger where next_fire_time <= ? and next_fire_time >= ? and state = ? order by next_fire_time",
         ResultSetHandler.beanListHandler(JobTriggerEntity.class), maxTimestamp, noEarlierThan,
-        JobResource.STATE_WAITING, new Page<>(1, maxSize));
-
+        JobConstants.STATE_WAITING, new Page<>(1, maxSize));
+    
     for (JobTriggerEntity entity : list) {
       Long nextFireTime = entity.getNextFireTime();
       if (nextFireTime != null) {
@@ -329,9 +329,11 @@ public class JdbcJobStore implements JobStore {
         }
         int updated = Jdbc.update(conn,
             "update oxy_job_trigger set state = ? where trigger_key = ? and state = ?",
-            JobResource.STATE_ACQUIRED, entity.getTriggerKey(), JobResource.STATE_WAITING);
+            JobConstants.STATE_ACQUIRED, entity.getTriggerKey(), JobConstants.STATE_WAITING);
         if (updated > 0) {
-          triggers.add(Utils.convert(entity));
+          JobTrigger trigger = Utils.convert(entity);
+          trigger.setState(JobConstants.STATE_WAITING);
+          triggers.add(trigger);
         }
       } else {
         log.warn("the nextFireTime of Trigger {} is null", entity.getTriggerKey());
@@ -339,15 +341,15 @@ public class JdbcJobStore implements JobStore {
     }
     return triggers;
   }
-
+  
   private JobInfoEntity loadJob(Connection conn, String jobKey) {
     Entity<JobInfoEntity> model = Entity.parse(JobInfoEntity.class);
     return model.findOne(conn, new JobInfoEntity().setJobKey(jobKey));
   }
-
+  
   private JobTriggerEntity loadTrigger(Connection conn, String triggerKey) {
     Entity<JobTriggerEntity> model = Entity.parse(JobTriggerEntity.class);
     return model.findOne(conn, new JobTriggerEntity().setTriggerKey(triggerKey));
   }
-
+  
 }
