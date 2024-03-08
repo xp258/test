@@ -23,10 +23,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DecimalSystemConvert {
 
-  private final char[] DIGITS =
-      {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-          'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-
+  private final char[] DIGITS = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKKLZXCVBNM1234567890"
+      .toCharArray();
 
   /**
    * 进制转换，默认使用数字+字母数组做为数据源
@@ -82,7 +80,7 @@ public class DecimalSystemConvert {
    */
   public long recover(String value, int shift, char[] source) {
     char[] buf = value.toCharArray();
-    int result = 0;
+    long result = 0;
     for (int i = buf.length - 1; i >= 0; i--) {
       int index = indexOf(buf[i], shift, source);
       if (index == -1) {
