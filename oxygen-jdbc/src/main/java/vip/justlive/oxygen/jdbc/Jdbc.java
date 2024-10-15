@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
 import vip.justlive.oxygen.jdbc.interceptor.PageJdbcInterceptor;
@@ -39,6 +40,7 @@ import vip.justlive.oxygen.jdbc.page.PageDialectHelper;
  *
  * @author wubo
  */
+@Slf4j
 @UtilityClass
 public class Jdbc {
 
@@ -72,6 +74,7 @@ public class Jdbc {
     if (local != null) {
       throw new IllegalArgumentException(String.format("数据源名称[%s]已存在", name));
     }
+    log.info("add datasource [{}]", name);
     if (!JDBC_INTERCEPTORS.contains(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR)) {
       JDBC_INTERCEPTORS.add(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR);
       Collections.sort(JDBC_INTERCEPTORS);
