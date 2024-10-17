@@ -251,13 +251,89 @@ public class Jdbc {
    * @param dataSourceName 数据源名称
    */
   public void rollbackTx(String dataSourceName) {
-    Connection connection = getConnection(dataSourceName);
+    rollbackTx(getConnection(dataSourceName));
+  }
+
+  /**
+   * 回滚指定数据源的事务
+   *
+   * @param connection 数据源连接
+   */
+  public void rollbackTx(Connection connection) {
     if (connection != null) {
       try {
         connection.setAutoCommit(false);
         connection.rollback();
       } catch (SQLException e) {
         throw JdbcException.wrap(e);
+      }
+    }
+  }
+
+  /**
+   * 在事务中执行
+   *
+   * @param runnable 执行逻辑
+   */
+  public void invokeWithinTx(Runnable runnable) {
+    startTx();
+    boolean hasError = false;
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      hasError = true;
+      throw e;
+    } finally {
+      if (hasError) {
+        rollbackTx();
+      } else {
+        closeTx();
+      }
+    }
+  }
+
+  /**
+   * 在事务中执行
+   *
+   * @param runnable   执行逻辑
+   * @param datasource 数据源
+   */
+  public void invokeWithinTx(Runnable runnable, String datasource) {
+    startTx(datasource);
+    boolean hasError = false;
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      hasError = true;
+      throw e;
+    } finally {
+      if (hasError) {
+        rollbackTx(datasource);
+      } else {
+        closeTx(datasource);
+      }
+    }
+  }
+
+  /**
+   * 在事务中执行
+   *
+   * @param runnable   执行逻辑
+   * @param connection 数据库连接
+   */
+  public void invokeWithinTx(Runnable runnable, Connection connection) {
+    startTx(connection);
+    boolean hasError = false;
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      hasError = true;
+      throw e;
+    } finally {
+      if (hasError) {
+        rollbackTx(connection);
+      } else {
+        closeTx(connection);
       }
     }
   }
