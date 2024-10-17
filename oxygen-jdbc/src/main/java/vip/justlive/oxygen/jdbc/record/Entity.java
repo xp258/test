@@ -125,7 +125,7 @@ public class Entity<T> {
   /**
    * 根据record属性值获取一个值
    *
-   * @param obj     record
+   * @param obj record
    * @param throwEx 是否抛出异常
    * @return list
    */
@@ -145,7 +145,7 @@ public class Entity<T> {
   /**
    * 获取分页
    *
-   * @param obj  record
+   * @param obj record
    * @param page 分页参数
    * @return list
    */
@@ -226,7 +226,7 @@ public class Entity<T> {
    * 根据主键获取record
    *
    * @param dataSourceName 数据源名称
-   * @param id             主键
+   * @param id 主键
    * @return 记录
    */
   public T findById(String dataSourceName, Object id) {
@@ -237,7 +237,7 @@ public class Entity<T> {
    * 根据主键获取records
    *
    * @param dataSourceName 数据源名称
-   * @param ids            主键
+   * @param ids 主键
    * @return 记录
    */
   public List<T> findByIds(String dataSourceName, List<?> ids) {
@@ -248,7 +248,7 @@ public class Entity<T> {
    * 根据record属性值获取集合
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
+   * @param obj record
    * @return list
    */
   public List<T> find(String dataSourceName, T obj) {
@@ -259,7 +259,7 @@ public class Entity<T> {
    * 根据record属性值获取一个值
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
+   * @param obj record
    * @return list
    */
   public T findOne(String dataSourceName, T obj) {
@@ -270,8 +270,8 @@ public class Entity<T> {
    * 根据record属性值获取一个值
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
-   * @param throwEx        是否抛出异常
+   * @param obj record
+   * @param throwEx 是否抛出异常
    * @return list
    */
   public T findOne(String dataSourceName, T obj, boolean throwEx) {
@@ -292,8 +292,8 @@ public class Entity<T> {
    * 获取分页
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
-   * @param page           分页参数
+   * @param obj record
+   * @param page 分页参数
    * @return list
    */
   public List<T> page(String dataSourceName, T obj, Page<T> page) {
@@ -304,7 +304,7 @@ public class Entity<T> {
    * count
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
+   * @param obj record
    * @return count
    */
   public int count(String dataSourceName, T obj) {
@@ -315,7 +315,7 @@ public class Entity<T> {
    * 修改record
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
+   * @param obj record
    * @return updated
    */
   public int updateById(String dataSourceName, T obj) {
@@ -326,7 +326,7 @@ public class Entity<T> {
    * 插入record
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
+   * @param obj record
    * @return updated
    */
   public int insert(String dataSourceName, T obj) {
@@ -337,7 +337,7 @@ public class Entity<T> {
    * 批量插入
    *
    * @param dataSourceName 数据源名称
-   * @param list           集合
+   * @param list 集合
    */
   public void insertBatch(String dataSourceName, List<T> list) {
     insertBatch(Jdbc.getConnection(dataSourceName), list);
@@ -347,7 +347,7 @@ public class Entity<T> {
    * 根据id删除record
    *
    * @param dataSourceName 数据源名称
-   * @param id             主键
+   * @param id 主键
    * @return updated
    */
   public int deleteById(String dataSourceName, Object id) {
@@ -358,7 +358,7 @@ public class Entity<T> {
    * 根据ids删除record
    *
    * @param dataSourceName 数据源名称
-   * @param ids            注解列表
+   * @param ids 注解列表
    * @return updated
    */
   public int deleteByIds(String dataSourceName, List<?> ids) {
@@ -369,7 +369,7 @@ public class Entity<T> {
    * 根据record属性删除
    *
    * @param dataSourceName 数据源名称
-   * @param obj            record
+   * @param obj record
    * @return updated
    */
   public int delete(String dataSourceName, T obj) {
@@ -380,7 +380,7 @@ public class Entity<T> {
    * 根据主键获取record
    *
    * @param conn 数据库连接
-   * @param id   主键
+   * @param id 主键
    * @return 记录
    */
   public T findById(Connection conn, Object id) {
@@ -392,7 +392,7 @@ public class Entity<T> {
    * 根据主键获取records
    *
    * @param conn 数据库连接
-   * @param ids  主键
+   * @param ids 主键
    * @return 记录
    */
   @SuppressWarnings("unchecked")
@@ -408,7 +408,7 @@ public class Entity<T> {
    * 根据record属性值获取集合
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @return list
    */
   public List<T> find(Connection conn, T obj) {
@@ -419,7 +419,7 @@ public class Entity<T> {
    * 根据record属性值获取一个值
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @return list
    */
   public T findOne(Connection conn, T obj) {
@@ -429,8 +429,8 @@ public class Entity<T> {
   /**
    * 根据record属性值获取一个值
    *
-   * @param conn    数据库连接
-   * @param obj     record
+   * @param conn 数据库连接
+   * @param obj record
    * @param throwEx 是否抛出异常
    * @return list
    */
@@ -461,7 +461,7 @@ public class Entity<T> {
    * 获取分页
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @param page 分页参数
    * @return list
    */
@@ -479,7 +479,7 @@ public class Entity<T> {
    * count
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @return count
    */
   public int count(Connection conn, T obj) {
@@ -493,7 +493,7 @@ public class Entity<T> {
    * 修改record
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @return updated
    */
   public int updateById(Connection conn, T obj) {
@@ -520,7 +520,7 @@ public class Entity<T> {
    * 插入record
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @return updated
    */
   public int insert(Connection conn, T obj) {
@@ -528,12 +528,12 @@ public class Entity<T> {
     try {
       String sql = formatInsertSql(this, obj, params);
       if (primary != null && canConvert(primary.type)) {
-        int id = Jdbc.update(conn, sql, params, conn.getAutoCommit(), true);
+        int id = Jdbc.update(conn, sql, params, Jdbc.isAutoCommit(conn), true);
         convert(obj, primary, id);
         return id;
       }
       return Jdbc.update(conn, sql, params);
-    } catch (IllegalAccessException | SQLException e) {
+    } catch (IllegalAccessException e) {
       throw JdbcException.wrap(e);
     }
   }
@@ -565,7 +565,7 @@ public class Entity<T> {
    * 根据id删除record
    *
    * @param conn 数据库连接
-   * @param id   主键
+   * @param id 主键
    * @return updated
    */
   public int deleteById(Connection conn, Object id) {
@@ -577,15 +577,15 @@ public class Entity<T> {
    * 根据ids删除record
    *
    * @param conn 数据库连接
-   * @param ids  注解列表
+   * @param ids 注解列表
    * @return updated
    */
   @SuppressWarnings("unchecked")
   public int deleteByIds(Connection conn, List<?> ids) {
     List<String> list = new ArrayList<>(ids.size());
     ids.forEach(id -> list.add(SEAT));
-    String sql = DELETE + table + WHERE + AND + String
-        .format(IN_PARAM_STR, primary.name, String.join(COMMA, list));
+    String sql = DELETE + table + WHERE + AND + String.format(IN_PARAM_STR, primary.name,
+        String.join(COMMA, list));
     return Jdbc.update(conn, sql, (List<Object>) ids);
   }
 
@@ -593,7 +593,7 @@ public class Entity<T> {
    * 根据record属性删除
    *
    * @param conn 数据库连接
-   * @param obj  record
+   * @param obj record
    * @return updated
    */
   public int delete(Connection conn, T obj) {
