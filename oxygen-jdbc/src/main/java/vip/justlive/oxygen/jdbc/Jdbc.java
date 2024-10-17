@@ -788,8 +788,6 @@ public class Jdbc {
 
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
-   * <br>
-   * 不关闭连接
    *
    * @param connection 数据库连接
    * @param sql sql
@@ -797,13 +795,11 @@ public class Jdbc {
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, Object... params) {
-    return update(connection, sql, Arrays.asList(params), false);
+    return update(connection, sql, Arrays.asList(params), isAutoCommit(connection));
   }
 
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
-   * <br>
-   * 不关闭连接
    *
    * @param connection 数据库连接
    * @param sql sql
@@ -811,7 +807,7 @@ public class Jdbc {
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, List<Object> params) {
-    return update(connection, sql, params, false);
+    return update(connection, sql, params, isAutoCommit(connection));
   }
 
   /**
@@ -824,7 +820,7 @@ public class Jdbc {
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, List<Object> params, boolean closeCon) {
-    return update(connection, sql, params, closeCon, isAutoCommit(connection));
+    return update(connection, sql, params, closeCon, false);
   }
 
   /**
