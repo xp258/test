@@ -16,9 +16,11 @@ package vip.justlive.oxygen.jdbc.record;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
 import vip.justlive.oxygen.core.util.base.Strings;
@@ -56,6 +58,8 @@ public class Entity<T> {
   private List<Property> properties;
   private String baseQuery;
 
+  private Set<String> columnKeys;
+
   @SuppressWarnings("unchecked")
   public static <T> Entity<T> parse(Class<T> clazz) {
     return (Entity<T>) CACHED.computeIfAbsent(clazz, k -> parseClass(clazz));
@@ -70,6 +74,7 @@ public class Entity<T> {
     entity.type = clazz;
     entity.table = table.value();
     entity.properties = new LinkedList<>();
+    entity.columnKeys = new HashSet<>(8);
     if (entity.table.length() == 0) {
       entity.table = clazz.getSimpleName().toLowerCase();
     }
@@ -80,7 +85,6 @@ public class Entity<T> {
     entity.baseQuery = String.format(SELECT, entity.table);
     return entity;
   }
-
 
   /**
    * 根据主键获取record
@@ -220,11 +224,12 @@ public class Entity<T> {
   /**
    * 根据record属性删除
    *
-   * @param obj record
+   * @param obj    record
+   * @param wheres where for sql
    * @return updated
    */
-  public int delete(T obj) {
-    return delete(Jdbc.currentUse(), obj);
+  public int delete(T obj, Where... wheres) {
+    return delete(Jdbc.currentUse(), obj, wheres);
   }
 
   /**
@@ -380,10 +385,11 @@ public class Entity<T> {
    *
    * @param dataSourceName 数据源名称
    * @param obj            record
+   * @param wheres         where for sql
    * @return updated
    */
-  public int delete(String dataSourceName, T obj) {
-    return delete(Jdbc.getConnection(dataSourceName), obj);
+  public int delete(String dataSourceName, T obj, Where... wheres) {
+    return delete(Jdbc.getConnection(dataSourceName), obj, wheres);
   }
 
   /**
@@ -607,14 +613,15 @@ public class Entity<T> {
   /**
    * 根据record属性删除
    *
-   * @param conn 数据库连接
-   * @param obj  record
+   * @param conn   数据库连接
+   * @param obj    record
+   * @param wheres where for sql
    * @return updated
    */
-  public int delete(Connection conn, T obj) {
+  public int delete(Connection conn, T obj, Where... wheres) {
     StringBuilder sb = new StringBuilder(DELETE).append(table).append(WHERE);
     List<Object> params = new LinkedList<>();
-    margeWhere(this, obj, sb, params);
+    margeWhere(this, obj, sb, params, wheres);
     return Jdbc.update(conn, sb.toString(), params);
   }
 
@@ -697,6 +704,7 @@ public class Entity<T> {
       if (property.pk) {
         entity.primary = property;
       }
+      entity.columnKeys.add(property.name);
     }
   }
 
