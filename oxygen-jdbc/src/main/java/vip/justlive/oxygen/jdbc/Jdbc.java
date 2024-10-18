@@ -66,7 +66,7 @@ public class Jdbc {
   /**
    * 添加数据源
    *
-   * @param name 数据源名称
+   * @param name       数据源名称
    * @param dataSource 数据源
    */
   public void addDataSource(String name, DataSource dataSource) {
@@ -266,6 +266,8 @@ public class Jdbc {
         connection.rollback();
       } catch (SQLException e) {
         throw JdbcException.wrap(e);
+      } finally {
+        close(connection);
       }
     }
   }
@@ -295,7 +297,7 @@ public class Jdbc {
   /**
    * 在事务中执行
    *
-   * @param runnable 执行逻辑
+   * @param runnable   执行逻辑
    * @param datasource 数据源
    */
   public void invokeWithinTx(Runnable runnable, String datasource) {
@@ -318,7 +320,7 @@ public class Jdbc {
   /**
    * 在事务中执行
    *
-   * @param runnable 执行逻辑
+   * @param runnable   执行逻辑
    * @param connection 数据库连接
    */
   public void invokeWithinTx(Runnable runnable, Connection connection) {
@@ -343,10 +345,10 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
-   * @param clazz bean类型
+   * @param sql    sql
+   * @param clazz  bean类型
    * @param params 参数
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return result
    */
   public <T> T query(String sql, Class<T> clazz, Object... params) {
@@ -358,10 +360,10 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
-   * @param clazz bean类型
+   * @param sql    sql
+   * @param clazz  bean类型
    * @param params 参数
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return result
    */
   public <T> T query(String sql, Class<T> clazz, List<Object> params) {
@@ -374,10 +376,10 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param clazz bean类型
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql            sql
+   * @param clazz          bean类型
+   * @param params         参数
+   * @param <T>            泛型
    * @return result
    */
   public <T> T query(String dataSourceName, String sql, Class<T> clazz, Object... params) {
@@ -390,10 +392,10 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param clazz bean类型
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql            sql
+   * @param clazz          bean类型
+   * @param params         参数
+   * @param <T>            泛型
    * @return result
    */
   public <T> T query(String dataSourceName, String sql, Class<T> clazz, List<Object> params) {
@@ -405,10 +407,10 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql     sql
    * @param handler 结果集处理器
-   * @param params 参数
-   * @param <T> 泛型
+   * @param params  参数
+   * @param <T>     泛型
    * @return result
    */
   public <T> T query(String sql, ResultSetHandler<T> handler, Object... params) {
@@ -420,10 +422,10 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql     sql
    * @param handler 结果集处理器
-   * @param params 参数
-   * @param <T> 泛型
+   * @param params  参数
+   * @param <T>     泛型
    * @return result
    */
   public <T> T query(String sql, ResultSetHandler<T> handler, List<Object> params) {
@@ -437,10 +439,10 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param handler 结果集处理器
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql            sql
+   * @param handler        结果集处理器
+   * @param params         参数
+   * @param <T>            泛型
    * @return result
    */
   public <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,
@@ -454,10 +456,10 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param handler 结果集处理器
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql            sql
+   * @param handler        结果集处理器
+   * @param params         参数
+   * @param <T>            泛型
    * @return result
    */
   public <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,
@@ -470,10 +472,10 @@ public class Jdbc {
    * 执行 select 操作
    *
    * @param connection 数据库连接
-   * @param sql sql
-   * @param handler 结果集处理器
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql        sql
+   * @param handler    结果集处理器
+   * @param params     参数
+   * @param <T>        泛型
    * @return result
    */
   public <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
@@ -485,10 +487,10 @@ public class Jdbc {
    * 执行 select 操作
    *
    * @param connection 数据库连接
-   * @param sql sql
-   * @param handler 结果集处理器
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql        sql
+   * @param handler    结果集处理器
+   * @param params     参数
+   * @param <T>        泛型
    * @return result
    */
   public <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
@@ -500,11 +502,11 @@ public class Jdbc {
    * 执行 select 操作
    *
    * @param connection 数据库连接
-   * @param sql sql
-   * @param handler 结果集处理器
-   * @param params 参数
-   * @param closeCon 是否关闭连接
-   * @param <T> 泛型
+   * @param sql        sql
+   * @param handler    结果集处理器
+   * @param params     参数
+   * @param closeCon   是否关闭连接
+   * @param <T>        泛型
    * @return result
    */
   public <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
@@ -553,10 +555,10 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
-   * @param clazz bean类型
+   * @param sql    sql
+   * @param clazz  bean类型
    * @param params 参数
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return result
    */
   public <T> List<T> queryForList(String sql, Class<T> clazz, Object... params) {
@@ -569,10 +571,10 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param clazz bean类型
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql            sql
+   * @param clazz          bean类型
+   * @param params         参数
+   * @param <T>            泛型
    * @return result
    */
   public <T> List<T> queryForList(String dataSourceName, String sql, Class<T> clazz,
@@ -585,10 +587,10 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
-   * @param clazz bean类型
+   * @param sql    sql
+   * @param clazz  bean类型
    * @param params 参数
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return result
    */
   public <T> List<T> queryForList(String sql, Class<T> clazz, List<Object> params) {
@@ -601,10 +603,10 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param clazz bean类型
-   * @param params 参数
-   * @param <T> 泛型
+   * @param sql            sql
+   * @param clazz          bean类型
+   * @param params         参数
+   * @param <T>            泛型
    * @return result
    */
   public <T> List<T> queryForList(String dataSourceName, String sql, Class<T> clazz,
@@ -617,7 +619,7 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return result
    */
@@ -631,8 +633,8 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param params 参数
+   * @param sql            sql
+   * @param params         参数
    * @return result
    */
   public Map<String, Object> queryForMap(String dataSourceName, String sql, Object... params) {
@@ -644,7 +646,7 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return result
    */
@@ -658,8 +660,8 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param params 参数
+   * @param sql            sql
+   * @param params         参数
    * @return result
    */
   public Map<String, Object> queryForMap(String dataSourceName, String sql, List<Object> params) {
@@ -671,7 +673,7 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return result
    */
@@ -685,8 +687,8 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param params 参数
+   * @param sql            sql
+   * @param params         参数
    * @return result
    */
   public List<Map<String, Object>> queryForMapList(String dataSourceName, String sql,
@@ -699,7 +701,7 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return result
    */
@@ -713,8 +715,8 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param params 参数
+   * @param sql            sql
+   * @param params         参数
    * @return result
    */
   public List<Map<String, Object>> queryForMapList(String dataSourceName, String sql,
@@ -727,7 +729,7 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return 受影响行数
    */
@@ -740,7 +742,7 @@ public class Jdbc {
    * <br>
    * 使用primary数据源
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return 受影响行数
    */
@@ -754,8 +756,8 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param params 参数
+   * @param sql            sql
+   * @param params         参数
    * @return 受影响行数
    */
   public int update(String dataSourceName, String sql, Object... params) {
@@ -773,8 +775,8 @@ public class Jdbc {
    * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
-   * @param sql sql
-   * @param params 参数
+   * @param sql            sql
+   * @param params         参数
    * @return 受影响行数
    */
   public int update(String dataSourceName, String sql, List<Object> params) {
@@ -790,8 +792,8 @@ public class Jdbc {
    * 执行 INSERT、 UPDATE、 DELETE 操作
    *
    * @param connection 数据库连接
-   * @param sql sql
-   * @param params 参数
+   * @param sql        sql
+   * @param params     参数
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, Object... params) {
@@ -802,8 +804,8 @@ public class Jdbc {
    * 执行 INSERT、 UPDATE、 DELETE 操作
    *
    * @param connection 数据库连接
-   * @param sql sql
-   * @param params 参数
+   * @param sql        sql
+   * @param params     参数
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, List<Object> params) {
@@ -814,9 +816,9 @@ public class Jdbc {
    * 执行 INSERT、 UPDATE、 DELETE 操作
    *
    * @param connection 数据库连接
-   * @param sql sql
-   * @param params 参数
-   * @param closeCon 是否关闭连接
+   * @param sql        sql
+   * @param params     参数
+   * @param closeCon   是否关闭连接
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, List<Object> params, boolean closeCon) {
@@ -826,10 +828,10 @@ public class Jdbc {
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
    *
-   * @param connection 数据库连接
-   * @param sql sql
-   * @param params 参数
-   * @param closeCon 是否关闭连接
+   * @param connection             数据库连接
+   * @param sql                    sql
+   * @param params                 参数
+   * @param closeCon               是否关闭连接
    * @param returnAutoGeneratedKey 是否返回主键
    * @return 受影响行数或主键
    */
