@@ -87,6 +87,15 @@ public class Entity<T> {
   }
 
   /**
+   * 获取该表的排序，使用此方法会校验排序字段
+   *
+   * @return orderBy
+   */
+  public OrderBy orderBy() {
+    return new OrderBy(this);
+  }
+
+  /**
    * 根据主键获取record
    *
    * @param id 主键

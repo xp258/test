@@ -79,7 +79,6 @@ class JdbcTest {
     assertNull(entity.findOne(option, new Where().setSql("lo = 1222")));
     assertNull(entity.findOne(option, new Where().setSql("lo = ?").setParam(1222)));
 
-
     option.setSt("22x");
     entity.updateById(option);
 
@@ -150,6 +149,10 @@ class JdbcTest {
     assertEquals(1, list.size());
     assertEquals("st2", list.get(0).getSt());
     assertNotNull(page.getTotalNumber());
+
+    Entity.parse(Option.class).orderBy().desc("id").asc("st", "lo").desc("lo").start();
+    list = Jdbc.queryForList("select * from option", Option.class, page);
+    assertEquals(2L, list.get(0).getId());
 
   }
 

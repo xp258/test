@@ -30,6 +30,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
+import vip.justlive.oxygen.jdbc.interceptor.OrderJdbcInterceptor;
 import vip.justlive.oxygen.jdbc.interceptor.PageJdbcInterceptor;
 import vip.justlive.oxygen.jdbc.interceptor.SqlCtx;
 import vip.justlive.oxygen.jdbc.page.Page;
@@ -77,6 +78,10 @@ public class Jdbc {
     log.info("add datasource [{}]", name);
     if (!JDBC_INTERCEPTORS.contains(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR)) {
       JDBC_INTERCEPTORS.add(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR);
+      Collections.sort(JDBC_INTERCEPTORS);
+    }
+    if (!JDBC_INTERCEPTORS.contains(OrderJdbcInterceptor.ORDER_JDBC_INTERCEPTOR)) {
+      JDBC_INTERCEPTORS.add(OrderJdbcInterceptor.ORDER_JDBC_INTERCEPTOR);
       Collections.sort(JDBC_INTERCEPTORS);
     }
     PageDialectHelper.guess(name, dataSource);
