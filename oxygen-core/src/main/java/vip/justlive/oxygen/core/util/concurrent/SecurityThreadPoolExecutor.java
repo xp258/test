@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.util.concurrent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,9 +27,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import vip.justlive.oxygen.core.util.base.DecimalSystemConvert;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 增加安全校验的线程池
@@ -70,7 +77,11 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
   public void execute(Runnable command) {
     submittedCount.incrementAndGet();
     try {
-      super.execute(command);
+      Runnable runnable = command;
+      if (!(runnable instanceof DecoratedTask)) {
+        runnable = new DecoratedTask(MDC.getCopyOfContextMap(), runnable);
+      }
+      super.execute(runnable);
     } catch (RejectedExecutionException e) {
       if (getQueue() instanceof PoolQueue && getQueue().offer(command)) {
         return;
@@ -125,17 +136,18 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     return submittedCount.get();
   }
 
+
   @Override
   protected void afterExecute(Runnable r, Throwable t) {
     submittedCount.decrementAndGet();
   }
 
+  @Setter
   @NoArgsConstructor
   public static class PoolQueue extends LinkedBlockingQueue<Runnable> {
 
     private static final long serialVersionUID = 5267382526416848275L;
 
-    @Setter
     private transient SecurityThreadPoolExecutor pool;
 
     PoolQueue(int capacity) {
@@ -153,6 +165,32 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
         return false;
       }
       return super.offer(runnable);
+    }
+  }
+
+
+  @RequiredArgsConstructor
+  public static class DecoratedTask implements Runnable {
+
+    private final Map<String, String> contextMap;
+    private final Runnable command;
+
+    @Override
+    public void run() {
+      try {
+        if (contextMap != null) {
+          contextMap.forEach(MDC::put);
+        }
+        MDC.put(Strings.SPAN_ID,
+            DecimalSystemConvert.convert(SnowflakeId.defaultNextId(), Strings.ALPHA_NUMERIC.length,
+                Strings.ALPHA_NUMERIC));
+        command.run();
+      } finally {
+        if (contextMap != null) {
+          contextMap.keySet().forEach(MDC::remove);
+        }
+        MDC.remove(Strings.SPAN_ID);
+      }
     }
   }
 

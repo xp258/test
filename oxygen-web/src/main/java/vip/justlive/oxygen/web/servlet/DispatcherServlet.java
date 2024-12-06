@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.Context;
@@ -69,9 +71,16 @@ public class DispatcherServlet extends HttpServlet {
 
     String requestUri = req.getRequestURI();
     String queryString = req.getQueryString();
-    if (queryString != null && queryString.length() > 0) {
+    if (queryString != null && !queryString.isEmpty()) {
       requestUri += Strings.QUESTION_MARK + queryString;
     }
+
+    // trace-id
+    String traceId = req.getHeader(Strings.TRACE_ID);
+    if (!Strings.hasText(traceId)) {
+      traceId = Long.toString(SnowflakeId.defaultNextId());
+    }
+    MDC.put(Strings.TRACE_ID, traceId);
 
     final Request request = new Request(httpMethod, requestUri, req.getProtocol());
     request.addAttribute(Request.ORIGINAL_REQUEST, req);
@@ -88,6 +97,7 @@ public class DispatcherServlet extends HttpServlet {
       Response.clear();
       copyResponse(response, resp);
       copyStream(response, resp);
+      MDC.remove(Strings.TRACE_ID);
     }
   }
 

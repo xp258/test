@@ -17,7 +17,11 @@ package vip.justlive.oxygen.web;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.SystemUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
@@ -29,6 +33,7 @@ import vip.justlive.oxygen.web.server.Server;
 /**
  * @author wubo
  */
+@Slf4j
 class WebTest {
 
   @Test
@@ -37,9 +42,16 @@ class WebTest {
     String msg = "hello world";
     int port = SystemUtils.findAvailablePort();
 
-    Router.router().method(HttpMethod.GET).path("/a").handler(ctx -> ctx.response().write(msg));
+    Router.router().method(HttpMethod.GET).path("/a").handler(ctx -> {
+      log.info("enter into router GET a");
+      ctx.response().write(msg);
+      log.info("leave router GET a");
+    });
     Router.router().method(HttpMethod.POST).path("/a")
-        .handler(ctx -> ctx.response().write(msg + "!"));
+        .handler(ctx -> {
+          log.info("enter into router POST a");
+          ctx.response().write(msg + "!");
+        });
     Server.listen(port);
 
     ThreadUtils.sleep(3000);
@@ -50,11 +62,15 @@ class WebTest {
       fail();
     }
 
+    MDC.put(Strings.TRACE_ID, Long.toString(SnowflakeId.defaultNextId()));
+
     try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/a").execute()) {
       assertEquals(msg + "!", response.bodyAsString());
     } catch (Exception e) {
       fail();
     }
+
+    MDC.remove(Strings.TRACE_ID);
 
     try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/b/123")
         .execute()) {

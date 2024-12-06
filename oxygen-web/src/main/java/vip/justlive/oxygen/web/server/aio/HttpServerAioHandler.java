@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.net.aio.AioHandler;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
@@ -133,6 +135,14 @@ public class HttpServerAioHandler implements AioHandler {
 
     request.local();
     response.local();
+
+    // trace-id
+    String traceId = request.getHeader(Strings.TRACE_ID);
+    if (!Strings.hasText(traceId)) {
+      traceId = Long.toString(SnowflakeId.defaultNextId());
+    }
+    MDC.put(Strings.TRACE_ID, traceId);
+
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
       Context.dispatch(ctx);
@@ -142,6 +152,7 @@ public class HttpServerAioHandler implements AioHandler {
       Request.clear();
       Response.clear();
       channelContext.write(response);
+      MDC.remove(Strings.TRACE_ID);
     }
   }
 

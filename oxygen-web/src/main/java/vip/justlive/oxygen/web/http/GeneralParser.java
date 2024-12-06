@@ -88,7 +88,7 @@ public class GeneralParser implements Parser {
     } else {
       path = request.path;
     }
-    if (path.length() == 0) {
+    if (path.isEmpty()) {
       path = Strings.SLASH;
     }
     request.path = path;

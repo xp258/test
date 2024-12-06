@@ -32,8 +32,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @UtilityClass
 public class Strings {
 
-  final char[] ALPHA_NUMERIC = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKKLZXCVBNM1234567890"
-      .toCharArray();
+  public final char[] ALPHA_NUMERIC = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKKLZXCVBNM1234567890".toCharArray();
   public final String AND = "&";
   public final String ANY = "*";
   public final String ANY_PATH = "/*";
@@ -66,6 +65,8 @@ public class Strings {
   public final String ALL_CLASSPATH_PREFIX = "classpath*:";
   public final String CLASSPATH_PREFIX = "classpath:";
   public final String[] EMPTY_ARRAY = new String[0];
+  public final String TRACE_ID = "trace-id";
+  public final String SPAN_ID = "span-id";
 
   /**
    * 字符串是否有值

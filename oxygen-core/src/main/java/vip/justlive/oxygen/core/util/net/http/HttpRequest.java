@@ -29,6 +29,8 @@ import java.util.function.Function;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
+import org.slf4j.MDC;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * http request
@@ -339,6 +341,15 @@ public class HttpRequest {
    * @throws IOException io异常
    */
   public HttpResponse execute() throws IOException {
+
+    // trace-id
+    if (!this.headers.containsKey(Strings.TRACE_ID)) {
+      String traceId = MDC.get(Strings.TRACE_ID);
+      if (Strings.hasText(traceId)) {
+        this.headers.put(Strings.TRACE_ID, traceId);
+      }
+    }
+
     Iterator<HttpRequestInterceptor> iterable = null;
     if (interceptors != null) {
       iterable = interceptors.iterator();
@@ -353,6 +364,7 @@ public class HttpRequest {
       HttpRequestHolder.set(
           new HttpRequestHolder().setRequest(this).setRequestTime(System.currentTimeMillis()));
     }
+
     HttpResponse response = new IteratorHttpRequestInterceptor(httpRequestExecution,
         iterable).execute(this);
     if (enabled) {
