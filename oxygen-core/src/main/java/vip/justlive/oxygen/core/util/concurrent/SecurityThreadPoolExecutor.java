@@ -30,11 +30,8 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import vip.justlive.oxygen.core.util.base.DecimalSystemConvert;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
-import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
@@ -181,9 +178,7 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
         if (contextMap != null) {
           contextMap.forEach(MDC::put);
         }
-        MDC.put(Strings.SPAN_ID,
-            DecimalSystemConvert.convert(SnowflakeId.defaultNextId(), Strings.ALPHA_NUMERIC.length,
-                Strings.ALPHA_NUMERIC));
+        MDC.put(Strings.SPAN_ID, ThreadUtils.nextSpanId());
         command.run();
       } finally {
         if (contextMap != null) {

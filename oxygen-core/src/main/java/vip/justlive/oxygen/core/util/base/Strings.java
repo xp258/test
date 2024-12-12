@@ -75,7 +75,7 @@ public class Strings {
    * @return true为有值
    */
   public boolean hasText(String text) {
-    return text != null && text.trim().length() > 0;
+    return text != null && !text.trim().isEmpty();
   }
 
   /**

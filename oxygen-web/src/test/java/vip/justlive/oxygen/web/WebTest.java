@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
-import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.SystemUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
@@ -62,7 +61,7 @@ class WebTest {
       fail();
     }
 
-    MDC.put(Strings.TRACE_ID, Long.toString(SnowflakeId.defaultNextId()));
+    MDC.put(Strings.TRACE_ID, ThreadUtils.nextTraceId());
 
     try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/a").execute()) {
       assertEquals(msg + "!", response.bodyAsString());

@@ -26,7 +26,6 @@ import org.slf4j.MDC;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
-import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 
@@ -39,7 +38,7 @@ class SecurityThreadPoolExecutorTest {
   @Test
   void test() {
 
-    MDC.put(Strings.TRACE_ID, Long.toString(SnowflakeId.defaultNextId()));
+    MDC.put(Strings.TRACE_ID, ThreadUtils.nextTraceId());
 
     Bootstrap.registerUncaughtExceptionHandler();
 

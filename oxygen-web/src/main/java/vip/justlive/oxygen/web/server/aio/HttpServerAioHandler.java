@@ -26,8 +26,8 @@ import org.slf4j.MDC;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
-import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.aio.AioHandler;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
@@ -90,11 +90,11 @@ public class HttpServerAioHandler implements AioHandler {
     // 响应体
     if (body.length > 0) {
       if (log.isDebugEnabled() && body.length > MAX) {
-        log.debug("http response [{}*mask*]", bytes.toString());
+        log.debug("http response [{}*mask*]", bytes);
       }
       bytes.write(body);
       if (log.isDebugEnabled() && body.length <= MAX) {
-        log.debug("http response [{}]", bytes.toString());
+        log.debug("http response [{}]", bytes);
       }
     }
     return ByteBuffer.wrap(bytes.toArray());
@@ -108,8 +108,9 @@ public class HttpServerAioHandler implements AioHandler {
       return null;
     }
     if (Strings.hasText(contextPath) && !builder.requestUri.startsWith(contextPath)) {
-      throw Exceptions.fail(String
-          .format("RequestUri [%s] not match contextPath [%s]", builder.requestUri, contextPath));
+      throw Exceptions.fail(
+          String.format("RequestUri [%s] not match contextPath [%s]", builder.requestUri,
+              contextPath));
     }
     if (parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
       Request request = builder.build(channelContext);
@@ -139,7 +140,7 @@ public class HttpServerAioHandler implements AioHandler {
     // trace-id
     String traceId = request.getHeader(Strings.TRACE_ID);
     if (!Strings.hasText(traceId)) {
-      traceId = Long.toString(SnowflakeId.defaultNextId());
+      traceId = ThreadUtils.nextTraceId();
     }
     MDC.put(Strings.TRACE_ID, traceId);
 

@@ -20,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import vip.justlive.oxygen.core.util.base.SnowflakeId;
 import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.http.Cookie;
@@ -78,7 +78,7 @@ public class DispatcherServlet extends HttpServlet {
     // trace-id
     String traceId = req.getHeader(Strings.TRACE_ID);
     if (!Strings.hasText(traceId)) {
-      traceId = Long.toString(SnowflakeId.defaultNextId());
+      traceId = ThreadUtils.nextTraceId();
     }
     MDC.put(Strings.TRACE_ID, traceId);
 
