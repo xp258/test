@@ -19,7 +19,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <fastjson.version>1.2.83</fastjson.version>
-    <freemarker.version>2.3.31</freemarker.version>
+    <freemarker.version>2.3.33</freemarker.version>
     <servlet-api.version>4.0.1</servlet-api.version>
     <thymeleaf.version>3.0.15.RELEASE</thymeleaf.version>
 
