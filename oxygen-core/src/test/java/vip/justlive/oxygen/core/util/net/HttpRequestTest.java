@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Data;
@@ -140,6 +141,19 @@ class HttpRequestTest {
     }
   }
 
+  @Test
+  void test7() throws IOException {
+    AtomicInteger count = new AtomicInteger();
+    try (HttpResponse response = HttpRequest.get(
+            "https://cn.bing.com/AS/Suggestions?pt=page.serp&bq=Charset&mkt=zh-cn&ds=mobileweb&qry=charset&cp=7&cvid=5E954FAA1B634A69A7CCF9438379A606")
+        .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
+        .interceptors(Arrays.asList(new TestHttpRequestInterceptor(count), new TestHttpRequestInterceptor2(count)))
+        .followRedirects(false).execute()) {
+      assertEquals(200, response.getCode());
+    }
+
+    assertEquals(2, count.get());
+  }
   @Data
   @Accessors(fluent = true)
   private static class Body {

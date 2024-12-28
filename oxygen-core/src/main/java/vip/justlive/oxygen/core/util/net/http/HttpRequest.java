@@ -30,6 +30,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
 import org.slf4j.MDC;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
@@ -341,13 +342,23 @@ public class HttpRequest {
    * @throws IOException io异常
    */
   public HttpResponse execute() throws IOException {
-
     // trace-id
     if (!this.headers.containsKey(Strings.TRACE_ID)) {
       String traceId = MDC.get(Strings.TRACE_ID);
       if (Strings.hasText(traceId)) {
         this.headers.put(Strings.TRACE_ID, traceId);
       }
+    }
+    // reset content-type
+    String contentType = this.headers.get(HttpHeaders.CONTENT_TYPE);
+    if (contentType == null) {
+      contentType = httpBody.getMedia();
+      if (httpBody == HttpBody.MULTIPART) {
+        contentType += "; boundary=" + Strings.DEFAULT_BOUNDARY;
+      }
+    }
+    if (contentType != null && !contentType.contains(HttpHeaders.CHARSET)) {
+      this.headers.put(HttpHeaders.CONTENT_TYPE, contentType + ";charset=" + charset.name());
     }
 
     Iterator<HttpRequestInterceptor> iterable = null;

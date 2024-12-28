@@ -63,7 +63,7 @@ class WebTest {
 
     MDC.put(Strings.TRACE_ID, ThreadUtils.nextTraceId());
 
-    try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/a").execute()) {
+    try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/a").jsonBody("{}").execute()) {
       assertEquals(msg + "!", response.bodyAsString());
     } catch (Exception e) {
       fail();

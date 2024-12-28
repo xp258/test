@@ -67,6 +67,8 @@ public class Strings {
   public final String[] EMPTY_ARRAY = new String[0];
   public final String TRACE_ID = "trace-id";
   public final String SPAN_ID = "span-id";
+  public final String DEFAULT_BOUNDARY = "----oxygen_" + SnowflakeId.defaultNextId();
+
 
   /**
    * 字符串是否有值
