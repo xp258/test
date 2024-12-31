@@ -30,6 +30,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
 import org.slf4j.MDC;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
 
@@ -40,6 +41,13 @@ import vip.justlive.oxygen.core.util.base.Strings;
  */
 @Getter
 public class HttpRequest {
+
+  private static final Map<String, HttpRequestExecution> EXECUTIONS = new HashMap<>(4);
+
+  static {
+    EXECUTIONS.put("HUC", HucHttpRequestExecution.HUC);
+    EXECUTIONS.put("AIO", AioHttpRequestExecution.AIO);
+  }
 
   private final String url;
   private final Map<String, String> headers = new HashMap<>(4);
@@ -366,7 +374,8 @@ public class HttpRequest {
       iterable = interceptors.iterator();
     }
     if (httpRequestExecution == null) {
-      httpRequestExecution = HucHttpRequestExecution.HUC;
+      httpRequestExecution = EXECUTIONS.getOrDefault(
+          CoreConfigKeys.HTTP_REQUEST_EXECUTION.getValue(), HucHttpRequestExecution.HUC);
     }
 
     HttpRequestHolder.remove();

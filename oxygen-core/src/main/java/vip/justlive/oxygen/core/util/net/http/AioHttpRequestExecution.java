@@ -29,13 +29,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.HttpHeaders.ResponseStatusLine;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.Urls;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.aio.AioHandler;
 import vip.justlive.oxygen.core.util.net.aio.AioListener;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
@@ -49,10 +49,19 @@ import vip.justlive.oxygen.core.util.net.aio.GroupContext;
  * @since 3.0.10
  */
 @Slf4j
-public class AioHttpRequestExecution implements HttpRequestExecution, AioHandler, AioListener {
+public class AioHttpRequestExecution implements HttpRequestExecution {
 
-  public static final AioHttpRequestExecution INSTANCE = new AioHttpRequestExecution();
-  private static Client client;
+  public static final AioHttpRequestExecution AIO = new AioHttpRequestExecution();
+  private static final Client CLIENT;
+
+  static {
+    AioHandlerListener handlerListener = new AioHandlerListener();
+    GroupContext context = new GroupContext(handlerListener);
+    ConfigFactory.load(context, "oxygen.httpRequest.aio");
+    context.setAioListener(handlerListener);
+    context.setDaemon(true);
+    CLIENT = new Client(context);
+  }
 
   @Override
   public HttpResponse execute(HttpRequest request) throws IOException {
@@ -73,7 +82,7 @@ public class AioHttpRequestExecution implements HttpRequestExecution, AioHandler
       request.addHeader(HttpHeaders.CONNECTION, HttpHeaders.CONNECTION_KEEP_ALIVE);
     }
 
-    ChannelContext context = getClient().connect(uri.getHost(), uri.getPort());
+    ChannelContext context = getChannel(uri);
     CompletableFuture<AioHttpResponse> future = new CompletableFuture<>();
     context.addAttr(AioHttpRequestExecution.class.getName(), future);
 
@@ -120,111 +129,8 @@ public class AioHttpRequestExecution implements HttpRequestExecution, AioHandler
   }
 
 
-  @Override
-  public ByteBuffer encode(Object data, ChannelContext channelContext) {
-    return ByteBuffer.wrap((byte[]) data);
-  }
-
-  @Override
-  public Object decode(ByteBuffer buffer, int readableSize, ChannelContext channelContext) {
-    int index = buffer.position();
-    ResponseStatusLine statusLine = HttpHeaders.parseResponseStatusLine(buffer);
-    if (statusLine == null) {
-      return null;
-    }
-    Map<String, List<String>> headers = HttpHeaders.parseHttpHeaders(buffer);
-    if (headers == null) {
-      return null;
-    }
-    byte[] body = HttpHeaders.parseHttpBody(headers, buffer);
-    if (body == null) {
-      return null;
-    }
-
-    if (log.isDebugEnabled()) {
-      log.debug("Received Http [{}] [{}]", channelContext.getId(),
-          new String(buffer.array(), index, buffer.position(), StandardCharsets.UTF_8));
-    }
-
-    ByteArrayInputStream out = new ByteArrayInputStream(body);
-    Charset charset = StandardCharsets.UTF_8;
-    String contentType = HttpHeaders.getHeader(headers, HttpHeaders.CONTENT_TYPE);
-    String split = "charset=";
-    if (contentType != null && contentType.contains(split)) {
-      charset = Charset.forName(contentType.split(split)[1]);
-    }
-    return new AioHttpResponse(Integer.parseInt(statusLine.getStatusText()),
-        statusLine.getMessage(), out, charset, channelContext);
-  }
-
-  @Override
-  public void onConnected(ChannelContext channelContext) {
-    if (log.isDebugEnabled()) {
-      log.debug("httpclient connected {}", channelContext);
-    }
-  }
-
-  @Override
-  public void onClosed(ChannelContext channelContext) {
-    @SuppressWarnings("unchecked") CompletableFuture<AioHttpResponse> future = (CompletableFuture<AioHttpResponse>) channelContext.getAttr(
-        AioHttpRequestExecution.class.getName());
-    if (log.isDebugEnabled()) {
-      log.debug("httpclient closed {}", channelContext);
-    }
-    if (future != null && !future.isDone()) {
-      future.completeExceptionally(new ClosedChannelException());
-    }
-
-  }
-
-  @Override
-  public void handle(Object data, ChannelContext channelContext) {
-    @SuppressWarnings("unchecked") CompletableFuture<AioHttpResponse> future = (CompletableFuture<AioHttpResponse>) channelContext.getAttr(
-        AioHttpRequestExecution.class.getName());
-    if (log.isDebugEnabled()) {
-      log.debug("handle future {} {}", channelContext.getId(), future);
-    }
-    if (future != null) {
-      future.complete((AioHttpResponse) data);
-    }
-  }
-
-  private static synchronized Client getClient() {
-    if (client != null) {
-      return client;
-    }
-
-    GroupContext context = new GroupContext(INSTANCE);
-    context.setAioListener(INSTANCE);
-    context.setDaemon(true);
-    client = new Client(context);
-
-    ThreadUtils.globalTimer().scheduleWithFixedDelay(() -> {
-      log.info("group : {}, work: {}", client.getGroupContext().getGroupExecutor(),
-          client.getGroupContext().getWorkerExecutor());
-    }, 10, 10, TimeUnit.SECONDS);
-
-    return client;
-  }
-
-  private static class AioHttpResponse extends HttpResponse {
-
-    private final ChannelContext channel;
-
-    public AioHttpResponse(int code, String message, InputStream body, Charset charset,
-        ChannelContext channel) {
-      super(code, message, body, charset);
-      this.channel = channel;
-    }
-
-    @Override
-    public void close() throws IOException {
-      try {
-        super.close();
-      } finally {
-        channel.close();
-      }
-    }
+  private ChannelContext getChannel(URI uri) throws IOException {
+    return CLIENT.connect(uri.getHost(), uri.getPort());
   }
 
   private void waitChannelConnected(HttpRequest request, ChannelContext context) {
@@ -255,4 +161,98 @@ public class AioHttpRequestExecution implements HttpRequestExecution, AioHandler
     }
     return future.join();
   }
+
+  @Slf4j
+  private static class AioHandlerListener implements AioHandler, AioListener {
+
+    @Override
+    public ByteBuffer encode(Object data, ChannelContext channelContext) {
+      return ByteBuffer.wrap((byte[]) data);
+    }
+
+    @Override
+    public Object decode(ByteBuffer buffer, int readableSize, ChannelContext channelContext) {
+      int index = buffer.position();
+      ResponseStatusLine statusLine = HttpHeaders.parseResponseStatusLine(buffer);
+      if (statusLine == null) {
+        return null;
+      }
+      Map<String, List<String>> headers = HttpHeaders.parseHttpHeaders(buffer);
+      if (headers == null) {
+        return null;
+      }
+      byte[] body = HttpHeaders.parseHttpBody(headers, buffer);
+      if (body == null) {
+        return null;
+      }
+
+      if (log.isDebugEnabled()) {
+        log.debug("Received Http [{}] [{}]", channelContext.getId(),
+            new String(buffer.array(), index, buffer.position(), StandardCharsets.UTF_8));
+      }
+
+      ByteArrayInputStream out = new ByteArrayInputStream(body);
+      Charset charset = StandardCharsets.UTF_8;
+      String contentType = HttpHeaders.getHeader(headers, HttpHeaders.CONTENT_TYPE);
+      String split = "charset=";
+      if (contentType != null && contentType.contains(split)) {
+        charset = Charset.forName(contentType.split(split)[1]);
+      }
+      return new AioHttpResponse(Integer.parseInt(statusLine.getStatusText()),
+          statusLine.getMessage(), out, charset, channelContext);
+    }
+
+    @Override
+    public void onConnected(ChannelContext channelContext) {
+      if (log.isDebugEnabled()) {
+        log.debug("httpclient connected {}", channelContext);
+      }
+    }
+
+    @Override
+    public void onClosed(ChannelContext channelContext) {
+      @SuppressWarnings("unchecked") CompletableFuture<AioHttpResponse> future = (CompletableFuture<AioHttpResponse>) channelContext.getAttr(
+          AioHttpRequestExecution.class.getName());
+      if (log.isDebugEnabled()) {
+        log.debug("httpclient closed {}", channelContext);
+      }
+      if (future != null && !future.isDone()) {
+        future.completeExceptionally(new ClosedChannelException());
+      }
+    }
+
+    @Override
+    public void handle(Object data, ChannelContext channelContext) {
+      @SuppressWarnings("unchecked") CompletableFuture<AioHttpResponse> future = (CompletableFuture<AioHttpResponse>) channelContext.getAttr(
+          AioHttpRequestExecution.class.getName());
+      if (log.isDebugEnabled()) {
+        log.debug("handle future {} {}", channelContext.getId(), future);
+      }
+      if (future != null) {
+        future.complete((AioHttpResponse) data);
+      }
+    }
+  }
+
+  private static class AioHttpResponse extends HttpResponse {
+
+    private final ChannelContext channel;
+
+    public AioHttpResponse(int code, String message, InputStream body, Charset charset,
+        ChannelContext channel) {
+      super(code, message, body, charset);
+      this.channel = channel;
+    }
+
+    @Override
+    public void close() throws IOException {
+      try {
+        super.close();
+      } finally {
+        channel.close();
+      }
+    }
+  }
+
+
 }

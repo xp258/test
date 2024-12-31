@@ -59,5 +59,7 @@ public class CoreConfigKeys {
 
   public final ConfigKey HTTP_REQUEST_HOLDER_ENABLED = new ConfigKey(
       "oxygen.httpRequest.holder.enabled", "true");
+  public final ConfigKey HTTP_REQUEST_EXECUTION = new ConfigKey("oxygen.httpRequest.execution",
+      "HUC");
 
 }
