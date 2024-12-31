@@ -178,7 +178,19 @@ public class Bytes {
    * @return string
    */
   public synchronized String toString(Charset charset) {
-    return new String(buffer, 0, count, charset);
+    return toString(count, charset);
+  }
+
+  /**
+   * 转string
+   *
+   * @param length  转换长度
+   * @param charset 编码
+   * @return string
+   * @since 3.0.10
+   */
+  public String toString(int length, Charset charset) {
+    return new String(buffer, 0, length, charset);
   }
 
   /**

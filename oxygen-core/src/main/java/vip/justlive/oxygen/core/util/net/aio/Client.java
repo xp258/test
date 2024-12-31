@@ -29,9 +29,9 @@ import vip.justlive.oxygen.core.util.io.IoUtils;
  *
  * @author wubo
  */
+@Getter
 public class Client {
 
-  @Getter
   private final GroupContext groupContext;
 
   public Client(GroupContext groupContext) {

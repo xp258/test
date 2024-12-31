@@ -284,6 +284,7 @@ public class ThreadUtils {
           CoreConfigKeys.WHEEL_TIMER_POOL_SIZE.castValue(int.class));
       globalTimer.getSecurityChecker()
           .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown)));
+      globalTimer.start();
     }
     return globalTimer;
   }
