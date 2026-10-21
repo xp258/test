@@ -29,7 +29,7 @@ import vip.justlive.oxygen.core.util.io.FileUtils;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 
 /**
- * 123qwe
+ * 123qwe456
  * 引导类
  * <br>
  * 用于加载程序启动需要的配置
